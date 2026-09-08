@@ -6,7 +6,7 @@ HTML, CSS, and a few lines of JavaScript, served by GitHub Pages.
 
 ## Live site
 
-https://derinyurtsever-oss.github.io/control-systems-i/
+https://controls.derinyurtsever.com
 
 ## Files
 
@@ -16,6 +16,7 @@ https://derinyurtsever-oss.github.io/control-systems-i/
 | `styles.css` | Styling. The `:root` block at the top holds colors and fonts. |
 | `script.js` | Mobile menu toggle and the footer timestamp. |
 | `.nojekyll` | Tells GitHub Pages to serve files as-is, skipping Jekyll. |
+| `CNAME` | The custom domain. Managed by GitHub Settings -> Pages; do not edit by hand. |
 
 ## Filling in the placeholders
 
