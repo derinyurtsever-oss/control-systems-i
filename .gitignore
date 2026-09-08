@@ -11,3 +11,6 @@ desktop.ini
 # Local notes not meant for students
 drafts/
 *.local.*
+
+# Local dev tooling
+.claude/
