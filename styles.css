@@ -1,0 +1,320 @@
+/* ---------------------------------------------------------------
+   Control Systems I - TA site
+   Placeholder styling. Swap the tokens below to restyle the site.
+   --------------------------------------------------------------- */
+
+:root {
+  --accent:        #1f4e79;
+  --accent-soft:   #e8f0f8;
+  --bg:            #ffffff;
+  --bg-alt:        #f6f7f9;
+  --text:          #1c1f23;
+  --text-muted:    #5a626b;
+  --border:        #e2e5ea;
+  --placeholder:   #a4560c;
+  --placeholder-bg:#fdf3e6;
+
+  --radius: 10px;
+  --wrap: 960px;
+  --font-body: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --font-head: Georgia, "Times New Roman", serif;
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --accent:        #7fb2e5;
+    --accent-soft:   #16283a;
+    --bg:            #14171a;
+    --bg-alt:        #1b1f23;
+    --text:          #e6e8ea;
+    --text-muted:    #9aa3ad;
+    --border:        #2b3138;
+    --placeholder:   #e0a765;
+    --placeholder-bg:#2a2115;
+  }
+}
+
+* { box-sizing: border-box; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-body);
+  font-size: 17px;
+  line-height: 1.65;
+  -webkit-font-smoothing: antialiased;
+}
+
+.wrap {
+  width: 100%;
+  max-width: var(--wrap);
+  margin: 0 auto;
+  padding: 0 20px;
+}
+
+a { color: var(--accent); }
+
+h1, h2, h3 { font-family: var(--font-head); line-height: 1.25; }
+
+code {
+  font-family: var(--font-mono);
+  font-size: 0.9em;
+  background: var(--bg-alt);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 1px 5px;
+}
+
+.skip-link { position: absolute; left: -9999px; }
+.skip-link:focus {
+  left: 12px; top: 12px;
+  z-index: 100;
+  background: var(--bg);
+  border: 2px solid var(--accent);
+  padding: 8px 14px;
+  border-radius: var(--radius);
+}
+
+/* --- header ---------------------------------------------------- */
+
+.site-header {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  background: var(--bg);
+  border-bottom: 1px solid var(--border);
+}
+
+.header-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  min-height: 62px;
+}
+
+.brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  text-decoration: none;
+  color: var(--text);
+  font-weight: 600;
+}
+
+.brand-mark {
+  display: inline-grid;
+  place-items: center;
+  width: 34px; height: 34px;
+  border-radius: 8px;
+  background: var(--accent);
+  color: #fff;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  letter-spacing: 0.5px;
+}
+
+@media (prefers-color-scheme: dark) {
+  .brand-mark { color: #0f1519; }
+}
+
+.nav { display: flex; gap: 22px; }
+
+.nav a {
+  text-decoration: none;
+  color: var(--text-muted);
+  font-size: 15px;
+  padding: 6px 0;
+  border-bottom: 2px solid transparent;
+}
+.nav a:hover { color: var(--text); border-bottom-color: var(--accent); }
+
+.nav-toggle {
+  display: none;
+  font: inherit;
+  font-size: 14px;
+  background: var(--bg-alt);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 7px 12px;
+  cursor: pointer;
+}
+
+/* --- hero ------------------------------------------------------ */
+
+.hero {
+  background: var(--bg-alt);
+  border-bottom: 1px solid var(--border);
+  padding: 64px 0 56px;
+  margin-bottom: 48px;
+}
+
+.eyebrow {
+  margin: 0 0 8px;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  letter-spacing: 1.4px;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+
+.hero h1 { margin: 0 0 14px; font-size: clamp(2rem, 5vw, 2.9rem); }
+
+.lede { margin: 0 0 10px; font-size: 1.12rem; max-width: 62ch; }
+
+.byline { margin: 0 0 26px; color: var(--text-muted); font-size: 0.95rem; }
+
+.hero-actions { display: flex; flex-wrap: wrap; gap: 12px; }
+
+.btn {
+  display: inline-block;
+  text-decoration: none;
+  font-size: 15px;
+  font-weight: 500;
+  padding: 10px 20px;
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  background: var(--bg);
+  color: var(--text);
+}
+.btn:hover { border-color: var(--accent); }
+
+.btn-primary {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+}
+.btn-primary:hover { opacity: 0.9; }
+
+@media (prefers-color-scheme: dark) {
+  .btn-primary { color: #0f1519; }
+}
+
+/* --- sections -------------------------------------------------- */
+
+section { margin-bottom: 52px; scroll-margin-top: 80px; }
+
+section > h2 {
+  font-size: 1.5rem;
+  margin: 0 0 6px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--border);
+}
+
+.section-note { margin: 0 0 22px; color: var(--text-muted); font-size: 0.95rem; }
+
+.card {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 20px 22px;
+}
+
+.card h3 { margin: 4px 0 8px; font-size: 1.12rem; }
+.card p:last-child, .card ul:last-child { margin-bottom: 0; }
+.card ul { margin: 0; padding-left: 20px; }
+.card li { margin-bottom: 6px; }
+
+.callout { border-left: 3px solid var(--accent); background: var(--accent-soft); }
+.callout h2 { margin: 0 0 12px; font-size: 1.2rem; border: 0; padding: 0; }
+
+.announce-list { list-style: none; margin: 0; padding: 0; }
+.announce-list li { padding: 8px 0; border-top: 1px solid var(--border); }
+.announce-list li:first-child { border-top: 0; }
+.announce-list time {
+  display: inline-block;
+  min-width: 130px;
+  font-family: var(--font-mono);
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 16px;
+}
+.grid-2 { grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); }
+
+.tag {
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+
+.links { display: flex; flex-wrap: wrap; gap: 14px; font-size: 14px; margin-bottom: 0; }
+
+/* --- table ----------------------------------------------------- */
+
+.table-scroll { overflow-x: auto; border: 1px solid var(--border); border-radius: var(--radius); }
+
+table { width: 100%; border-collapse: collapse; font-size: 15px; }
+
+th, td { text-align: left; padding: 11px 16px; border-bottom: 1px solid var(--border); }
+
+th {
+  background: var(--bg-alt);
+  font-weight: 600;
+  font-size: 13px;
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+tbody tr:last-child td { border-bottom: 0; }
+
+/* --- placeholder marker ---------------------------------------- */
+/* Every .ph span is content still to be filled in. The highlight
+   disappears on its own as you replace the text; delete this rule
+   when you no longer want the reminder.                            */
+
+.ph {
+  background: var(--placeholder-bg);
+  color: var(--placeholder);
+  border-radius: 3px;
+  padding: 0 4px;
+  font-style: italic;
+}
+
+/* --- footer ---------------------------------------------------- */
+
+.site-footer {
+  border-top: 1px solid var(--border);
+  background: var(--bg-alt);
+  padding: 30px 0;
+  margin-top: 20px;
+  color: var(--text-muted);
+  font-size: 14px;
+}
+.site-footer p { margin: 0 0 4px; }
+
+.fine { font-size: 13px; color: var(--text-muted); }
+
+/* --- responsive ------------------------------------------------ */
+
+@media (max-width: 640px) {
+  body { font-size: 16px; }
+  .nav-toggle { display: block; }
+  .nav {
+    display: none;
+    position: absolute;
+    top: 62px; left: 0; right: 0;
+    flex-direction: column;
+    gap: 0;
+    background: var(--bg);
+    border-bottom: 1px solid var(--border);
+    padding: 8px 20px 14px;
+  }
+  .nav.open { display: flex; }
+  .nav a { padding: 10px 0; border-bottom: 1px solid var(--border); }
+  .hero { padding: 44px 0 40px; }
+  .announce-list time { display: block; min-width: 0; }
+}
