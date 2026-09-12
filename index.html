@@ -18,13 +18,16 @@
 </header>
 
 <main class="stage" id="stage">
-  <img class="shot" id="shot" alt="">
+  <div class="canvas" id="canvas">
+    <img class="shot" id="shot" alt="">
+    <div class="dots" id="dots"></div>
+  </div>
   <div class="missing" id="missing" hidden>
     <p class="missing-title">Photo not found</p>
     <p class="missing-path" id="missingPath"></p>
-    <p class="missing-help">Save the room photo at this path and reload. The dots below are in their planned positions.</p>
+    <p class="missing-help">Save the room photo at this path and reload.</p>
   </div>
-  <div class="dots" id="dots"></div>
+  <p class="hint" id="hint" hidden>Drag to look around the room</p>
   <div class="veil" aria-hidden="true"></div>
 
   <button class="arrow prev" id="prev" type="button" aria-label="Previous room">

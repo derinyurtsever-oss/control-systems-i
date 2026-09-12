@@ -8,9 +8,11 @@
   if (!ROOMS || !ROOMS.length) return;
 
   var stage   = document.getElementById("stage");
+  var canvas  = document.getElementById("canvas");
   var shot    = document.getElementById("shot");
   var dotsEl  = document.getElementById("dots");
   var missing = document.getElementById("missing");
+  var hint    = document.getElementById("hint");
   var sheet   = document.getElementById("sheet");
   var body    = document.getElementById("sheetBody");
   var nav     = document.getElementById("roomsNav");
@@ -18,6 +20,10 @@
   var EDIT = new URLSearchParams(location.search).has("edit");
   var index = 0;
   var lastFocus = null;
+  var hintShown = false;
+
+  /* the photo's displayed size, and how far it is panned */
+  var view = { w: 0, h: 0, x: 0, y: 0 };
 
   /* ---------- text helpers ---------- */
 
@@ -26,6 +32,7 @@
   }
   // escape, then highlight anything still written in [brackets]
   function h(s) { return esc(s).replace(/\[([^\]]+)\]/g, '<span class="ph">[$1]</span>'); }
+  function isSmall() { return window.matchMedia("(max-width: 720px)").matches; }
 
   /* ---------- rooms nav ---------- */
 
@@ -43,44 +50,85 @@
     });
   }
 
-  /* ---------- dots ---------- */
+  /* ---------- layout ----------
+     The photo always covers the screen. Whatever spills past the edges can
+     be dragged into view, and the dots ride along because they live inside
+     the same element and are positioned as percentages of it. */
 
-  /* The photo is object-fit: cover, so part of it is cropped. Work out
-     exactly where the image really sits and place each dot against that,
-     otherwise the dots drift off their objects as the window changes. */
-  /* On a phone the photo is letterboxed instead of cropped (see the
-     matching object-fit rule in the CSS), otherwise most of the dots end
-     up outside the visible slice. */
-  function isContain() { return window.matchMedia("(max-width: 720px)").matches; }
-
-  function photoBox() {
-    var nw = shot.naturalWidth || 3, nh = shot.naturalHeight || 2;
+  function layout() {
+    var nw = shot.naturalWidth || 3000, nh = shot.naturalHeight || 2000;
     var cw = stage.clientWidth, ch = stage.clientHeight;
-    var scale = isContain() ? Math.min(cw / nw, ch / nh) : Math.max(cw / nw, ch / nh);
-    var dw = nw * scale, dh = nh * scale;
-    return { w: dw, h: dh, x: (cw - dw) / 2, y: (ch - dh) / 2, cw: cw };
+    var scale = Math.max(cw / nw, ch / nh);
+
+    view.w = Math.round(nw * scale);
+    view.h = Math.round(nh * scale);
+
+    canvas.style.width = view.w + "px";
+    canvas.style.height = view.h + "px";
+
+    // start centred, then keep the pan inside the allowed range
+    if (view.x === 0 && view.y === 0) {
+      view.x = (cw - view.w) / 2;
+      view.y = (ch - view.h) / 2;
+    }
+    clampPan();
+    applyPan();
+    updateHint();
   }
 
-  function placeDots() {
-    var b = photoBox();
+  function clampPan() {
+    var cw = stage.clientWidth, ch = stage.clientHeight;
+    var minX = Math.min(0, cw - view.w), minY = Math.min(0, ch - view.h);
+    view.x = Math.max(minX, Math.min(0, view.x));
+    view.y = Math.max(minY, Math.min(0, view.y));
+    if (view.w <= cw) view.x = (cw - view.w) / 2;
+    if (view.h <= ch) view.y = (ch - view.h) / 2;
+  }
 
-    Array.prototype.forEach.call(dotsEl.children, function (el) {
-      el.style.left = (b.x + (el._x / 100) * b.w) + "px";
-      el.style.top  = (b.y + (el._y / 100) * b.h) + "px";
-    });
+  function applyPan() {
+    canvas.style.transform = "translate3d(" + view.x + "px," + view.y + "px,0)";
+    shiftLabels();
+  }
 
-    // nudge any label that would hang off the side of the screen
+  function pannable() {
+    return view.w - stage.clientWidth > 12 || view.h - stage.clientHeight > 12;
+  }
+
+  function updateHint() {
+    if (hintShown || !pannable() || EDIT) { hint.hidden = true; return; }
+    hint.hidden = false;
+  }
+
+  function dismissHint() {
+    if (hintShown) return;
+    hintShown = true;
+    hint.hidden = true;
+  }
+
+  /* keep a label from hanging off the side of the screen */
+  function shiftLabels() {
+    var cw = stage.clientWidth;
     Array.prototype.forEach.call(dotsEl.children, function (el) {
       var tag = el.querySelector(".tag");
       if (!tag) return;
+
+      // a label whose dot has been panned off screen points at nothing
+      var d = el.getBoundingClientRect();
+      var cx = d.left + d.width / 2, cy = d.top + d.height / 2;
+      var off = cx < 4 || cx > cw - 4 || cy < 4 || cy > stage.clientHeight - 4;
+      tag.style.visibility = off ? "hidden" : "";
+      if (off) return;
+
       tag.style.setProperty("--shift", "0px");
       var r = tag.getBoundingClientRect();
       var shift = 0;
       if (r.left < 10) shift = 10 - r.left;
-      else if (r.right > b.cw - 10) shift = (b.cw - 10) - r.right;
+      else if (r.right > cw - 10) shift = (cw - 10) - r.right;
       if (shift) tag.style.setProperty("--shift", Math.round(shift) + "px");
     });
   }
+
+  /* ---------- dots ---------- */
 
   function buildDots(room) {
     dotsEl.innerHTML = "";
@@ -88,19 +136,19 @@
       var b = document.createElement("button");
       b.type = "button";
       b.className = "hotspot";
+      b.style.left = spot.x + "%";
+      b.style.top = spot.y + "%";
       b.setAttribute("aria-label", spot.label);
       b.innerHTML = '<span class="ring"></span><span class="core"></span><span class="tag">' + esc(spot.label) + "</span>";
-      b._x = spot.x;
-      b._y = spot.y;
       b._spot = spot;
       b.addEventListener("click", function () {
-        if (b._dragged) { b._dragged = false; return; }
+        if (b._suppress) { b._suppress = false; return; }
         openPanel(spot, b);
       });
       if (EDIT) makeDraggable(b);
       dotsEl.appendChild(b);
     });
-    placeDots();
+    shiftLabels();
   }
 
   /* ---------- showing a room ---------- */
@@ -111,6 +159,7 @@
 
     shot.classList.remove("ready");
     missing.hidden = true;
+    view.x = 0; view.y = 0;
     shot.alt = room.name + " — " + room.place.replace(/[\[\]]/g, "");
     shot.src = room.photo;
 
@@ -120,7 +169,6 @@
     buildDots(room);
     paintNav();
 
-    // keep the next room's photo warm so switching feels instant
     var next = ROOMS[(index + 1) % ROOMS.length];
     if (next !== room) { new Image().src = next.photo; }
   }
@@ -128,13 +176,12 @@
   shot.addEventListener("load", function () {
     shot.classList.add("ready");
     missing.hidden = true;
-    placeDots();
+    layout();
   });
 
   shot.addEventListener("error", function () {
     missing.hidden = false;
     document.getElementById("missingPath").textContent = ROOMS[index].photo;
-    placeDots();
   });
 
   document.getElementById("prev").addEventListener("click", function () { show(index - 1); });
@@ -146,13 +193,88 @@
     if (e.key === "ArrowRight") show(index + 1);
   });
 
-  window.addEventListener("resize", placeDots);
+  window.addEventListener("resize", function () {
+    layout();
+    if (sheet.open && sheet._anchor) positionSheet(sheet._anchor);
+  });
+
+  /* ---------- dragging the room ---------- */
+
+  (function () {
+    var dragging = false, moved = false, startX = 0, startY = 0, originX = 0, originY = 0, target = null;
+
+    stage.addEventListener("pointerdown", function (e) {
+      if (EDIT && e.target.closest(".hotspot")) return;   // edit mode drags dots instead
+      if (e.target.closest(".arrow, .bar")) return;
+      if (!pannable()) return;
+
+      dragging = true;
+      moved = false;
+      startX = e.clientX; startY = e.clientY;
+      originX = view.x; originY = view.y;
+      target = e.target.closest(".hotspot");
+      canvas.classList.add("dragging");
+      stage.setPointerCapture(e.pointerId);
+    });
+
+    stage.addEventListener("pointermove", function (e) {
+      if (!dragging) return;
+      var dx = e.clientX - startX, dy = e.clientY - startY;
+      if (!moved && Math.abs(dx) + Math.abs(dy) > 6) {
+        moved = true;
+        dismissHint();
+        // a drag that started on a dot must not also count as a tap on it
+        if (target) target._suppress = true;
+      }
+      if (!moved) return;
+      view.x = originX + dx;
+      view.y = originY + dy;
+      clampPan();
+      applyPan();
+    });
+
+    function end(e) {
+      if (!dragging) return;
+      dragging = false;
+      canvas.classList.remove("dragging");
+      try { stage.releasePointerCapture(e.pointerId); } catch (err) {}
+      target = null;
+    }
+    stage.addEventListener("pointerup", end);
+    stage.addEventListener("pointercancel", end);
+  })();
 
   /* ---------- panel ---------- */
 
+  /* Open the panel beside the dot it belongs to, not in a fixed corner.
+     Phones keep the bottom sheet — a floating card would cover the room. */
+  function positionSheet(btn) {
+    if (isSmall() || !btn) {
+      sheet.style.left = "";
+      sheet.style.top = "";
+      sheet.style.removeProperty("--from");
+      return;
+    }
+    var d = btn.getBoundingClientRect();
+    var vw = window.innerWidth, vh = window.innerHeight;
+    var w = sheet.offsetWidth, h = sheet.offsetHeight;
+    var m = 16, gap = 20, left, from;
+
+    if (d.right + gap + w <= vw - m) { left = d.right + gap; from = -16; }        // to the right of the dot
+    else if (d.left - gap - w >= m)  { left = d.left - gap - w; from = 16; }      // or to its left
+    else { left = Math.min(Math.max(d.left + d.width / 2 - w / 2, m), vw - w - m); from = 0; }
+
+    var top = Math.min(Math.max(d.top + d.height / 2 - h / 2, m), vh - h - m);
+
+    sheet.style.left = Math.round(left) + "px";
+    sheet.style.top = Math.round(top) + "px";
+    sheet.style.setProperty("--from", from + "px");
+  }
+
   function openPanel(spot, btn) {
     var p = spot.panel;
-    var html = '<p class="s-kicker">' + h(p.kicker || "") + "</p>" +
+    body.innerHTML =
+      '<p class="s-kicker">' + h(p.kicker || "") + "</p>" +
       '<h2 id="sheetTitle">' + h(p.title) + "</h2>" +
       (p.lead ? '<p class="s-lead">' + h(p.lead) + "</p>" : "") +
       (p.list ? '<ul class="s-list">' + p.list.map(function (li) { return "<li>" + h(li) + "</li>"; }).join("") + "</ul>" : "") +
@@ -160,8 +282,6 @@
         return '<a href="' + esc(l.href || "#") + '">' + h(l.label) + "</a>";
       }).join("") + "</div>" : "") +
       (p.note ? '<p class="s-note">' + h(p.note) + "</p>" : "");
-
-    body.innerHTML = html;
     body.scrollTop = 0;
 
     Array.prototype.forEach.call(dotsEl.children, function (el) { el.classList.remove("open"); });
@@ -171,46 +291,49 @@
       lastFocus = document.activeElement;
       sheet.showModal();
     }
+    sheet._anchor = btn;
+    positionSheet(btn);   // measured once it is on screen, before the first paint
   }
 
   function closePanel() {
     sheet.close();
+    sheet._anchor = null;
     Array.prototype.forEach.call(dotsEl.children, function (el) { el.classList.remove("open"); });
     if (lastFocus && lastFocus.focus) lastFocus.focus();
   }
 
   document.getElementById("sheetClose").addEventListener("click", closePanel);
   sheet.addEventListener("click", function (e) { if (e.target === sheet) closePanel(); });
-  // links are placeholders until real files exist
   body.addEventListener("click", function (e) {
     var a = e.target.closest("a");
     if (a && (a.getAttribute("href") === "#" || !a.getAttribute("href"))) e.preventDefault();
   });
 
-  /* ---------- edit mode ----------
-     Drag a dot to move it, click the photo to read a position off it,
-     then copy the whole set back into rooms-data.js. */
+  /* ---------- edit mode ---------- */
 
   function makeDraggable(b) {
     b.addEventListener("pointerdown", function (e) {
       e.preventDefault();
+      e.stopPropagation();
       b.setPointerCapture(e.pointerId);
       var moved = false;
 
       function move(ev) {
         moved = true;
-        b._dragged = true;
+        b._suppress = true;
         var pos = toPhotoPercent(ev.clientX, ev.clientY);
-        b._x = pos.x;
-        b._y = pos.y;
-        placeDots();
+        b._spot.x = pos.x;
+        b._spot.y = pos.y;
+        b.style.left = pos.x + "%";
+        b.style.top = pos.y + "%";
+        shiftLabels();
         readout(pos);
       }
       function up(ev) {
-        b.releasePointerCapture(ev.pointerId);
+        try { b.releasePointerCapture(ev.pointerId); } catch (err) {}
         b.removeEventListener("pointermove", move);
         b.removeEventListener("pointerup", up);
-        if (!moved) b._dragged = false;
+        if (!moved) b._suppress = false;
       }
       b.addEventListener("pointermove", move);
       b.addEventListener("pointerup", up);
@@ -218,11 +341,10 @@
   }
 
   function toPhotoPercent(clientX, clientY) {
-    var r = stage.getBoundingClientRect();
-    var b = photoBox();
+    var r = canvas.getBoundingClientRect();
     return {
-      x: +(((clientX - r.left - b.x) / b.w) * 100).toFixed(1),
-      y: +(((clientY - r.top - b.y) / b.h) * 100).toFixed(1)
+      x: +(((clientX - r.left) / r.width) * 100).toFixed(1),
+      y: +(((clientY - r.top) / r.height) * 100).toFixed(1)
     };
   }
 
@@ -241,7 +363,7 @@
 
     document.getElementById("copyBtn").addEventListener("click", function () {
       var lines = Array.prototype.map.call(dotsEl.children, function (el) {
-        return "        " + el._spot.id + ": x: " + el._x + ", y: " + el._y;
+        return "        " + el._spot.id + ": x: " + el._spot.x + ", y: " + el._spot.y;
       }).join("\n");
       var text = "// " + ROOMS[index].name + "\n" + lines;
       navigator.clipboard.writeText(text).then(function () {

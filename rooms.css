@@ -97,18 +97,48 @@ html:has(.sheet[open]) { overflow: hidden; }
   height: 100svh;
   overflow: hidden;
   background: var(--ground);
+  touch-action: none;          /* we handle the panning ourselves */
 }
 
-.shot {
+.canvas {
   position: absolute;
-  inset: 0;
+  top: 0;
+  left: 0;
+  will-change: transform;
+  cursor: grab;
+}
+.canvas.dragging { cursor: grabbing; }
+
+.shot {
+  display: block;
   width: 100%;
   height: 100%;
-  object-fit: cover;
   opacity: 0;
   transition: opacity .5s var(--ease);
+  -webkit-user-drag: none;
+  user-select: none;
 }
 .shot.ready { opacity: 1; }
+
+.hint {
+  position: absolute;
+  left: 50%;
+  bottom: 96px;
+  z-index: 12;
+  transform: translateX(-50%);
+  margin: 0;
+  padding: 8px 16px;
+  border-radius: 999px;
+  background: rgba(20, 22, 26, 0.55);
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+  color: rgba(255, 255, 255, 0.92);
+  font-size: 13.5px;
+  white-space: nowrap;
+  pointer-events: none;
+  animation: hint-in .6s var(--ease) both;
+}
+@keyframes hint-in { from { opacity: 0; transform: translate(-50%, 8px); } }
 
 /* a gentle top-and-bottom wash so the white UI always has contrast */
 .veil {
@@ -266,7 +296,9 @@ html:has(.sheet[open]) { overflow: hidden; }
   width: 430px;
   max-width: calc(100% - 32px);
   max-height: calc(100svh - 32px);
-  inset: 16px 16px 16px auto;
+  inset: auto;
+  left: 16px;
+  top: 16px;
   border-radius: 26px;
   background: var(--sheet);
   -webkit-backdrop-filter: blur(32px) saturate(180%);
@@ -278,7 +310,7 @@ html:has(.sheet[open]) { overflow: hidden; }
 .sheet[open] { display: flex; flex-direction: column; animation: slide-in .42s var(--ease); }
 .sheet::backdrop { background: rgba(10, 12, 15, 0.34); }
 
-@keyframes slide-in { from { opacity: 0; transform: translateX(26px); } }
+@keyframes slide-in { from { opacity: 0; transform: translateX(var(--from, 18px)) scale(.985); } }
 
 .sheet-close {
   position: absolute;
@@ -380,7 +412,6 @@ body.editing .hotspot:active { cursor: grabbing; }
 /* --- small screens --------------------------------------------- */
 
 @media (max-width: 720px) {
-  .shot { object-fit: contain; }
   .bar { padding: 14px 16px; font-size: 13.5px; grid-template-columns: 1fr auto; }
   .bar-right { display: none; }
   .rooms-nav { gap: 14px; }
@@ -388,10 +419,11 @@ body.editing .hotspot:active { cursor: grabbing; }
   .prev { left: 12px; }
   .next { right: 12px; }
   .caption-name { font-size: 18px; }
+  .hint { bottom: 84px; }
   .hotspot { width: 40px; height: 40px; margin: -20px 0 0 -20px; }
 
   .sheet {
-    inset: auto 0 0 0;
+    inset: auto 0 0 0 !important;
     width: 100%;
     max-width: 100%;
     border-radius: 24px 24px 0 0;
