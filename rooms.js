@@ -37,6 +37,8 @@
   }
   // escape, then highlight anything still written in [brackets]
   function h(s) { return esc(s).replace(/\[([^\]]+)\]/g, '<span class="ph">[$1]</span>'); }
+  // "#", empty, or [something in brackets] all mean the URL is not set yet
+  function isPh(s) { return !s || s === "#" || /^\s*\[.*\]\s*$/.test(s); }
   function isSmall() { return window.matchMedia("(max-width: 720px)").matches; }
 
   /* ---------- rooms nav ---------- */
@@ -305,7 +307,9 @@
       (p.lead ? '<p class="s-lead">' + h(p.lead) + "</p>" : "") +
       (p.list ? '<ul class="s-list">' + p.list.map(function (li) { return "<li>" + h(li) + "</li>"; }).join("") + "</ul>" : "") +
       (p.links ? '<div class="s-links">' + p.links.map(function (l) {
-        return '<a href="' + esc(l.href || "#") + '">' + h(l.label) + "</a>";
+        return isPh(l.href)
+          ? '<a href="#" data-placeholder title="Link not set yet">' + h(l.label) + "</a>"
+          : '<a href="' + esc(l.href) + '" target="_blank" rel="noopener">' + h(l.label) + "</a>";
       }).join("") + "</div>" : "") +
       (p.note ? '<p class="s-note">' + h(p.note) + "</p>" : "");
     body.scrollTop = 0;

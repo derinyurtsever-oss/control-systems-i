@@ -3,7 +3,10 @@
 
    x and y are percentages of the PHOTO (not the screen), measured from its
    top-left corner. Open the page with ?edit on the end of the URL to drag the
-   dots where you want them and copy the new numbers out. */
+   dots where you want them and copy the new numbers out.
+
+   Anything in [square brackets] is still a placeholder — it shows up
+   highlighted on the page until you replace it. */
 
 window.ROOMS = [
   {
@@ -14,13 +17,63 @@ window.ROOMS = [
     when: "Thursdays, 10:15",
     hotspots: [
       {
-        id: "screen",
-        x: 82, y: 34.5,
-        label: "This week",
+        id: "drive",
+        x: 30.5, y: 60,
+        label: "Course drive",
         panel: {
-          kicker: "Week 4 · On the screen",
+          kicker: "polybox",
+          title: "Everything in one folder",
+          lead: "Every worksheet, solution and slide deck from the exercise sessions lives here.",
+          list: [
+            "Worksheets and solutions, week by week",
+            "Slides from each session",
+            "Formula sheet and reference material"
+          ],
+          links: [{ label: "Open the polybox folder", href: "[polybox link]" }],
+          note: "Worth bookmarking — the link stays the same all semester."
+        }
+      },
+      {
+        id: "books",
+        x: 61, y: 57.3,
+        label: "Further reading",
+        panel: {
+          kicker: "On the table",
+          title: "If you want to go deeper",
+          lead: "Optional, but useful when the lecture notes move faster than you would like.",
+          list: [
+            "[Textbook, author, edition] — the main reference",
+            "[Second reference] — stronger on worked examples",
+            "Copies are on reserve at [library]"
+          ],
+          links: [{ label: "Full reading list", href: "[reading list link]" }]
+        }
+      },
+      {
+        id: "robot",
+        x: 82.8, y: 53.4,
+        label: "This week's tool",
+        panel: {
+          kicker: "Week 4 · Try it yourself",
+          title: "Play with a second-order system",
+          lead: "Drag the damping ratio and natural frequency, and watch the step response react.",
+          list: [
+            "Guess what happens before you drag anything",
+            "Overshoot is set by ζ alone",
+            "ωn only changes how fast it gets there"
+          ],
+          links: [{ label: "Open the tool", href: "#" }],
+          note: "A different tool appears here each week, matched to the topic."
+        }
+      },
+      {
+        id: "today",
+        x: 73.5, y: 45,
+        label: "Today's exercise",
+        panel: {
+          kicker: "Week 4 · Today",
           title: "Time response",
-          lead: "What we are working through in Thursday's session.",
+          lead: "What we are working through in this session, and everything shown on screen.",
           list: [
             "First- and second-order systems",
             "Damping ratio ζ and natural frequency ωn",
@@ -28,76 +81,29 @@ window.ROOMS = [
           ],
           links: [
             { label: "Worksheet 4", href: "#" },
-            { label: "Recitation notes", href: "#" }
+            { label: "Slides", href: "#" }
           ],
-          note: "Solutions go up after Friday."
+          note: "Solutions go up straight after the session."
         }
       },
       {
-        id: "seat",
-        x: 63.5, y: 66.8,
-        label: "Your seat",
+        id: "admin",
+        x: 7, y: 36,
+        label: "Admin",
         panel: {
-          kicker: "Before you sit down",
-          title: "Bring these",
-          lead: "The session moves faster if you arrive with the worksheet already attempted.",
+          kicker: "Exercise sessions",
+          title: "How the sessions run",
+          lead: "The practical details: when, where, and what actually counts towards your grade.",
           list: [
-            "Worksheet 4, printed or on a tablet",
-            "Last week's solutions, for reference",
-            "A calculator — no laptops needed this week"
+            "Thursdays 10:15–12:00, Room E24",
+            "Attendance is [required / optional]",
+            "Worksheets are not graded — the homework is",
+            "Missed one? The material goes up the same day"
           ],
           links: [
-            { label: "Print worksheet 4", href: "#" },
-            { label: "Worksheet 3 solutions", href: "#" }
+            { label: "Email me", href: "[your.email@university.edu]" },
+            { label: "Course page", href: "[Canvas link]" }
           ]
-        }
-      },
-      {
-        id: "desk",
-        x: 72.5, y: 45.8,
-        label: "Ask a question",
-        panel: {
-          kicker: "Office hours",
-          title: "Come and ask",
-          lead: "Drop in with questions on homework, labs, or exam prep. No appointment needed.",
-          list: [
-            "Tuesday 14:00–16:00 · [Room]",
-            "Thursday 10:00–12:00 · [Zoom link]"
-          ],
-          links: [
-            { label: "Ask anonymously", href: "#" },
-            { label: "Email me", href: "#" }
-          ],
-          note: "Question you would rather not ask out loud? Use the anonymous form."
-        }
-      },
-      {
-        id: "projector",
-        x: 40, y: 12.4,
-        label: "Slides",
-        panel: {
-          kicker: "From the projector",
-          title: "Slides and recaps",
-          lead: "Everything shown in the exercise sessions, week by week.",
-          links: [
-            { label: "Week 4 slides", href: "#" },
-            { label: "All previous weeks", href: "#" }
-          ]
-        }
-      },
-      {
-        id: "door",
-        x: 7.2, y: 36,
-        label: "Finding the room",
-        panel: {
-          kicker: "Room E24",
-          title: "How to get here",
-          lead: "Ground floor, through the glass-brick corridor. The door is marked E24.",
-          list: [
-            "Exercise session: Thursdays, 10:15–12:00",
-            "Doors stay open — come in late if you have to"
-          ],
-          links: [{ label: "Campus map", href: "#" }]
         }
       }
     ]

@@ -375,6 +375,15 @@ html:has(.sheet[open]) { overflow: hidden; }
 .s-links a:first-child { background: var(--blue); color: #fff; }
 .s-links a:first-child:hover { background: #0062c4; }
 
+/* a link whose URL has not been filled in yet */
+.s-links a[data-placeholder],
+.s-links a[data-placeholder]:hover {
+  background: var(--ph-bg);
+  color: var(--ph);
+  box-shadow: inset 0 0 0 1px rgba(164, 86, 12, 0.3);
+  cursor: default;
+}
+
 .s-note {
   margin: 22px 0 0;
   padding: 13px 15px;
