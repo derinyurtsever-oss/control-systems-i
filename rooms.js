@@ -9,7 +9,8 @@
 
   var stage   = document.getElementById("stage");
   var canvas  = document.getElementById("canvas");
-  var shot    = document.getElementById("shot");
+  var imgs    = [document.getElementById("shotA"), document.getElementById("shotB")];
+  var caption = document.querySelector(".caption");
   var dotsEl  = document.getElementById("dots");
   var missing = document.getElementById("missing");
   var hint    = document.getElementById("hint");
@@ -21,6 +22,10 @@
   var index = 0;
   var lastFocus = null;
   var hintShown = false;
+  var front = 0;      // which of the two photo layers is showing
+  var seq = 0;        // ignores a slow load that has been overtaken
+
+  function activeImg() { return imgs[front]; }
 
   /* the photo's displayed size, and how far it is panned */
   var view = { w: 0, h: 0, x: 0, y: 0 };
@@ -56,7 +61,8 @@
      the same element and are positioned as percentages of it. */
 
   function layout() {
-    var nw = shot.naturalWidth || 3000, nh = shot.naturalHeight || 2000;
+    var img = activeImg();
+    var nw = img.naturalWidth || 3000, nh = img.naturalHeight || 2000;
     var cw = stage.clientWidth, ch = stage.clientHeight;
     var scale = Math.max(cw / nw, ch / nh);
 
@@ -154,36 +160,53 @@
 
   /* ---------- showing a room ---------- */
 
+  /* The new room loads into the hidden layer first, then the two layers
+     cross-fade, so the room never flashes through the dark background.
+     The dots and caption dip out and back with it. */
   function show(i) {
     index = (i + ROOMS.length) % ROOMS.length;
+
     var room = ROOMS[index];
+    var incoming = imgs[1 - front];
+    var outgoing = imgs[front];
+    var token = ++seq;
 
-    shot.classList.remove("ready");
-    missing.hidden = true;
-    view.x = 0; view.y = 0;
-    shot.alt = room.name + " — " + room.place.replace(/[\[\]]/g, "");
-    shot.src = room.photo;
-
-    document.getElementById("capName").textContent = room.name;
-    document.getElementById("capSub").innerHTML = h(room.place) + " · " + esc(room.when);
-
-    buildDots(room);
     paintNav();
+    dotsEl.classList.add("fading");
+    caption.classList.add("fading");
 
-    var next = ROOMS[(index + 1) % ROOMS.length];
-    if (next !== room) { new Image().src = next.photo; }
+    incoming.onload = function () {
+      if (token !== seq) return;           // a newer switch already won
+      front = 1 - front;
+      incoming.classList.add("on");
+      outgoing.classList.remove("on");
+      missing.hidden = true;
+
+      view.x = 0; view.y = 0;
+      layout();
+      buildDots(room);
+
+      document.getElementById("capName").textContent = room.name;
+      document.getElementById("capSub").innerHTML = h(room.place) + " · " + esc(room.when);
+
+      dotsEl.classList.remove("fading");
+      caption.classList.remove("fading");
+
+      var next = ROOMS[(index + 1) % ROOMS.length];
+      if (next !== room) { new Image().src = next.photo; }
+    };
+
+    incoming.onerror = function () {
+      if (token !== seq) return;
+      missing.hidden = false;
+      document.getElementById("missingPath").textContent = room.photo;
+      dotsEl.classList.remove("fading");
+      caption.classList.remove("fading");
+    };
+
+    incoming.alt = room.name + " — " + room.place.replace(/[\[\]]/g, "");
+    incoming.src = room.photo;
   }
-
-  shot.addEventListener("load", function () {
-    shot.classList.add("ready");
-    missing.hidden = true;
-    layout();
-  });
-
-  shot.addEventListener("error", function () {
-    missing.hidden = false;
-    document.getElementById("missingPath").textContent = ROOMS[index].photo;
-  });
 
   document.getElementById("prev").addEventListener("click", function () { show(index - 1); });
   document.getElementById("next").addEventListener("click", function () { show(index + 1); });

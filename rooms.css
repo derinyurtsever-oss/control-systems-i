@@ -112,16 +112,22 @@ html:has(.sheet[open]) { overflow: hidden; }
   will-change: transform;
 }
 
+/* two stacked layers so one room can cross-fade into the next */
 .shot {
+  position: absolute;
+  inset: 0;
   display: block;
   width: 100%;
   height: 100%;
   opacity: 0;
-  transition: opacity .5s var(--ease);
+  transition: opacity .55s var(--ease);
   -webkit-user-drag: none;
   user-select: none;
 }
-.shot.ready { opacity: 1; }
+.shot.on { opacity: 1; }
+
+.dots, .caption { transition: opacity .3s var(--ease); }
+.dots.fading, .caption.fading { opacity: 0; }
 
 .hint {
   position: absolute;
