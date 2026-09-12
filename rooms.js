@@ -90,8 +90,9 @@
     shiftLabels();
   }
 
+  /* Dragging is a phone thing. On desktop the photo just sits centred. */
   function pannable() {
-    return view.w - stage.clientWidth > 12 || view.h - stage.clientHeight > 12;
+    return isSmall() && (view.w - stage.clientWidth > 12 || view.h - stage.clientHeight > 12);
   }
 
   function updateHint() {
@@ -213,8 +214,8 @@
       startX = e.clientX; startY = e.clientY;
       originX = view.x; originY = view.y;
       target = e.target.closest(".hotspot");
-      canvas.classList.add("dragging");
-      stage.setPointerCapture(e.pointerId);
+      // NB: capturing the pointer here would send the following click to the
+      // stage instead of the dot, so it only happens once a drag really starts
     });
 
     stage.addEventListener("pointermove", function (e) {
@@ -223,6 +224,8 @@
       if (!moved && Math.abs(dx) + Math.abs(dy) > 6) {
         moved = true;
         dismissHint();
+        canvas.classList.add("dragging");
+        try { stage.setPointerCapture(e.pointerId); } catch (err) {}
         // a drag that started on a dot must not also count as a tap on it
         if (target) target._suppress = true;
       }
