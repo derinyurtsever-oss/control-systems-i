@@ -2,181 +2,58 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Control Systems I — Teaching Assistant</title>
-<meta name="description" content="Course support page for Control Systems I: office hours, recitation materials, and resources.">
-<link rel="stylesheet" href="styles.css">
-<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📈</text></svg>">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="light">
+<title>Control Systems I</title>
+<meta name="description" content="Control Systems I — explore the exercise room and the lecture hall. Topics, materials, office hours and recaps.">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎛️</text></svg>">
+<link rel="stylesheet" href="rooms.css">
 </head>
 <body>
 
-<a class="skip-link" href="#main">Skip to content</a>
-
-<header class="site-header">
-  <div class="wrap header-inner">
-    <a class="brand" href="#top">
-      <span class="brand-mark">CS&nbsp;I</span>
-      <span class="brand-text">Control Systems I</span>
-    </a>
-    <button class="nav-toggle" aria-expanded="false" aria-controls="nav">Menu</button>
-    <nav id="nav" class="nav">
-      <a href="#office-hours">Office Hours</a>
-      <a href="#materials">Materials</a>
-      <a href="#resources">Resources</a>
-      <a href="#contact">Contact</a>
-    </nav>
-  </div>
+<header class="bar">
+  <nav class="rooms-nav" id="roomsNav" aria-label="Rooms"></nav>
+  <p class="bar-title">Control Systems I</p>
+  <p class="bar-right" id="barRight">Week 4</p>
 </header>
 
-<main id="main">
+<main class="stage" id="stage">
+  <img class="shot" id="shot" alt="">
+  <div class="missing" id="missing" hidden>
+    <p class="missing-title">Photo not found</p>
+    <p class="missing-path" id="missingPath"></p>
+    <p class="missing-help">Save the room photo at this path and reload. The dots below are in their planned positions.</p>
+  </div>
+  <div class="dots" id="dots"></div>
+  <div class="veil" aria-hidden="true"></div>
 
-  <section class="hero" id="top">
-    <div class="wrap">
-      <p class="eyebrow">Teaching Assistant Page</p>
-      <h1>Control Systems I</h1>
-      <p class="lede">
-        Recitation materials, office hours, and practice problems for students in
-        <span class="ph">[Course Number]</span>, <span class="ph">[Semester Year]</span>.
-      </p>
-      <p class="byline">
-        Teaching Assistant: <strong><span class="ph">[Your Name]</span></strong>
-        &middot; <span class="ph">[Department]</span>, <span class="ph">[University]</span>
-      </p>
-      <div class="hero-actions">
-        <a class="btn btn-primary" href="#office-hours">Office hours</a>
-        <a class="btn" href="#materials">Course materials</a>
-      </div>
-    </div>
-  </section>
+  <button class="arrow prev" id="prev" type="button" aria-label="Previous room">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5 L8 12 L15 19"/></svg>
+  </button>
+  <button class="arrow next" id="next" type="button" aria-label="Next room">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5 L16 12 L9 19"/></svg>
+  </button>
 
-  <div class="wrap">
-
-    <section id="announcements" class="card callout">
-      <h2>Announcements</h2>
-      <ul class="announce-list">
-        <li>
-          <time datetime="2026-01-01">Placeholder date</time>
-          <span class="ph">[First announcement goes here — e.g. "Recitation moved to Room 210 this week."]</span>
-        </li>
-        <li>
-          <time datetime="2026-01-01">Placeholder date</time>
-          <span class="ph">[Second announcement.]</span>
-        </li>
-      </ul>
-    </section>
-
-    <section id="office-hours">
-      <h2>Office Hours</h2>
-      <p class="section-note">Drop in with questions on homework, labs, or exam prep. No appointment needed.</p>
-      <div class="table-scroll">
-        <table>
-          <thead>
-            <tr><th scope="col">Day</th><th scope="col">Time</th><th scope="col">Location</th><th scope="col">Notes</th></tr>
-          </thead>
-          <tbody>
-            <tr><td>Placeholder</td><td><span class="ph">[0:00–0:00]</span></td><td><span class="ph">[Room / Zoom]</span></td><td>In person</td></tr>
-            <tr><td>Placeholder</td><td><span class="ph">[0:00–0:00]</span></td><td><span class="ph">[Room / Zoom]</span></td><td>Online</td></tr>
-            <tr><td>By appointment</td><td>—</td><td>—</td><td>Email to arrange</td></tr>
-          </tbody>
-        </table>
-      </div>
-    </section>
-
-    <section id="materials">
-      <h2>Recitation Materials</h2>
-      <p class="section-note">Notes, worksheets, and worked solutions, posted after each session.</p>
-      <div class="grid">
-
-        <article class="card">
-          <p class="tag">Week 1</p>
-          <h3>System modeling &amp; Laplace transforms</h3>
-          <p class="ph">[Short description of what this session covered.]</p>
-          <p class="links"><a href="#">Notes (PDF)</a> <a href="#">Worksheet</a> <a href="#">Solutions</a></p>
-        </article>
-
-        <article class="card">
-          <p class="tag">Week 2</p>
-          <h3>Transfer functions &amp; block diagrams</h3>
-          <p class="ph">[Short description of what this session covered.]</p>
-          <p class="links"><a href="#">Notes (PDF)</a> <a href="#">Worksheet</a> <a href="#">Solutions</a></p>
-        </article>
-
-        <article class="card">
-          <p class="tag">Week 3</p>
-          <h3>Time response &amp; stability</h3>
-          <p class="ph">[Short description of what this session covered.]</p>
-          <p class="links"><a href="#">Notes (PDF)</a> <a href="#">Worksheet</a> <a href="#">Solutions</a></p>
-        </article>
-
-        <article class="card">
-          <p class="tag">Week 4</p>
-          <h3>Root locus</h3>
-          <p class="ph">[Short description of what this session covered.]</p>
-          <p class="links"><a href="#">Notes (PDF)</a> <a href="#">Worksheet</a> <a href="#">Solutions</a></p>
-        </article>
-
-        <article class="card">
-          <p class="tag">Week 5</p>
-          <h3>Frequency response &amp; Bode plots</h3>
-          <p class="ph">[Short description of what this session covered.]</p>
-          <p class="links"><a href="#">Notes (PDF)</a> <a href="#">Worksheet</a> <a href="#">Solutions</a></p>
-        </article>
-
-        <article class="card">
-          <p class="tag">Week 6</p>
-          <h3>PID control &amp; compensator design</h3>
-          <p class="ph">[Short description of what this session covered.]</p>
-          <p class="links"><a href="#">Notes (PDF)</a> <a href="#">Worksheet</a> <a href="#">Solutions</a></p>
-        </article>
-
-      </div>
-    </section>
-
-    <section id="resources">
-      <h2>Resources</h2>
-      <div class="grid grid-2">
-        <article class="card">
-          <h3>Textbook &amp; references</h3>
-          <ul>
-            <li><span class="ph">[Textbook title, author, edition]</span></li>
-            <li><span class="ph">[Supplementary reference]</span></li>
-            <li><span class="ph">[Formula sheet link]</span></li>
-          </ul>
-        </article>
-        <article class="card">
-          <h3>Software &amp; tools</h3>
-          <ul>
-            <li>MATLAB — Control System Toolbox</li>
-            <li>Python — <code>python-control</code>, <code>scipy.signal</code></li>
-            <li><span class="ph">[Simulink / lab software link]</span></li>
-          </ul>
-        </article>
-      </div>
-    </section>
-
-    <section id="contact">
-      <h2>Contact</h2>
-      <div class="card">
-        <p>
-          Email: <a href="mailto:placeholder@example.edu"><span class="ph">[your.email@university.edu]</span></a><br>
-          Course page: <a href="#"><span class="ph">[Canvas / LMS link]</span></a>
-        </p>
-        <p class="fine">
-          For grading questions, please email with your section number and the assignment name in the subject line.
-        </p>
-      </div>
-    </section>
-
+  <div class="caption">
+    <p class="caption-name" id="capName"></p>
+    <p class="caption-sub" id="capSub"></p>
   </div>
 </main>
 
-<footer class="site-footer">
-  <div class="wrap">
-    <p><span class="ph">[Your Name]</span> &middot; Control Systems I &middot; <span class="ph">[Semester Year]</span></p>
-    <p class="fine">Last updated <span id="updated">—</span>. Built as a static site, hosted on GitHub Pages.</p>
-  </div>
-</footer>
+<dialog class="sheet" id="sheet" aria-labelledby="sheetTitle">
+  <button class="sheet-close" id="sheetClose" type="button" aria-label="Close">
+    <svg viewBox="0 0 14 14" aria-hidden="true"><path d="M3 3 L11 11 M11 3 L3 11"/></svg>
+  </button>
+  <div class="sheet-body" id="sheetBody"></div>
+</dialog>
 
-<script src="script.js"></script>
+<div class="editbar" id="editbar" hidden>
+  <span>Edit mode — drag a dot, or click the photo for coordinates</span>
+  <output id="editOut">—</output>
+  <button type="button" id="copyBtn">Copy positions</button>
+</div>
+
+<script src="rooms-data.js"></script>
+<script src="rooms.js"></script>
 </body>
 </html>

@@ -12,9 +12,11 @@ https://controls.derinyurtsever.com
 
 | File | Purpose |
 | --- | --- |
-| `index.html` | All page content. Everything students read lives here. |
-| `styles.css` | Styling. The `:root` block at the top holds colors and fonts. |
-| `script.js` | Mobile menu toggle and the footer timestamp. |
+| `index.html` | Page structure: the photo stage, the dots, and the panel. |
+| `rooms-data.js` | All the content. Edit this to change what the dots say and where they sit. |
+| `rooms.css` | Styling. The `:root` block at the top holds colors and fonts. |
+| `rooms.js` | Places the dots on the photo, switches rooms, fills the panels. |
+| `images/` | The room photos. |
 | `.nojekyll` | Tells GitHub Pages to serve files as-is, skipping Jekyll. |
 | `CNAME` | The custom domain. Managed by GitHub Settings -> Pages; do not edit by hand. |
 

@@ -1,0 +1,418 @@
+/* ---------------------------------------------------------------
+   Control Systems I — room explorer
+   Full-bleed photo, dots on the objects, Apple-style panels.
+   Committed to one light look; colours are painted explicitly.
+   --------------------------------------------------------------- */
+
+:root {
+  color-scheme: light;
+
+  --ink:    #1d1d1f;
+  --ink-2:  #6e6e73;
+  --ink-3:  #a1a1a6;
+  --line:   #e4e6ea;
+  --blue:   #0071e3;
+  --sheet:  rgba(255, 255, 255, 0.92);
+  --ground: #0f1114;
+
+  --ph:     #a4560c;
+  --ph-bg:  #fdf1e2;
+
+  --font: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text",
+          "Segoe UI Variable Display", "Segoe UI", system-ui, sans-serif;
+  --ease: cubic-bezier(.2, .8, .2, 1);
+}
+
+* { box-sizing: border-box; }
+
+/* `hidden` must win over the display rules set further down */
+[hidden] { display: none !important; }
+
+html, body { height: 100%; }
+
+body {
+  margin: 0;
+  background: var(--ground);
+  color: #fff;
+  font-family: var(--font);
+  font-size: 16px;
+  line-height: 1.45;
+  letter-spacing: -0.01em;
+  -webkit-font-smoothing: antialiased;
+  overflow: hidden;
+}
+
+html:has(.sheet[open]) { overflow: hidden; }
+
+:focus-visible { outline: 2.5px solid #fff; outline-offset: 3px; border-radius: 10px; }
+
+.ph {
+  background: var(--ph-bg);
+  color: var(--ph);
+  border-radius: 4px;
+  padding: 0 4px;
+  font-style: italic;
+}
+
+/* --- top bar --------------------------------------------------- */
+
+.bar {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  z-index: 30;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 16px;
+  padding: 18px 24px;
+  font-size: 15px;
+  color: #fff;
+  text-shadow: 0 1px 14px rgba(0, 0, 0, 0.45);
+  pointer-events: none;
+}
+.bar > * { pointer-events: auto; }
+
+.rooms-nav { display: flex; gap: 20px; }
+
+.rooms-nav button {
+  border: 0;
+  padding: 2px 0;
+  background: none;
+  color: rgba(255, 255, 255, 0.68);
+  font: inherit;
+  cursor: pointer;
+  transition: color .2s;
+}
+.rooms-nav button:hover { color: #fff; }
+.rooms-nav button[aria-current="true"] { color: #fff; font-weight: 600; }
+
+.bar-title { margin: 0; font-weight: 600; white-space: nowrap; }
+.bar-right { margin: 0; text-align: right; color: rgba(255, 255, 255, 0.68); }
+
+/* --- stage ----------------------------------------------------- */
+
+.stage {
+  position: relative;
+  width: 100%;
+  height: 100svh;
+  overflow: hidden;
+  background: var(--ground);
+}
+
+.shot {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0;
+  transition: opacity .5s var(--ease);
+}
+.shot.ready { opacity: 1; }
+
+/* a gentle top-and-bottom wash so the white UI always has contrast */
+.veil {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    linear-gradient(to bottom, rgba(0,0,0,.42), rgba(0,0,0,0) 190px),
+    linear-gradient(to top,    rgba(0,0,0,.46), rgba(0,0,0,0) 220px);
+}
+
+.missing {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  align-content: center;
+  justify-items: center;
+  gap: 6px;
+  padding: 24px;
+  text-align: center;
+  background:
+    radial-gradient(60% 60% at 50% 40%, #2b3038, #14171b 70%);
+}
+.missing-title { margin: 0; font-size: 19px; font-weight: 600; }
+.missing-path {
+  margin: 0;
+  font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+  font-size: 14px;
+  color: #9fb4c8;
+}
+.missing-help { margin: 8px 0 0; max-width: 40ch; font-size: 14px; color: rgba(255,255,255,.62); }
+
+/* --- dots ------------------------------------------------------ */
+
+.dots { position: absolute; inset: 0; }
+
+.hotspot {
+  position: absolute;
+  width: 46px;
+  height: 46px;
+  margin: -23px 0 0 -23px;
+  padding: 0;
+  border: 0;
+  background: none;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.hotspot .ring {
+  position: absolute;
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  border: 1.5px solid rgba(255, 255, 255, 0.55);
+  background: rgba(255, 255, 255, 0.07);
+  -webkit-backdrop-filter: blur(2px);
+  backdrop-filter: blur(2px);
+  transform: scale(.82);
+  opacity: 0;
+  transition: transform .35s var(--ease), opacity .35s var(--ease);
+}
+
+.hotspot .core {
+  position: relative;
+  width: 13px;
+  height: 13px;
+  border-radius: 50%;
+  background: #fff;
+  /* thin dark edge so the dot still reads on a white projector screen */
+  box-shadow: 0 0 0 1.5px rgba(0, 0, 0, 0.22), 0 3px 14px rgba(0, 0, 0, 0.55);
+  transition: transform .3s var(--ease);
+}
+
+.hotspot:hover .ring,
+.hotspot:focus-visible .ring,
+.hotspot.open .ring { transform: scale(1); opacity: 1; }
+.hotspot:hover .core,
+.hotspot:focus-visible .core { transform: scale(1.15); }
+
+.hotspot .tag {
+  position: absolute;
+  left: 50%;
+  bottom: calc(100% - 6px);
+  transform: translate(calc(-50% + var(--shift, 0px)), 6px);
+  white-space: nowrap;
+  padding: 8px 15px;
+  border-radius: 999px;
+  background: #fff;
+  color: var(--ink);
+  font-size: 14.5px;
+  font-weight: 500;
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.28);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .25s var(--ease), transform .25s var(--ease);
+}
+.hotspot:hover .tag,
+.hotspot:focus-visible .tag {
+  opacity: 1;
+  transform: translate(calc(-50% + var(--shift, 0px)), 0);
+}
+
+/* touch devices get no hover, so the labels simply stay visible */
+@media (hover: none) {
+  .hotspot .tag { opacity: 1; transform: translate(calc(-50% + var(--shift, 0px)), 0); font-size: 13px; padding: 6px 12px; }
+  .hotspot .ring { opacity: 1; transform: scale(1); }
+}
+
+/* --- arrows & caption ------------------------------------------ */
+
+.arrow {
+  position: absolute;
+  top: 50%;
+  z-index: 12;
+  width: 44px;
+  height: 44px;
+  margin-top: -22px;
+  display: grid;
+  place-items: center;
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.12);
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+  color: #fff;
+  cursor: pointer;
+  transition: background .2s, transform .2s var(--ease);
+}
+.arrow:hover { background: rgba(255, 255, 255, 0.26); }
+.arrow:active { transform: scale(.94); }
+.arrow svg { width: 19px; height: 19px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.prev { left: 22px; }
+.next { right: 22px; }
+
+.caption {
+  position: absolute;
+  left: 0; right: 0; bottom: 26px;
+  z-index: 12;
+  text-align: center;
+  pointer-events: none;
+  text-shadow: 0 1px 16px rgba(0, 0, 0, 0.5);
+}
+.caption-name { margin: 0; font-size: 22px; font-weight: 600; letter-spacing: -0.02em; }
+.caption-sub { margin: 3px 0 0; font-size: 14px; color: rgba(255, 255, 255, 0.74); }
+
+/* --- panel ----------------------------------------------------- */
+
+.sheet {
+  position: fixed;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  width: 430px;
+  max-width: calc(100% - 32px);
+  max-height: calc(100svh - 32px);
+  inset: 16px 16px 16px auto;
+  border-radius: 26px;
+  background: var(--sheet);
+  -webkit-backdrop-filter: blur(32px) saturate(180%);
+  backdrop-filter: blur(32px) saturate(180%);
+  color: var(--ink);
+  box-shadow: 0 30px 80px -24px rgba(0, 0, 0, 0.55), 0 0 0 0.5px rgba(0, 0, 0, 0.07);
+  overflow: hidden;
+}
+.sheet[open] { display: flex; flex-direction: column; animation: slide-in .42s var(--ease); }
+.sheet::backdrop { background: rgba(10, 12, 15, 0.34); }
+
+@keyframes slide-in { from { opacity: 0; transform: translateX(26px); } }
+
+.sheet-close {
+  position: absolute;
+  top: 16px; right: 16px;
+  z-index: 2;
+  width: 30px; height: 30px;
+  display: grid;
+  place-items: center;
+  border: 0;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.06);
+  color: var(--ink-2);
+  cursor: pointer;
+}
+.sheet-close:hover { background: rgba(0, 0, 0, 0.11); color: var(--ink); }
+.sheet-close svg { width: 12px; height: 12px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; }
+
+.sheet-body { overflow-y: auto; padding: 30px 30px 28px; overscroll-behavior: contain; }
+
+.s-kicker { margin: 0 0 7px; font-size: 13.5px; font-weight: 600; color: var(--blue); }
+.sheet h2 {
+  margin: 0;
+  padding-right: 34px;
+  font-size: 29px;
+  line-height: 1.13;
+  font-weight: 700;
+  letter-spacing: -0.028em;
+  text-wrap: balance;
+}
+.s-lead { margin: 11px 0 0; color: var(--ink-2); font-size: 15.5px; }
+
+.s-list { margin: 22px 0 0; padding: 0; list-style: none; display: grid; }
+.s-list li {
+  padding: 11px 0;
+  border-top: 1px solid var(--line);
+  font-size: 15px;
+  color: var(--ink);
+}
+.s-list li:first-child { border-top: 0; }
+
+.s-links { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 22px; }
+.s-links a {
+  padding: 9px 16px;
+  border-radius: 999px;
+  background: #f1f2f4;
+  color: var(--ink);
+  font-size: 14.5px;
+  font-weight: 500;
+  text-decoration: none;
+  transition: background .2s;
+}
+.s-links a:hover { background: #e4e6ea; }
+.s-links a:first-child { background: var(--blue); color: #fff; }
+.s-links a:first-child:hover { background: #0062c4; }
+
+.s-note {
+  margin: 22px 0 0;
+  padding: 13px 15px;
+  border-radius: 14px;
+  background: #f5f5f7;
+  color: var(--ink-2);
+  font-size: 14.5px;
+}
+
+/* --- edit mode ------------------------------------------------- */
+
+.editbar {
+  position: fixed;
+  left: 16px; bottom: 16px;
+  z-index: 40;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 10px 14px;
+  border-radius: 14px;
+  background: rgba(20, 22, 26, 0.86);
+  -webkit-backdrop-filter: blur(14px);
+  backdrop-filter: blur(14px);
+  color: #fff;
+  font-size: 13px;
+}
+.editbar output {
+  font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+  color: #7fd4ff;
+}
+.editbar button {
+  border: 0;
+  border-radius: 999px;
+  padding: 6px 13px;
+  background: #fff;
+  color: #14161a;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+body.editing .hotspot { cursor: grab; }
+body.editing .hotspot:active { cursor: grabbing; }
+
+/* --- small screens --------------------------------------------- */
+
+@media (max-width: 720px) {
+  .shot { object-fit: contain; }
+  .bar { padding: 14px 16px; font-size: 13.5px; grid-template-columns: 1fr auto; }
+  .bar-right { display: none; }
+  .rooms-nav { gap: 14px; }
+  .arrow { width: 38px; height: 38px; margin-top: -19px; }
+  .prev { left: 12px; }
+  .next { right: 12px; }
+  .caption-name { font-size: 18px; }
+  .hotspot { width: 40px; height: 40px; margin: -20px 0 0 -20px; }
+
+  .sheet {
+    inset: auto 0 0 0;
+    width: 100%;
+    max-width: 100%;
+    border-radius: 24px 24px 0 0;
+    max-height: 86svh;
+  }
+  .sheet[open] { animation: slide-up .42s var(--ease); }
+  .sheet-body { padding: 26px 20px calc(24px + env(safe-area-inset-bottom)); }
+  .sheet-body::before {
+    content: "";
+    display: block;
+    width: 36px; height: 5px;
+    margin: -12px auto 16px;
+    border-radius: 3px;
+    background: #d2d2d7;
+  }
+  .sheet h2 { font-size: 25px; }
+}
+
+@keyframes slide-up { from { transform: translateY(100%); } }
+
+@media (prefers-reduced-motion: reduce) {
+  * { animation: none !important; transition: none !important; }
+  .shot { opacity: 1; }
+}
