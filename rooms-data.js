@@ -12,9 +12,9 @@ window.ROOMS = [
   {
     id: "exercise",
     name: "Exercise room",
-    place: "[Building], Room E24",
+    place: "GLC, Room E24",
     photo: "images/exercise-room.jpg",
-    when: "Thursdays, 10:15",
+    when: "Fridays, 10:15",
     hotspots: [
       {
         id: "drive",
@@ -27,10 +27,10 @@ window.ROOMS = [
           list: [
             "Worksheets and solutions, week by week",
             "Slides from each session",
-            "Formula sheet and reference material"
+            "Cheat sheet and reference material"
           ],
           links: [{ label: "Open the polybox folder", href: "[polybox link]" }],
-          note: "Worth bookmarking — the link stays the same all semester."
+          note: "The link will stay the same all semester."
         }
       },
       {
@@ -42,9 +42,9 @@ window.ROOMS = [
           title: "If you want to go deeper",
           lead: "Optional, but useful when the lecture notes move faster than you would like.",
           list: [
-            "[Textbook, author, edition] — the main reference",
-            "[Second reference] — stronger on worked examples",
-            "Copies are on reserve at [library]"
+            "bla",
+            "bla",
+            "bla"
           ],
           links: [{ label: "Full reading list", href: "[reading list link]" }]
         }
@@ -95,13 +95,13 @@ window.ROOMS = [
           title: "How the sessions run",
           lead: "The practical details: when, where, and what actually counts towards your grade.",
           list: [
-            "Thursdays 10:15–12:00, Room E24",
-            "Attendance is [required / optional]",
-            "Worksheets are not graded — the homework is",
-            "Missed one? The material goes up the same day"
+            "Fridays 10:15–12:00, Room E24",
+            "Attendance is optional",
+            "Nothing is graded",
+            "Missed one? You can access all material here"
           ],
           links: [
-            { label: "Email me", href: "[your.email@university.edu]" },
+            { label: "Email me", href: "dyurtsever@ethz.ch" },
             { label: "Course page", href: "[Canvas link]" }
           ]
         }
@@ -114,7 +114,7 @@ window.ROOMS = [
     name: "Lecture hall",
     place: "[Building], Main auditorium",
     photo: "images/lecture-hall.jpg",
-    when: "Mondays and Wednesdays, 08:15",
+    when: "Wednesdays, idk",
     hotspots: [
       {
         id: "screen",
@@ -171,7 +171,7 @@ window.ROOMS = [
       {
         id: "seats",
         x: 65, y: 75,
-        label: "Lecture notes",
+        label: "What did I miss?",
         panel: {
           kicker: "From the seats",
           title: "Notes and readings",
