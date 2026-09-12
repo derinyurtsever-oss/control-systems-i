@@ -18,7 +18,7 @@ window.ROOMS = [
     hotspots: [
       {
         id: "drive",
-        x: 30.5, y: 64.8,
+        x: 30.3, y: 60.8,
         label: "Course drive",
         panel: {
           kicker: "polybox",
@@ -35,7 +35,7 @@ window.ROOMS = [
       },
       {
         id: "books",
-        x: 61.3, y: 60.3,
+        x: 61.25, y: 57.4,
         label: "Further reading",
         panel: {
           kicker: "On the table",
@@ -51,7 +51,7 @@ window.ROOMS = [
       },
       {
         id: "robot",
-        x: 83.5, y: 54.7,
+        x: 83, y: 53.3,
         label: "This week's tool",
         panel: {
           kicker: "Week 4 · Try it yourself",
@@ -68,7 +68,7 @@ window.ROOMS = [
       },
       {
         id: "today",
-        x: 73.8, y: 44.8,
+        x: 73.5, y: 44.9,
         label: "Today's exercise",
         panel: {
           kicker: "Week 4 · Today",
@@ -88,7 +88,7 @@ window.ROOMS = [
       },
       {
         id: "admin",
-        x: 6.5, y: 35.1,
+        x: 7, y: 36,
         label: "Admin",
         panel: {
           kicker: "Exercise sessions",
