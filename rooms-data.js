@@ -118,7 +118,7 @@ window.ROOMS = [
     hotspots: [
       {
         id: "recording",
-        x: 46.75, y: 44,
+        x: 46.75, y: 49.5,
         label: "Lecture recording",
         panel: {
           kicker: "Every lecture",
@@ -129,7 +129,7 @@ window.ROOMS = [
       },
       {
         id: "recap",
-        x: 46.75, y: 24.7,
+        x: 46.75, y: 27.8,
         label: "Lecture recap",
         panel: {
           kicker: "AI-generated",
@@ -143,7 +143,7 @@ window.ROOMS = [
       },
       {
         id: "exam",
-        x: 72.5, y: 49,
+        x: 72.5, y: 55.1,
         label: "Exam date",
         panel: {
           kicker: "Exam",
