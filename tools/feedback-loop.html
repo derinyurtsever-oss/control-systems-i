@@ -394,7 +394,7 @@ details.sheet .line { color: var(--ink); font-style: italic; }
   /* move the little value pill along a wire */
   function travel(wire, value, cls) {
     return new Promise(function (done) {
-      var path = wire, len = path.getTotalLength(), t0 = null, dur = 380, finished = false;
+      var path = wire, len = path.getTotalLength(), t0 = null, dur = 480, finished = false;
       wire.classList.add("live");
       packet.setAttribute("class", "packet" + (cls ? " " + cls : ""));
       packetText.textContent = value;
@@ -428,7 +428,7 @@ details.sheet .line { color: var(--ink); font-style: italic; }
 
   function flash(block, warn) {
     block.classList.add(warn ? "active-warn" : "active");
-    return wait(skip ? 0 : 240);
+    return wait(skip ? 0 : 310);
   }
 
   /* ---------------- one round ---------------- */
@@ -449,7 +449,7 @@ details.sheet .line { color: var(--ink); font-style: italic; }
 
       $("sumText").textContent = sgn(e) + e;
       say("Reference <b>" + ref + "</b> − measured <b>" + alt + "</b> = error <b>" + sgn(e) + e + "</b>.");
-      await wait(skip ? 0 : 420);
+      await wait(skip ? 0 : 540);
 
       u = Math.round(K * e);
       await flash(BLOCKS.ctrl, warn);
@@ -461,7 +461,7 @@ details.sheet .line { color: var(--ink); font-style: italic; }
       $("sumText").textContent = "−";
       await flash(BLOCKS.ctrl);
       say("No measurement is coming back. The controller holds its guess: <b>0</b>.");
-      await wait(skip ? 0 : 300);
+      await wait(skip ? 0 : 380);
     }
 
     await travel(WIRES.w3, sgn(u) + u, warn ? "warn" : "");
@@ -478,7 +478,7 @@ details.sheet .line { color: var(--ink); font-style: italic; }
       $("gustLabel").classList.add("show");
       $("gustLabel").textContent = "gust " + sgn(gust) + gust;
       say('<b style="color:var(--red)">Gust!</b> The plant is bumped by <b>' + sgn(gust) + gust + "</b>.");
-      await wait(skip ? 0 : 500);
+      await wait(skip ? 0 : 640);
       alt += gust;
       $("gustArrow").classList.remove("show");
       $("gustLabel").classList.remove("show");
