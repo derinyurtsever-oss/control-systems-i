@@ -55,15 +55,15 @@ window.ROOMS = [
         label: "This week's tool",
         panel: {
           kicker: "Week 4 · Try it yourself",
-          title: "Play with a second-order system",
-          lead: "Drag the damping ratio and natural frequency, and watch the step response react.",
+          title: "Be the loop",
+          lead: "The block diagram, running one round at a time. You can see the number travel from the sensor to the controller and back round to the aircraft.",
           list: [
-            "Guess what happens before you drag anything",
-            "Overshoot is set by ζ alone",
-            "ωn only changes how fast it gets there"
+            "Cut the sensor wire: a gust hits and nothing ever corrects it",
+            "Reconnect it: the error is caught and the altitude comes back",
+            "Turn the gain up: it overshoots, flies past the target, and never settles"
           ],
-          links: [{ label: "Open the tool", href: "#" }],
-          note: "A different tool appears here each week, matched to the topic."
+          links: [{ label: "Open the demo", href: "tools/feedback-loop.html" }],
+          note: "More feedback is not automatically better — react too hard and you shake the system apart."
         }
       },
       {

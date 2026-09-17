@@ -1,0 +1,648 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<meta name="robots" content="noindex, nofollow">
+<title>The loop, one round at a time</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🔁</text></svg>">
+<style>
+:root {
+  color-scheme: light;
+  --ink:   #1d1d1f;
+  --ink-2: #6e6e73;
+  --ink-3: #a1a1a6;
+  --line:  #e0e3e8;
+  --bg:    #f7f8fa;
+  --card:  #ffffff;
+
+  --blue:  #0071e3;   /* closed loop, K = 1 */
+  --grey:  #8e8e93;   /* open loop        */
+  --amber: #ff9500;   /* over-react, K = 2 */
+  --red:   #ff3b30;   /* violent, K = 3   */
+  --green: #1d9a5b;
+
+  --font: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text",
+          "Segoe UI Variable Display", "Segoe UI", system-ui, sans-serif;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--font);
+  font-size: 16px;
+  letter-spacing: -0.01em;
+  -webkit-font-smoothing: antialiased;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+.wrap {
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 18px 20px 26px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  min-height: 100vh;
+}
+
+:focus-visible { outline: 2.5px solid var(--blue); outline-offset: 2px; border-radius: 10px; }
+
+/* --- header ------------------------------------------------------ */
+
+.top { display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+.top h1 { margin: 0; font-size: clamp(19px, 2.2vw, 26px); font-weight: 650; letter-spacing: -0.025em; }
+.top .back { font-size: 14px; color: var(--blue); text-decoration: none; }
+.top .back:hover { text-decoration: underline; }
+
+.chips { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 7px 14px;
+  border-radius: 999px;
+  background: var(--card);
+  box-shadow: inset 0 0 0 1px var(--line);
+  font-size: clamp(13px, 1.4vw, 15px);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+.chip b { font-weight: 700; }
+.chip .swatch { width: 9px; height: 9px; border-radius: 50%; background: var(--c, var(--grey)); }
+.chip.mode-open   { --c: var(--grey);  color: var(--grey); }
+.chip.mode-closed { --c: var(--blue);  color: var(--blue); }
+.chip.gain-2 { --c: var(--amber); color: #9a5200; }
+.chip.gain-3 { --c: var(--red);   color: #c1271f; }
+
+/* --- the diagram -------------------------------------------------- */
+
+.stage {
+  background: var(--card);
+  border-radius: 20px;
+  box-shadow: 0 1px 2px rgba(16,24,40,.04), 0 12px 30px -18px rgba(16,24,40,.25);
+  padding: 8px 10px 0;
+}
+svg.diagram { display: block; width: 100%; height: auto; }
+
+.blk { fill: #fff; stroke: var(--line); stroke-width: 2; }
+.blk-label { font-size: 21px; font-weight: 650; fill: var(--ink); text-anchor: middle; }
+.blk-sub { font-size: 14px; fill: var(--ink-3); text-anchor: middle; }
+
+.node { fill: #f1f3f6; stroke: var(--line); stroke-width: 2; }
+.node-text { font-size: 20px; font-weight: 700; fill: var(--ink); text-anchor: middle; }
+
+.wire { fill: none; stroke: #c9ced6; stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; }
+.wire.live { stroke: var(--blue); }
+.wire.cut  { stroke: #d6dae0; stroke-dasharray: 9 11; }
+
+.arrowhead { fill: #c9ced6; }
+.arrowhead.live { fill: var(--blue); }
+
+/* the block currently doing something */
+.blk.active { stroke: var(--blue); stroke-width: 3.5; filter: drop-shadow(0 6px 16px rgba(0,113,227,.28)); }
+.blk.active-warn { stroke: var(--amber); stroke-width: 3.5; filter: drop-shadow(0 6px 16px rgba(255,149,0,.3)); }
+
+.packet circle { fill: var(--blue); }
+.packet text { font-size: 19px; font-weight: 700; fill: #fff; text-anchor: middle; dominant-baseline: central; }
+.packet.warn circle { fill: var(--amber); }
+.packet.gust circle { fill: var(--red); }
+
+.cutmark { font-size: 30px; text-anchor: middle; }
+
+.alt-big { font-size: 58px; font-weight: 700; fill: var(--ink); text-anchor: middle; letter-spacing: -0.03em; }
+.alt-cap { font-size: 14px; font-weight: 600; fill: var(--ink-3); text-anchor: middle; letter-spacing: .04em; }
+
+.gust-arrow { stroke: var(--red); stroke-width: 3; fill: none; opacity: 0; transition: opacity .18s; }
+.gust-arrow.show { opacity: 1; }
+.gust-label { font-size: 16px; font-weight: 700; fill: var(--red); text-anchor: middle; opacity: 0; transition: opacity .18s; }
+.gust-label.show { opacity: 1; }
+
+/* --- narration ---------------------------------------------------- */
+
+.say {
+  min-height: 34px;
+  font-size: clamp(17px, 2.1vw, 23px);
+  font-weight: 550;
+  letter-spacing: -0.02em;
+  text-align: center;
+  color: var(--ink);
+}
+.say .dim { color: var(--ink-3); }
+
+/* --- plot --------------------------------------------------------- */
+
+.plotwrap {
+  background: var(--card);
+  border-radius: 20px;
+  box-shadow: 0 1px 2px rgba(16,24,40,.04), 0 12px 30px -18px rgba(16,24,40,.25);
+  padding: 12px 14px 10px;
+}
+canvas { display: block; width: 100%; height: auto; }
+
+.legend { display: flex; gap: 16px; flex-wrap: wrap; justify-content: center; margin-top: 6px; font-size: 13px; color: var(--ink-2); }
+.legend span { display: inline-flex; align-items: center; gap: 6px; }
+.legend i { width: 14px; height: 3px; border-radius: 2px; background: var(--c); }
+
+/* --- controls ----------------------------------------------------- */
+
+.controls { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; justify-content: center; }
+
+button {
+  font: inherit;
+  font-size: 15px;
+  font-weight: 600;
+  padding: 10px 17px;
+  border: 0;
+  border-radius: 999px;
+  background: var(--card);
+  color: var(--ink);
+  box-shadow: inset 0 0 0 1px var(--line);
+  cursor: pointer;
+  transition: background .15s, box-shadow .15s;
+}
+button:hover { background: #f0f2f5; }
+button.primary { background: var(--blue); color: #fff; box-shadow: none; min-width: 190px; }
+button.primary:hover { background: #0062c4; }
+button.warn { background: var(--red); color: #fff; box-shadow: none; }
+button.warn:hover { background: #e0271d; }
+button[aria-pressed="true"] { background: var(--ink); color: #fff; box-shadow: none; }
+kbd {
+  font: inherit;
+  font-size: 11px;
+  font-weight: 700;
+  opacity: .55;
+  margin-left: 7px;
+  letter-spacing: .04em;
+}
+
+.sep { width: 1px; height: 26px; background: var(--line); margin: 0 4px; }
+
+/* --- run sheet ---------------------------------------------------- */
+
+details.sheet {
+  background: var(--card);
+  border-radius: 16px;
+  box-shadow: inset 0 0 0 1px var(--line);
+  padding: 12px 16px;
+  font-size: 14.5px;
+}
+details.sheet summary { cursor: pointer; font-weight: 650; }
+details.sheet ol { margin: 12px 0 0; padding-left: 20px; display: grid; gap: 10px; color: var(--ink-2); }
+details.sheet b { color: var(--ink); }
+details.sheet .line { color: var(--ink); font-style: italic; }
+
+@media (max-width: 720px) {
+  button { font-size: 14px; padding: 9px 14px; }
+  button.primary { min-width: 100%; }
+  kbd { display: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * { transition: none !important; }
+}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+
+  <div class="top">
+    <h1>The loop, one round at a time</h1>
+    <div class="chips">
+      <span class="chip" id="chipMode"><span class="swatch"></span><span id="modeText">Closed loop</span></span>
+      <span class="chip" id="chipGain">Gain <b id="gainText">K = 1</b></span>
+      <span class="chip">Reference <b id="refText">3</b></span>
+      <a class="back" href="../">← back to the room</a>
+    </div>
+  </div>
+
+  <div class="stage">
+    <svg class="diagram" id="svg" viewBox="0 0 1000 400" aria-label="Block diagram of a feedback loop">
+      <defs>
+        <marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+          <path d="M0 0 L10 5 L0 10 z" class="arrowhead"/>
+        </marker>
+      </defs>
+
+      <!-- wires (drawn first, so blocks sit on top) -->
+      <path id="w1" class="wire" marker-end="url(#ah)" d="M104 120 L144 120"/>
+      <path id="w2" class="wire" marker-end="url(#ah)" d="M196 120 L228 120"/>
+      <path id="w3" class="wire" marker-end="url(#ah)" d="M390 120 L428 120"/>
+      <path id="w4" class="wire" marker-end="url(#ah)" d="M590 120 L628 120"/>
+      <path id="w5" class="wire" marker-end="url(#ah)" d="M790 120 L838 120"/>
+      <path id="fb1" class="wire" d="M900 158 L900 300 L622 300"/>
+      <path id="fb2" class="wire" marker-end="url(#ah)" d="M458 300 L170 300 L170 148"/>
+
+      <!-- reference -->
+      <rect x="20" y="96" width="84" height="48" rx="16" class="node"/>
+      <text x="62" y="128" class="node-text">r=<tspan id="refNode">3</tspan></text>
+
+      <!-- comparator -->
+      <circle cx="170" cy="120" r="26" class="node" id="sumNode"/>
+      <text x="170" y="128" class="node-text" id="sumText">−</text>
+
+      <!-- blocks -->
+      <rect x="230" y="83" width="160" height="74" rx="18" class="blk" id="blkCtrl"/>
+      <text x="310" y="115" class="blk-label">Controller</text>
+      <text x="310" y="138" class="blk-sub" id="ctrlSub">u = K · e</text>
+
+      <rect x="430" y="83" width="160" height="74" rx="18" class="blk" id="blkAct"/>
+      <text x="510" y="115" class="blk-label">Actuator</text>
+      <text x="510" y="138" class="blk-sub">applies the command</text>
+
+      <rect x="630" y="83" width="160" height="74" rx="18" class="blk" id="blkPlant"/>
+      <text x="710" y="115" class="blk-label">Plant</text>
+      <text x="710" y="138" class="blk-sub">the aircraft</text>
+
+      <rect x="458" y="268" width="164" height="64" rx="18" class="blk" id="blkSensor"/>
+      <text x="540" y="295" class="blk-label">Sensor</text>
+      <text x="540" y="316" class="blk-sub">reads the altitude</text>
+
+      <!-- disturbance -->
+      <path class="gust-arrow" id="gustArrow" marker-end="url(#ah)" d="M710 34 L710 79"/>
+      <text x="710" y="26" class="gust-label" id="gustLabel">gust</text>
+
+      <!-- output -->
+      <text x="900" y="112" class="alt-big" id="altBig">3</text>
+      <text x="900" y="140" class="alt-cap">ALTITUDE</text>
+
+      <!-- cut marker on the feedback path -->
+      <text x="300" y="312" class="cutmark" id="cutMark" style="display:none">✂︎</text>
+
+      <!-- travelling value -->
+      <g class="packet" id="packet" style="display:none">
+        <circle r="20"/>
+        <text id="packetText">0</text>
+      </g>
+    </svg>
+  </div>
+
+  <p class="say" id="say">Press <b>Next round</b> and watch the number come back to the reference.</p>
+
+  <div class="plotwrap">
+    <canvas id="plot" width="2200" height="620"></canvas>
+    <div class="legend">
+      <span><i style="--c: var(--grey)"></i> open loop</span>
+      <span><i style="--c: var(--blue)"></i> closed, K = 1</span>
+      <span><i style="--c: var(--amber)"></i> K = 2</span>
+      <span><i style="--c: var(--red)"></i> K = 3</span>
+      <span><i style="--c: #c8ccd4"></i> reference</span>
+    </div>
+  </div>
+
+  <div class="controls">
+    <button class="primary" id="btnNext" type="button">Next round<kbd>SPACE</kbd></button>
+    <button class="warn" id="btnGust" type="button">Gust!<kbd>G</kbd></button>
+    <span class="sep"></span>
+    <button id="btnCut" type="button">Cut the sensor wire<kbd>C</kbd></button>
+    <span class="sep"></span>
+    <button id="btnK1" type="button" aria-pressed="true">K = 1<kbd>1</kbd></button>
+    <button id="btnK2" type="button" aria-pressed="false">K = 2<kbd>2</kbd></button>
+    <button id="btnK3" type="button" aria-pressed="false">K = 3<kbd>3</kbd></button>
+    <span class="sep"></span>
+    <button id="btnRefDown" type="button">Reference −<kbd>↓</kbd></button>
+    <button id="btnRefUp" type="button">Reference +<kbd>↑</kbd></button>
+    <span class="sep"></span>
+    <button id="btnReset" type="button">Reset<kbd>R</kbd></button>
+  </div>
+
+  <details class="sheet">
+    <summary>Run sheet — three rounds, about 20 minutes</summary>
+    <ol>
+      <li><b>Open loop.</b> Press <b>C</b> to cut the sensor wire, then hit <b>G</b> twice and keep pressing space.
+        The altitude wanders off and never comes back.
+        <div class="line">"Nothing in this picture knows anything has gone wrong."</div></li>
+      <li><b>Closed loop.</b> Press <b>C</b> again to reconnect. Same gusts.
+        The sensor catches them and the number returns to the reference.
+        <div class="line">"What, exactly, saved it?" — the sensor wire. The feedback.</div></li>
+      <li><b>The chaos round.</b> Press <b>2</b>, then <b>3</b>. The controller now over-reacts to the same error.
+        It overshoots, flips past the target, and never settles.
+        <div class="line">"More feedback is not automatically better. React too hard and you shake the system apart."</div></li>
+    </ol>
+    <p style="margin:14px 0 0; color: var(--ink-2)">
+      Before each round lands, ask the room to call it: up or down? The value only appears when
+      the packet arrives, so silence still resolves a second later.
+      Press <b>↑ / ↓</b> mid-run to move the reference and show it tracking.
+    </p>
+  </details>
+
+</div>
+
+<script>
+(function () {
+  "use strict";
+
+  /* ---------------- state ---------------- */
+
+  var START_ALT = 3, START_REF = 3;
+
+  var alt = START_ALT;        // where the aircraft is
+  var ref = START_REF;        // where we want it
+  var K = 1;                  // how hard the controller reacts
+  var closed = true;          // is the sensor wire connected
+  var gustQueued = 0;         // +1 / -1, fired on the next round
+  var history = [];           // one entry per round, for the plot
+  var busy = false;           // a round is animating
+  var skip = false;           // space pressed mid-round: jump to the end
+
+  var $ = function (id) { return document.getElementById(id); };
+  var svg = $("svg"), packet = $("packet"), packetText = $("packetText");
+
+  var BLOCKS = { ctrl: $("blkCtrl"), act: $("blkAct"), plant: $("blkPlant"), sensor: $("blkSensor") };
+  var WIRES = { w1: $("w1"), w2: $("w2"), w3: $("w3"), w4: $("w4"), w5: $("w5"), fb1: $("fb1"), fb2: $("fb2") };
+
+  /* ---------------- helpers ---------------- */
+
+  function sgn(v) { return v > 0 ? "+" : ""; }
+  function wait(ms) { return new Promise(function (r) { setTimeout(r, ms); }); }
+
+  function clearHighlights() {
+    Object.keys(BLOCKS).forEach(function (k) { BLOCKS[k].classList.remove("active", "active-warn"); });
+    Object.keys(WIRES).forEach(function (k) { WIRES[k].classList.remove("live"); });
+    packet.style.display = "none";
+  }
+
+  function say(html) { $("say").innerHTML = html; }
+
+  function tone() { return !closed ? "grey" : K >= 3 ? "red" : K === 2 ? "amber" : "blue"; }
+  function toneColor() { return getComputedStyle(document.documentElement).getPropertyValue("--" + tone()).trim(); }
+
+  function paintStatus() {
+    var chip = $("chipMode");
+    chip.className = "chip " + (closed ? "mode-closed" : "mode-open");
+    $("modeText").textContent = closed ? "Closed loop" : "Open loop";
+    $("gainText").textContent = "K = " + K;
+    $("chipGain").className = "chip" + (K === 2 ? " gain-2" : K === 3 ? " gain-3" : "");
+    $("refText").textContent = ref;
+    $("refNode").textContent = ref;
+    $("altBig").textContent = alt;
+    $("cutMark").style.display = closed ? "none" : "";
+    WIRES.fb2.classList.toggle("cut", !closed);
+    WIRES.fb1.classList.toggle("cut", !closed);
+    $("btnCut").textContent = closed ? "Cut the sensor wire" : "Reconnect the sensor";
+    $("btnCut").insertAdjacentHTML("beforeend", '<kbd>C</kbd>');
+    [1, 2, 3].forEach(function (k) { $("btnK" + k).setAttribute("aria-pressed", String(K === k)); });
+  }
+
+  /* move the little value pill along a wire */
+  function travel(wire, value, cls) {
+    return new Promise(function (done) {
+      var path = wire, len = path.getTotalLength(), t0 = null, dur = 380, finished = false;
+      wire.classList.add("live");
+      packet.setAttribute("class", "packet" + (cls ? " " + cls : ""));
+      packetText.textContent = value;
+      packet.style.display = "";
+
+      function finish() {
+        if (finished) return;
+        finished = true;
+        clearTimeout(bail);
+        packet.style.display = "none";
+        done();
+      }
+      // if the window is in the background the browser stops firing frames,
+      // so a round would hang here forever without this
+      var bail = setTimeout(finish, dur + 600);
+
+      function frame(ts) {
+        if (finished) return;
+        if (skip) { finish(); return; }
+        if (t0 === null) t0 = ts;
+        var p = Math.min(1, (ts - t0) / dur);
+        var e = p * p * (3 - 2 * p);                 // ease
+        var pt = path.getPointAtLength(e * len);
+        packet.setAttribute("transform", "translate(" + pt.x + "," + pt.y + ")");
+        if (p < 1) requestAnimationFrame(frame);
+        else finish();
+      }
+      requestAnimationFrame(frame);
+    });
+  }
+
+  function flash(block, warn) {
+    block.classList.add(warn ? "active-warn" : "active");
+    return wait(skip ? 0 : 240);
+  }
+
+  /* ---------------- one round ---------------- */
+
+  async function round() {
+    if (busy) { skip = true; return; }
+    busy = true; skip = false;
+    clearHighlights();
+
+    var warn = K >= 2;
+    var u, e = ref - alt;
+
+    if (closed) {
+      await flash(BLOCKS.sensor);
+      say("Sensor reads <b>" + alt + "</b>.");
+      await travel(WIRES.fb1, alt);
+      await travel(WIRES.fb2, alt);
+
+      $("sumText").textContent = sgn(e) + e;
+      say("Reference <b>" + ref + "</b> − measured <b>" + alt + "</b> = error <b>" + sgn(e) + e + "</b>.");
+      await wait(skip ? 0 : 420);
+
+      u = Math.round(K * e);
+      await flash(BLOCKS.ctrl, warn);
+      say("Controller: <b>" + (u > 0 ? "more thrust" : u < 0 ? "less thrust" : "hold") + "</b> (" + sgn(u) + u + ")."
+          + (warn ? ' <span class="dim">— reacting ' + K + "× the error</span>" : ""));
+      await travel(WIRES.w2, sgn(e) + e, warn ? "warn" : "");
+    } else {
+      u = 0;   // flying blind: the controller just keeps holding its guess
+      $("sumText").textContent = "−";
+      await flash(BLOCKS.ctrl);
+      say("No measurement is coming back. The controller holds its guess: <b>0</b>.");
+      await wait(skip ? 0 : 300);
+    }
+
+    await travel(WIRES.w3, sgn(u) + u, warn ? "warn" : "");
+    await flash(BLOCKS.act, warn);
+    say("Actuator applies <b>" + sgn(u) + u + "</b>.");
+    await travel(WIRES.w4, sgn(u) + u, warn ? "warn" : "");
+
+    alt += u;
+
+    var gust = gustQueued;
+    if (gust) {
+      gustQueued = 0;
+      $("gustArrow").classList.add("show");
+      $("gustLabel").classList.add("show");
+      $("gustLabel").textContent = "gust " + sgn(gust) + gust;
+      say('<b style="color:var(--red)">Gust!</b> The plant is bumped by <b>' + sgn(gust) + gust + "</b>.");
+      await wait(skip ? 0 : 500);
+      alt += gust;
+      $("gustArrow").classList.remove("show");
+      $("gustLabel").classList.remove("show");
+      $("btnGust").textContent = "Gust!";
+      $("btnGust").insertAdjacentHTML("beforeend", '<kbd>G</kbd>');
+    }
+
+    await flash(BLOCKS.plant, warn);
+    $("altBig").textContent = alt;
+    await travel(WIRES.w5, String(alt), warn ? "warn" : "");
+
+    history.push({ alt: alt, tone: tone(), gust: !!gust, ref: ref });
+    drawPlot();
+
+    var off = alt - ref;
+    if (!closed) {
+      say("Altitude is <b>" + alt + "</b>. " + (off === 0
+        ? "<span class='dim'>Still fine — until something disturbs it.</span>"
+        : "<b>" + Math.abs(off) + "</b> away from the reference, and nothing is correcting it."));
+    } else if (off === 0) {
+      say("Altitude is <b>" + alt + "</b>. <span class='dim'>Back on the reference.</span>");
+    } else {
+      say("Altitude is <b>" + alt + "</b> — now <b>" + Math.abs(off) + "</b> " + (off > 0 ? "above" : "below")
+          + " the reference." + (K >= 2 ? " <span class='dim'>It flew straight past it.</span>" : ""));
+    }
+
+    clearHighlights();
+    $("sumText").textContent = "−";
+    busy = false; skip = false;
+  }
+
+  /* ---------------- the plot ---------------- */
+
+  var cv = $("plot"), ctx = cv.getContext("2d");
+
+  function drawPlot() {
+    var W = cv.width, H = cv.height, padL = 70, padR = 40, padT = 30, padB = 54;
+    var css = getComputedStyle(document.documentElement);
+    ctx.clearRect(0, 0, W, H);
+
+    var alts = history.map(function (h) { return h.alt; }).concat([ref, START_ALT]);
+    var lo = Math.min.apply(null, alts) - 1, hi = Math.max.apply(null, alts) + 1;
+    if (hi - lo < 6) { var mid = (hi + lo) / 2; lo = mid - 3; hi = mid + 3; }
+    var N = Math.max(12, history.length + 1);
+
+    var X = function (i) { return padL + (i / N) * (W - padL - padR); };
+    var Y = function (v) { return padT + (1 - (v - lo) / (hi - lo)) * (H - padT - padB); };
+
+    // grid
+    ctx.strokeStyle = "#eceef2"; ctx.lineWidth = 2;
+    ctx.beginPath();
+    for (var g = Math.ceil(lo); g <= Math.floor(hi); g++) { ctx.moveTo(padL, Y(g)); ctx.lineTo(W - padR, Y(g)); }
+    ctx.stroke();
+
+    // y labels
+    ctx.fillStyle = "#a1a1a6"; ctx.font = "600 26px " + css.getPropertyValue("--font");
+    ctx.textAlign = "right"; ctx.textBaseline = "middle";
+    for (var g2 = Math.ceil(lo); g2 <= Math.floor(hi); g2++) ctx.fillText(String(g2), padL - 14, Y(g2));
+
+    // reference line (steps with it if the reference was moved)
+    ctx.strokeStyle = "#c8ccd4"; ctx.lineWidth = 3; ctx.setLineDash([10, 10]);
+    ctx.beginPath();
+    ctx.moveTo(padL, Y(history.length ? history[0].ref : ref));
+    history.forEach(function (h, i) { ctx.lineTo(X(i), Y(h.ref)); ctx.lineTo(X(i + 1), Y(h.ref)); });
+    if (!history.length) ctx.lineTo(W - padR, Y(ref));
+    ctx.stroke();
+    ctx.setLineDash([]);
+
+    // the trace, coloured by what was in charge that round
+    ctx.lineWidth = 6; ctx.lineJoin = "round"; ctx.lineCap = "round";
+    var prevX = X(0), prevY = Y(START_ALT);
+    history.forEach(function (h, i) {
+      ctx.strokeStyle = css.getPropertyValue("--" + h.tone).trim();
+      ctx.beginPath();
+      ctx.moveTo(prevX, prevY);
+      ctx.lineTo(X(i + 1), prevY);       // hold, then step: it is a discrete loop
+      ctx.lineTo(X(i + 1), Y(h.alt));
+      ctx.stroke();
+      prevX = X(i + 1); prevY = Y(h.alt);
+    });
+
+    // dots, and a mark under any round that was gusted
+    history.forEach(function (h, i) {
+      ctx.fillStyle = css.getPropertyValue("--" + h.tone).trim();
+      ctx.beginPath(); ctx.arc(X(i + 1), Y(h.alt), 9, 0, 7); ctx.fill();
+      if (h.gust) {
+        ctx.fillStyle = css.getPropertyValue("--red").trim();
+        ctx.beginPath();
+        ctx.moveTo(X(i + 1), H - padB + 8);
+        ctx.lineTo(X(i + 1) - 9, H - padB + 26);
+        ctx.lineTo(X(i + 1) + 9, H - padB + 26);
+        ctx.fill();
+      }
+    });
+
+    ctx.fillStyle = "#a1a1a6"; ctx.textAlign = "center"; ctx.textBaseline = "top";
+    ctx.fillText("rounds →", (padL + W - padR) / 2, H - 30);
+  }
+
+  /* ---------------- controls ---------------- */
+
+  function setGain(k) { K = k; paintStatus(); }
+
+  function toggleWire() {
+    closed = !closed;
+    paintStatus();
+    say(closed
+      ? "Sensor wire reconnected. <span class='dim'>The controller can see the error again.</span>"
+      : "Sensor wire cut. <span class='dim'>The controller is flying blind.</span>");
+  }
+
+  function queueGust(dir) {
+    // Always shove it further from the reference. A random gust that happened
+    // to cancel the last one would "fix" the open loop and lose the point.
+    var away = alt === ref ? (Math.random() < 0.5 ? -1 : 1) : (alt > ref ? 1 : -1);
+    gustQueued = dir || away;
+    $("btnGust").textContent = "Gust armed (" + sgn(gustQueued) + gustQueued + ")";
+    $("btnGust").insertAdjacentHTML("beforeend", '<kbd>G</kbd>');
+    say("Gust armed. <span class='dim'>It hits on the next round.</span>");
+  }
+
+  function reset() {
+    alt = START_ALT; ref = START_REF; K = 1; closed = true;
+    gustQueued = 0; history = []; busy = false; skip = false;
+    clearHighlights(); paintStatus(); drawPlot();
+    say("Reset. <span class='dim'>Closed loop, K = 1, altitude 3.</span>");
+  }
+
+  function moveRef(d) {
+    ref = Math.max(-2, Math.min(8, ref + d));
+    paintStatus(); drawPlot();
+    say("Reference moved to <b>" + ref + "</b>. <span class='dim'>Watch it chase the new target.</span>");
+  }
+
+  $("btnNext").addEventListener("click", round);
+  $("btnGust").addEventListener("click", function () { queueGust(); });
+  $("btnCut").addEventListener("click", toggleWire);
+  $("btnK1").addEventListener("click", function () { setGain(1); });
+  $("btnK2").addEventListener("click", function () { setGain(2); });
+  $("btnK3").addEventListener("click", function () { setGain(3); });
+  $("btnRefUp").addEventListener("click", function () { moveRef(1); });
+  $("btnRefDown").addEventListener("click", function () { moveRef(-1); });
+  $("btnReset").addEventListener("click", reset);
+
+  document.addEventListener("keydown", function (ev) {
+    var k = ev.key.toLowerCase();
+    if (k === " " || ev.code === "Space") { ev.preventDefault(); round(); }
+    else if (k === "g") queueGust();
+    else if (k === "c") toggleWire();
+    else if (k === "1") setGain(1);
+    else if (k === "2") setGain(2);
+    else if (k === "3") setGain(3);
+    else if (ev.key === "ArrowUp") { ev.preventDefault(); moveRef(1); }
+    else if (ev.key === "ArrowDown") { ev.preventDefault(); moveRef(-1); }
+    else if (k === "r") reset();
+    else if (k === "f") {
+      if (document.fullscreenElement) document.exitFullscreen();
+      else document.documentElement.requestFullscreen();
+    }
+  });
+
+  paintStatus();
+  drawPlot();
+})();
+</script>
+</body>
+</html>
