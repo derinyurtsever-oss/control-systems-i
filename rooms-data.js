@@ -101,7 +101,7 @@ window.ROOMS = [
             "Missed one? You can access all material here"
           ],
           links: [
-            { label: "Email me", href: "dyurtsever@ethz.ch" },
+            { label: "Email me", href: "mailto:dyurtsever@ethz.ch" },
             { label: "Course page", href: "[Canvas link]" }
           ]
         }
@@ -112,91 +112,43 @@ window.ROOMS = [
   {
     id: "lecture",
     name: "Lecture hall",
-    place: "[Building], Main auditorium",
+    place: "ML D 28",
     photo: "images/lecture-hall.jpg",
-    when: "Wednesdays, idk",
+    when: "Wednesdays, 16:15–18:00",
     hotspots: [
       {
-        id: "screen",
-        x: 39.5, y: 42,
-        label: "Lecture recap",
-        panel: {
-          kicker: "Last lecture · Monday",
-          title: "Second-order systems",
-          lead: "The short version, in case you missed it or want a reminder before the exercise session.",
-          list: [
-            "Every second-order system is set by just ζ and ωn",
-            "ζ alone fixes the overshoot — ωn only sets the speed",
-            "Settling time ≈ 4 / (ζ·ωn), the rule you will use constantly"
-          ],
-          links: [
-            { label: "Full lecture notes", href: "#" },
-            { label: "Recording", href: "#" }
-          ],
-          note: "If only one thing sticks: overshoot is about ζ, speed is about ωn."
-        }
-      },
-      {
-        id: "lectern",
-        x: 49, y: 50.3,
-        label: "The lecturer",
-        panel: {
-          kicker: "Teaching team",
-          title: "[Prof. Name]",
-          lead: "Lectures Monday and Wednesday. I run the Thursday exercise session.",
-          list: [
-            "Lecturer office hours: [day and time]",
-            "Exercise session questions come to me"
-          ],
-          links: [
-            { label: "Syllabus", href: "#" },
-            { label: "Course page", href: "#" }
-          ]
-        }
-      },
-      {
-        id: "recordings",
-        x: 63.75, y: 51.8,
-        label: "Recordings",
+        id: "recording",
+        x: 54, y: 24.5,
+        label: "Lecture recording",
         panel: {
           kicker: "Every lecture",
-          title: "Watch it back",
-          lead: "Recordings usually appear within a day of the lecture.",
+          title: "Watch the recording",
+          lead: "Recordings of the Wednesday lectures in ML D 28.",
+          links: [{ label: "Open the recordings", href: "[recordings link]" }]
+        }
+      },
+      {
+        id: "recap",
+        x: 47.3, y: 63.3,
+        label: "Lecture recap",
+        panel: {
+          kicker: "AI-generated",
+          title: "Lecture recaps",
+          lead: "A short AI-generated summary of each lecture, for catching up or revising. If something looks off, the slides are the reference.",
           links: [
-            { label: "This week's recording", href: "#" },
-            { label: "Full archive", href: "#" }
+            { label: "This week's recap", href: "[current recap link]" },
+            { label: "All recaps", href: "[recap list link]" }
           ]
         }
       },
       {
-        id: "seats",
-        x: 65, y: 75,
-        label: "What did I miss?",
+        id: "exam",
+        x: 77, y: 48.7,
+        label: "Exam date",
         panel: {
-          kicker: "From the seats",
-          title: "Notes and readings",
-          lead: "What to read alongside each lecture.",
-          list: [
-            "Chapter 4 — time response",
-            "Worked examples 4.3 to 4.9",
-            "Skip section 4.8 for now, it comes back in week 9"
-          ],
-          links: [{ label: "Reading list", href: "#" }]
-        }
-      },
-      {
-        id: "clock",
-        x: 53.2, y: 42.8,
-        label: "Schedule",
-        panel: {
-          kicker: "Week 4 of 15",
-          title: "What is coming up",
-          lead: "Lectures Monday and Wednesday 08:15. Exercise session Thursday 10:15.",
-          list: [
-            "Homework 3 due Friday, 23:59",
-            "Midterm 1 on Tuesday 6 October, covering weeks 1–6"
-          ],
-          links: [{ label: "Add to your calendar", href: "#" }]
+          kicker: "Exam",
+          title: "Exam date: TBD",
+          lead: "The date will be posted here as soon as it is fixed."
         }
       }
     ]
