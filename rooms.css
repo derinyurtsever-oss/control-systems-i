@@ -375,6 +375,57 @@ html:has(.sheet[open]) { overflow: hidden; }
 .s-links a:first-child { background: var(--blue); color: #fff; }
 .s-links a:first-child:hover { background: #0062c4; }
 
+/* homework tiers: one tinted card per priority, exercises as chips */
+.s-tiers { display: grid; gap: 10px; margin-top: 22px; }
+
+.tier {
+  --c: #ff375f;  --c2: #ff7a45;  --t: #c8123f;
+  padding: 14px 16px 15px;
+  border-radius: 18px;
+  background: linear-gradient(135deg,
+    color-mix(in srgb, var(--c) 11%, #fff),
+    color-mix(in srgb, var(--c2) 6%, #fff));
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--c) 16%, transparent);
+}
+.tier-should { --c: #ff9500; --c2: #ffcc00; --t: #9a5200; }
+.tier-could  { --c: #5e5ce6; --c2: #bf5af2; --t: #4a3fc4; }
+
+.tier-head {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  margin: 0 0 11px;
+  font-size: 14px;
+  font-weight: 650;
+  color: var(--t);
+}
+.tier-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--c), var(--c2));
+  box-shadow: 0 0 0 3.5px color-mix(in srgb, var(--c) 20%, transparent);
+}
+
+.tier-chips { display: flex; flex-wrap: wrap; gap: 7px; }
+.tier-chip {
+  padding: 6px 13px;
+  border-radius: 999px;
+  background: #fff;
+  color: var(--ink);
+  font-size: 14px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05), inset 0 0 0 1px color-mix(in srgb, var(--c) 22%, transparent);
+}
+/* the must-do exercises get the filled treatment */
+.tier-must .tier-chip {
+  background: linear-gradient(135deg, #e8264e, #f4512c);
+  color: #fff;
+  box-shadow: 0 2px 8px -2px rgba(232, 38, 78, 0.45);
+}
+.tier-chip .ph { background: none; color: inherit; padding: 0; opacity: .75; }
+
 /* a link whose URL has not been filled in yet */
 .s-links a[data-placeholder],
 .s-links a[data-placeholder]:hover {

@@ -12,9 +12,9 @@ window.ROOMS = [
   {
     id: "exercise",
     name: "Exercise room",
-    place: "GLC, Room E24",
+    place: "LFW B2",
     photo: "images/exercise-room.jpg",
-    when: "Fridays, 10:15",
+    when: "Fridays, 10:15–12:00",
     hotspots: [
       {
         id: "drive",
@@ -36,17 +36,17 @@ window.ROOMS = [
       {
         id: "books",
         x: 61.25, y: 57.4,
-        label: "Further reading",
+        label: "This week's homework",
         panel: {
-          kicker: "On the table",
-          title: "If you want to go deeper",
-          lead: "Optional, but useful when the lecture notes move faster than you would like.",
-          list: [
-            "bla",
-            "bla",
-            "bla"
-          ],
-          links: [{ label: "Full reading list", href: "[reading list link]" }]
+          kicker: "Homework",
+          title: "This week's homework",
+          lead: "Start at the top and work down as far as your time allows.",
+          // tone: "must" (red), "should" (orange) or "could" (purple)
+          tiers: [
+            { label: "Definitely do", tone: "must", items: ["1B", "2A", "[more]"] },
+            { label: "If you have time", tone: "should", items: ["[exercises]"] },
+            { label: "If you are interested", tone: "could", items: ["[exercises]"] }
+          ]
         }
       },
       {
@@ -95,7 +95,7 @@ window.ROOMS = [
           title: "How the sessions run",
           lead: "The practical details: when, where, and what actually counts towards your grade.",
           list: [
-            "Fridays 10:15–12:00, Room E24",
+            "Fridays 10:15–12:00, LFW B2",
             "Attendance is optional",
             "Nothing is graded",
             "Missed one? You can access all material here"

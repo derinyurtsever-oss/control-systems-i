@@ -306,6 +306,13 @@
       '<h2 id="sheetTitle">' + h(p.title) + "</h2>" +
       (p.lead ? '<p class="s-lead">' + h(p.lead) + "</p>" : "") +
       (p.list ? '<ul class="s-list">' + p.list.map(function (li) { return "<li>" + h(li) + "</li>"; }).join("") + "</ul>" : "") +
+      (p.tiers ? '<div class="s-tiers">' + p.tiers.map(function (t) {
+        return '<div class="tier tier-' + esc(t.tone || "must") + '">' +
+          '<p class="tier-head"><span class="tier-dot"></span>' + h(t.label) + "</p>" +
+          '<div class="tier-chips">' + (t.items || []).map(function (i) {
+            return '<span class="tier-chip">' + h(i) + "</span>";
+          }).join("") + "</div></div>";
+      }).join("") + "</div>" : "") +
       (p.links ? '<div class="s-links">' + p.links.map(function (l) {
         return isPh(l.href)
           ? '<a href="#" data-placeholder title="Link not set yet">' + h(l.label) + "</a>"
