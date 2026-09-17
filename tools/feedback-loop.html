@@ -279,7 +279,7 @@ details.sheet .line { color: var(--ink); font-style: italic; }
     </svg>
   </div>
 
-  <p class="say" id="say">Press <b>Next round</b> and watch the number come back to the reference.</p>
+  <p class="say" id="say">One click, one step: the sensor reads, the error forms, the controller reacts.</p>
 
   <div class="plotwrap">
     <canvas id="plot" width="2200" height="620"></canvas>
@@ -437,40 +437,35 @@ details.sheet .line { color: var(--ink); font-style: italic; }
 
   /* ---------------- one round ---------------- */
 
-  async function round() {
-    if (busy) { skip = true; return; }
-    busy = true; skip = false;
-    clearHighlights();
+  /* A round is a list of stages. Each click plays exactly one of them, so
+     you can stop and talk between the sensor reading and the correction. */
 
+  var stages = null, stageIdx = 0, R = {};
+
+  var LABELS = {
+    closed: ["Read the sensor", "Send it back", "Into the controller", "Apply the command"],
+    open:   ["The controller guesses", "Apply the command"]
+  };
+
+  function warnCls() { return K >= 2 ? "warn" : ""; }
+
+  function paintStepHint() {
+    var list = LABELS[closed ? "closed" : "open"];
+    var i, running = busy && stages;
+    // while a stage plays, name the stage that is playing; otherwise the next one
+    if (running) i = stageIdx - 1;
+    else if (stages) i = stageIdx;
+    else i = 0;
+    i = Math.max(0, Math.min(i, list.length - 1));
+    var of = (stages ? " <span style='opacity:.55'>" + (i + 1) + "/" + list.length + "</span>" : "");
+    $("btnNext").innerHTML = list[i] + of + "<kbd>SPACE</kbd>";
+  }
+
+  /* the tail both loops share: the command reaches the aircraft */
+  async function applyCommand(u) {
     var warn = K >= 2;
-    var u, e = ref - alt;
-
-    if (closed) {
-      await flash(BLOCKS.sensor);
-      say("Sensor reads <b>" + alt + "</b>.");
-      await travel(WIRES.fb1, alt);
-      await travel(WIRES.fb2, alt);
-
-      $("sumText").textContent = sgn(e) + e;
-      say("Reference <b>" + ref + "</b> − measured <b>" + alt + "</b> = error <b>" + sgn(e) + e + "</b>.");
-      await wait(skip ? 0 : T_ERROR);
-
-      await travel(WIRES.w2, sgn(e) + e, warn ? "warn" : "");
-
-      u = Math.round(K * e);
-      await flash(BLOCKS.ctrl, warn);
-      say("Controller: <b>" + (u > 0 ? "more thrust" : u < 0 ? "less thrust" : "hold") + "</b> (" + sgn(u) + u + ")."
-          + (warn ? ' <span class="dim">— reacting ' + K + "× the error</span>" : ""));
-    } else {
-      u = 0;   // flying blind: the controller just keeps holding its guess
-      $("sumText").textContent = "−";
-      await flash(BLOCKS.ctrl);
-      say("No measurement is coming back. The controller holds its guess: <b>0</b>.");
-      await wait(skip ? 0 : T_BEAT);
-    }
-
     say("The command <b>" + sgn(u) + u + "</b> goes to the aircraft.");
-    await travel(WIRES.w3, sgn(u) + u, warn ? "warn" : "");
+    await travel(WIRES.w3, sgn(u) + u, warnCls());
 
     alt += u;
 
@@ -485,13 +480,12 @@ details.sheet .line { color: var(--ink); font-style: italic; }
       alt += gust;
       $("gustArrow").classList.remove("show");
       $("gustLabel").classList.remove("show");
-      $("btnGust").textContent = "Gust!";
-      $("btnGust").insertAdjacentHTML("beforeend", '<kbd>G</kbd>');
+      $("btnGust").innerHTML = 'Gust!<kbd>G</kbd>';
     }
 
     await flash(BLOCKS.plant, warn);
     $("altBig").textContent = alt;
-    await travel(WIRES.w5, String(alt), warn ? "warn" : "");
+    await travel(WIRES.w5, String(alt), warnCls());
 
     history.push({ alt: alt, tone: tone(), gust: !!gust, ref: ref });
     drawPlot();
@@ -510,8 +504,67 @@ details.sheet .line { color: var(--ink); font-style: italic; }
 
     clearHighlights();
     $("sumText").textContent = "−";
-    busy = false; skip = false;
   }
+
+  function closedStages() {
+    return [
+      async function () {                                  // the sensor takes a reading
+        clearHighlights();
+        $("sumText").textContent = "−";
+        R.measured = alt;
+        await flash(BLOCKS.sensor);
+        say("Sensor reads <b>" + R.measured + "</b>.");
+      },
+      async function () {                                  // it travels back and the error is formed
+        await travel(WIRES.fb1, R.measured);
+        await travel(WIRES.fb2, R.measured);
+        R.e = ref - R.measured;
+        $("sumText").textContent = sgn(R.e) + R.e;
+        say("Reference <b>" + ref + "</b> − measured <b>" + R.measured + "</b> = error <b>" + sgn(R.e) + R.e + "</b>.");
+      },
+      async function () {                                  // the controller decides what to do
+        await travel(WIRES.w2, sgn(R.e) + R.e, warnCls());
+        R.u = Math.round(K * R.e);
+        await flash(BLOCKS.ctrl, K >= 2);
+        say("Controller: <b>" + (R.u > 0 ? "more thrust" : R.u < 0 ? "less thrust" : "hold") + "</b> (" + sgn(R.u) + R.u + ")."
+            + (K >= 2 ? ' <span class="dim">— reacting ' + K + "× the error</span>" : ""));
+      },
+      async function () { await applyCommand(R.u); }
+    ];
+  }
+
+  function openStages() {
+    return [
+      async function () {
+        clearHighlights();
+        $("sumText").textContent = "−";
+        R.u = 0;                                           // flying blind: it just holds its guess
+        await flash(BLOCKS.ctrl);
+        say("No measurement is coming back. The controller holds its guess: <b>0</b>.");
+      },
+      async function () { await applyCommand(R.u); }
+    ];
+  }
+
+  /* one click = one stage; clicking mid-stage fast-forwards that stage */
+  function nextStep() {
+    if (busy) { skip = true; return; }
+    if (!stages) { stages = closed ? closedStages() : openStages(); stageIdx = 0; R = {}; }
+
+    var fn = stages[stageIdx++];
+    var last = stageIdx >= stages.length;
+    busy = true; skip = false;
+    paintStepHint();
+
+    fn().then(function () {
+      busy = false; skip = false;
+      if (last) { stages = null; stageIdx = 0; }
+      paintStepHint();
+    });
+  }
+
+  /* the current round no longer makes sense if the wiring changes under it */
+  function abortRound() { stages = null; stageIdx = 0; clearHighlights(); $("sumText").textContent = "−"; }
 
   /* ---------------- the plot ---------------- */
 
@@ -587,7 +640,9 @@ details.sheet .line { color: var(--ink); font-style: italic; }
 
   function toggleWire() {
     closed = !closed;
+    abortRound();
     paintStatus();
+    paintStepHint();
     say(closed
       ? "Sensor wire reconnected. <span class='dim'>The controller can see the error again.</span>"
       : "Sensor wire cut. <span class='dim'>The controller is flying blind.</span>");
@@ -606,7 +661,7 @@ details.sheet .line { color: var(--ink); font-style: italic; }
   function reset() {
     alt = START_ALT; ref = START_REF; K = 1; closed = true;
     gustQueued = 0; history = []; busy = false; skip = false;
-    clearHighlights(); paintStatus(); drawPlot();
+    abortRound(); clearHighlights(); paintStatus(); paintStepHint(); drawPlot();
     say("Reset. <span class='dim'>Closed loop, K = 1, altitude 3.</span>");
   }
 
@@ -616,7 +671,7 @@ details.sheet .line { color: var(--ink); font-style: italic; }
     say("Reference moved to <b>" + ref + "</b>. <span class='dim'>Watch it chase the new target.</span>");
   }
 
-  $("btnNext").addEventListener("click", round);
+  $("btnNext").addEventListener("click", nextStep);
   $("btnGust").addEventListener("click", function () { queueGust(); });
   $("btnCut").addEventListener("click", toggleWire);
   $("btnK1").addEventListener("click", function () { setGain(1); });
@@ -628,7 +683,7 @@ details.sheet .line { color: var(--ink); font-style: italic; }
 
   document.addEventListener("keydown", function (ev) {
     var k = ev.key.toLowerCase();
-    if (k === " " || ev.code === "Space") { ev.preventDefault(); round(); }
+    if (k === " " || ev.code === "Space") { ev.preventDefault(); nextStep(); }
     else if (k === "g") queueGust();
     else if (k === "c") toggleWire();
     else if (k === "1") setGain(1);
@@ -644,6 +699,7 @@ details.sheet .line { color: var(--ink); font-style: italic; }
   });
 
   paintStatus();
+  paintStepHint();
   drawPlot();
 })();
 </script>
