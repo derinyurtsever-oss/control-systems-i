@@ -17,6 +17,9 @@ https://controls.derinyurtsever.com
 | `rooms.css` | Styling. The `:root` block at the top holds colors and fonts. |
 | `rooms.js` | Places the dots on the photo, switches rooms, fills the panels. |
 | `images/` | The room photos. |
+| `files/` | Worksheets and anything else students download. |
+| `tools/` | The interactive demos linked from the dots. |
+| `recaps/` | The AI lecture recaps and their index. |
 | `.nojekyll` | Tells GitHub Pages to serve files as-is, skipping Jekyll. |
 | `CNAME` | The custom domain. Managed by GitHub Settings -> Pages; do not edit by hand. |
 

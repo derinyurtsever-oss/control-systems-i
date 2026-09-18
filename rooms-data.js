@@ -80,8 +80,7 @@ window.ROOMS = [
             "Why feedback changes the behaviour of a system"
           ],
           links: [
-            { label: "Worksheet 1", href: "#" },
-            { label: "Slides", href: "#" }
+            { label: "Worksheet 1", href: "files/week-1-worksheet.pdf" }
           ],
           note: "Solutions go up straight after the session."
         }
