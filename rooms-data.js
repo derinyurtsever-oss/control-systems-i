@@ -29,7 +29,7 @@ window.ROOMS = [
             "Slides from each session",
             "Cheat sheet and reference material"
           ],
-          links: [{ label: "Open the polybox folder", href: "[polybox link]" }],
+          links: [{ label: "Open the polybox folder", href: "https://polybox.ethz.ch/index.php/s/imtwa4ZjMFykYSi" }],
           note: "The link will stay the same all semester."
         }
       },
@@ -43,9 +43,9 @@ window.ROOMS = [
           lead: "Start at the top and work down as far as your time allows.",
           // tone: "must" (red), "should" (orange) or "could" (purple)
           tiers: [
-            { label: "Definitely do", tone: "must", items: ["1B", "2A", "[more]"] },
-            { label: "If you have time", tone: "should", items: ["[exercises]"] },
-            { label: "If you are interested", tone: "could", items: ["[exercises]"] }
+            { label: "Definitely do", tone: "must", items: ["No Homework"] },
+            { label: "If you have time", tone: "should", items: ["No Homework"] },
+            { label: "If you are interested", tone: "could", items: ["No Homework"] }
           ]
         }
       },
@@ -54,7 +54,7 @@ window.ROOMS = [
         x: 83, y: 53.3,
         label: "This week's tool",
         panel: {
-          kicker: "Week 4 · Try it yourself",
+          kicker: "Week 1 · Try it yourself",
           title: "Be the loop",
           lead: "The block diagram, running one round at a time. You can see the number travel from the sensor to the controller and back round to the aircraft.",
           list: [
@@ -71,16 +71,16 @@ window.ROOMS = [
         x: 73.5, y: 44.9,
         label: "Today's exercise",
         panel: {
-          kicker: "Week 4 · Today",
-          title: "Time response",
+          kicker: "Week 1 · Today",
+          title: "Introduction, Feedback",
           lead: "What we are working through in this session, and everything shown on screen.",
           list: [
-            "First- and second-order systems",
-            "Damping ratio ζ and natural frequency ωn",
-            "Rise time, overshoot, and 2% settling time"
+            "What a control system actually is",
+            "Open loop versus closed loop",
+            "Why feedback changes the behaviour of a system"
           ],
           links: [
-            { label: "Worksheet 4", href: "#" },
+            { label: "Worksheet 1", href: "#" },
             { label: "Slides", href: "#" }
           ],
           note: "Solutions go up straight after the session."
@@ -102,7 +102,7 @@ window.ROOMS = [
           ],
           links: [
             { label: "Email me", href: "mailto:dyurtsever@ethz.ch" },
-            { label: "Course page", href: "[Canvas link]" }
+            { label: "Course page", href: "https://idsc.ethz.ch/education/lectures/control-systems-i.html" }
           ]
         }
       }
@@ -124,7 +124,7 @@ window.ROOMS = [
           kicker: "Every lecture",
           title: "Watch the recording",
           lead: "Recordings of the Wednesday lectures in ML D 28.",
-          links: [{ label: "Open the recordings", href: "[recordings link]" }]
+          links: [{ label: "Open the recordings", href: "https://video.ethz.ch/lectures/d-mavt/2026/autumn/151-0591-00L" }]
         }
       },
       {
