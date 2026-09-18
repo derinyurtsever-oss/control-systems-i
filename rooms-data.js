@@ -55,12 +55,12 @@ window.ROOMS = [
         label: "This week's tool",
         panel: {
           kicker: "Week 1 · Try it yourself",
-          title: "Be the loop",
-          lead: "The block diagram, running one round at a time. You can see the number travel from the sensor to the controller and back round to the aircraft.",
+          title: "Hold it at two metres",
+          lead: "A drone trying to hold an altitude, with a live trace of where it actually is. Hit it with a gust and see what the loop does about it.",
           list: [
-            "Cut the sensor wire: a gust hits and nothing ever corrects it",
-            "Reconnect it: the error is caught and the altitude comes back",
-            "Turn the gain up: it overshoots, flies past the target, and never settles"
+            "Sensor cut: one gust and it drifts all the way into the ground",
+            "Sensor connected: it dips, then climbs back to the target",
+            "Reaction turned right up: it overshoots and bounces without settling"
           ],
           links: [{ label: "Open the demo", href: "tools/feedback-loop.html" }],
           note: "More feedback is not automatically better — react too hard and you shake the system apart."
