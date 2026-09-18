@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<meta name="robots" content="noindex, nofollow">
+<title>Lecture 1 recap — Introduction</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📝</text></svg>">
+<link rel="stylesheet" href="recap.css">
+</head>
+<body>
+<div class="wrap">
+
+  <a class="back" href="./">← All recaps</a>
+
+  <p class="eyebrow">Lecture 1 · 17 September</p>
+  <h1>Introduction</h1>
+  <p class="robot"><span>✨</span><span>AI-generated recap — check anything important against the slides</span></p>
+
+  <p class="lede">
+    Machines got complicated enough that a human could no longer hold them at the
+    behaviour we wanted. Control is the business of getting them to hold it themselves.
+  </p>
+
+  <div class="card">
+    <h2>The idea</h2>
+    <ul>
+      <li>First came <b>tools</b>, then <b>machines</b> with their own power source. Once the operator was no longer supplying the force, something had to decide how the machine should act.</li>
+      <li>That something is a <b>controller</b>: it holds the system at a <b>reference</b> the operator sets, in spite of <b>disturbances</b>.</li>
+      <li>Control is nearly invisible — a car has dozens of controllers in it — and mostly gets noticed when it fails.</li>
+    </ul>
+  </div>
+
+  <div class="card">
+    <h2>Three architectures</h2>
+    <div class="arch">
+      <div>
+        <h3>Open loop</h3>
+        <p>The command is set without ever measuring the result. A disturbance goes uncorrected.</p>
+      </div>
+      <div>
+        <h3>Closed loop</h3>
+        <p>The output is measured and compared with the reference. The error drives the command.</p>
+      </div>
+      <div>
+        <h3>Two degrees of freedom</h3>
+        <p>Feedback for the errors, plus a direct path from the reference, tuned separately.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>What a controller is asked to do</h2>
+    <ul>
+      <li><b>Stabilization</b> — keep the plant from running away from the desired behaviour.</li>
+      <li><b>Performance</b> — carry out the task as accurately as possible.</li>
+      <li><b>Robustness</b> — still do both under disturbances, modelling errors and measurement noise.</li>
+    </ul>
+  </div>
+
+  <div class="card">
+    <h2>What the course will do with it</h2>
+    <ul>
+      <li><b>Model</b>, <b>analyse</b>, <b>design</b> — the three objectives, applied to systems described by ODEs that are linear, time-invariant, and single-input single-output.</li>
+      <li>Much of it happens with complex numbers in the frequency domain rather than in time. The slides call this a leap of faith, and warn the curve is steep.</li>
+      <li>By the end you should be able to design a controller for the quadcopter lateral dynamics, and explain why it works.</li>
+    </ul>
+  </div>
+
+  <div class="keep">
+    <h2>If you keep one thing</h2>
+    <p>
+      Feedback gets you the behaviour you want even when the model is wrong and the world
+      pushes back — but it can also introduce instabilities that were not there before.
+      Both halves of that sentence are the course.
+    </p>
+  </div>
+
+  <div class="card">
+    <h2>Worth doing this week</h2>
+    <ul>
+      <li>Read <b>Åström &amp; Murray, chapter 1</b> — free online, and the suggested reading for this lecture.</li>
+      <li>Try the <a href="https://sites.google.com/view/cs1-speed-control/home">speed control game</a> from the slides, then the <a href="https://sites.google.com/view/quad-altitude-control/home">quadcopter altitude</a> one. Losing at them is the point.</li>
+      <li>In the exercise session, <a href="../tools/feedback-loop.html">step through the loop</a> and watch an open loop drift away.</li>
+    </ul>
+  </div>
+
+  <p class="fine">
+    Written by AI from the lecture slides, so treat it as a reminder rather than a source.<br>
+    <a href="https://video.ethz.ch/lectures/d-mavt/2026/autumn/151-0591-00L">Lecture recording</a> ·
+    <a href="https://idsc.ethz.ch/education/lectures/control-systems-i.html">Course page</a>
+  </p>
+
+</div>
+</body>
+</html>

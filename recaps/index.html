@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<meta name="robots" content="noindex, nofollow">
+<title>Lecture recaps — Control Systems I</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📝</text></svg>">
+<link rel="stylesheet" href="recap.css">
+</head>
+<body>
+<div class="wrap wide">
+
+  <a class="back" href="../">← Back to the room</a>
+
+  <p class="eyebrow">Control Systems I · Autumn</p>
+  <h1>Lecture recaps</h1>
+  <p class="robot"><span>✨</span><span>AI-generated from the slides — a reminder, not a source</span></p>
+
+  <p class="lede">
+    A short summary of each lecture, posted after it happens. Useful for catching up,
+    or for a quick pass before the exercise session.
+  </p>
+
+  <div class="rows" id="rows"></div>
+
+  <p class="fine">
+    Dates follow the tentative schedule from lecture 1 and may move.<br>
+    <a href="https://video.ethz.ch/lectures/d-mavt/2026/autumn/151-0591-00L">Recordings</a> ·
+    <a href="https://idsc.ethz.ch/education/lectures/control-systems-i.html">Course page</a>
+  </p>
+
+</div>
+
+<script>
+/* The tentative schedule, as given in lecture 1.
+   Add "recap" to a row once its page exists and it becomes a link. */
+var LECTURES = [
+  { n: 1,  date: "17 Sept", topic: "Introduction, Control Architectures, Motivation", recap: "lecture-01.html" },
+  { n: 2,  date: "24 Sept", topic: "Modeling, Model examples" },
+  { n: 3,  date: "1 Oct",   topic: "System properties, Linearization" },
+  { n: 4,  date: "8 Oct",   topic: "Analysis: Time response, Stability" },
+  { n: 5,  date: "15 Oct",  topic: "Transfer functions 1: Definition and properties" },
+  { n: 6,  date: "22 Oct",  topic: "Transfer functions 2: Poles and Zeros" },
+  { n: 7,  date: "29 Oct",  topic: "Proportional feedback control, root locus" },
+  { n: 8,  date: "5 Nov",   topic: "Time-domain specifications, PID, Computer implementation" },
+  { n: 9,  date: "12 Nov",  topic: "Frequency response, Bode plots" },
+  { n: 10, date: "19 Nov",  topic: "The Nyquist condition, Time delays" },
+  { n: 11, date: "26 Nov",  topic: "Frequency-domain specifications, PID revisited" },
+  { n: 12, date: "3 Dec",   topic: "Dynamic Compensation, Loop Shaping, performance limitations" },
+  { n: 13, date: "10 Dec",  topic: "Nonlinearities, Describing functions" },
+  { n: 14, date: "17 Dec",  topic: "Intro to Uncertainty and Robustness" }
+];
+
+document.getElementById("rows").innerHTML = LECTURES.map(function (l) {
+  var body = '<span class="n">' + l.n + "</span>" +
+             '<span><span class="t">' + l.topic + '</span><span class="d">' + l.date + "</span></span>" +
+             (l.recap ? '<span class="tag ready">Read ›</span>' : '<span class="tag soon">After the lecture</span>');
+  return l.recap
+    ? '<a class="row done" href="' + l.recap + '">' + body + "</a>"
+    : '<div class="row todo">' + body + "</div>";
+}).join("");
+</script>
+</body>
+</html>
