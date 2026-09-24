@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<meta name="robots" content="noindex, nofollow">
+<title>Lecture 2 recap — Modeling</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📝</text></svg>">
+<link rel="stylesheet" href="recap.css">
+</head>
+<body>
+<div class="wrap">
+
+  <a class="back" href="./">← All recaps</a>
+
+  <p class="eyebrow">Lecture 2 · 23 September</p>
+  <h1>Modeling</h1>
+  <p class="robot"><span>✨</span><span>AI-generated recap — check anything important against the slides</span></p>
+
+  <p class="lede">
+    Last week the plant was a box with a letter on it. This week you open the box, and it turns out
+    almost everything inside is one of three shapes.
+  </p>
+
+  <div class="card">
+    <h2>Step 1 — draw the boundary</h2>
+    <ul>
+      <li><b>Inputs</b> split in two: the ones you manipulate (<b>endogenous</b>, the control u) and the ones the world manipulates (<b>exogenous</b> — disturbances, d).</li>
+      <li><b>Outputs</b> split too: what you can actually measure, and what you actually care about. They are often not the same signal.</li>
+      <li><b>State</b> is the system's memory — the summary of every past input. <b>Parameters</b> are what never changes.</li>
+      <li>A check worth keeping: if one system's output feeds another, it must not disturb the first — unless you meant to build a loop.</li>
+    </ul>
+  </div>
+
+  <div class="card">
+    <h2>Step 2 — the bathtub law</h2>
+    <p class="s-lead" style="margin:0 0 14px; color: var(--ink-2)">
+      Nearly every model in the lecture came from one sentence: watch a stored quantity, and count what flows in and out.
+    </p>
+    <ul>
+      <li>d(storage)/dt = Σ inflows − Σ outflows.</li>
+      <li>It does not care what is being stored: water, heat, momentum, or money.</li>
+      <li>Keep differentiating the output until the input shows up explicitly.</li>
+    </ul>
+  </div>
+
+  <div class="card">
+    <h2>Step 3 — standard form</h2>
+    <ul>
+      <li>Everything gets written as ẋ = f(x, u), y = h(x, u) — first derivatives only.</li>
+      <li>A higher-order equation becomes a stack of first-order ones: name each derivative as its own state. A swing is two states; a horizontal quadrotor is four.</li>
+    </ul>
+  </div>
+
+  <div class="card">
+    <h2>Six examples, three shapes</h2>
+    <div class="arch">
+      <div>
+        <h3>Integrator</h3>
+        <p>The water tank. Flow in minus flow out, and the level just accumulates.</p>
+      </div>
+      <div>
+        <h3>First-order lag</h3>
+        <p>A heated room, a car's speed. It heads towards a value and eases off as it gets there.</p>
+      </div>
+      <div>
+        <h3>Oscillator</h3>
+        <p>The swing. Energy sloshes between two stores, so it rings rather than settles.</p>
+      </div>
+    </div>
+    <p style="margin:14px 0 0; color: var(--ink-2); font-size:15px">
+      A vertical quadrotor is two integrators; a horizontal one is those shapes wired together.
+      This is why a whole semester on a handful of transfer functions is not a toy exercise.
+    </p>
+  </div>
+
+  <div class="card">
+    <h2>Reading the time scale before solving anything</h2>
+    <ul>
+      <li>τ ≈ storage ÷ flow, straight off the equations.</li>
+      <li>A well-insulated room: τ = m/c, hours. Open a window and τ collapses.</li>
+      <li>A swing has nothing to dissipate, so the number that matters is ω<sub>n</sub> = √(g/l) — about 2 rad/s on a 2.5 m rope, a three-second period, exactly what a playground looks like.</li>
+      <li>A car left alone coasts down over about a minute; pushed by the engine it is more like ten seconds. How fast a plant drifts and how hard the actuator can push are different questions, and it is usually the second that decides what a controller can do.</li>
+    </ul>
+  </div>
+
+  <div class="card">
+    <h2>Wiring systems together</h2>
+    <ul>
+      <li><b>Series</b> Σ₂Σ₁ · <b>parallel</b> Σ₁ + Σ₂ · <b>feedback</b> (I + Σ₁Σ₂)⁻¹Σ₁.</li>
+      <li>For a simple loop with gain K, y = K/(1 + K)·u. Watch what that does as K approaches −1: the output runs away for any input at all.</li>
+      <li>Three architectures: <b>feed-forward</b>, <b>feedback</b>, and <b>two degrees of freedom</b> — feed-forward for tracking, feedback for everything that goes wrong.</li>
+    </ul>
+  </div>
+
+  <div class="keep">
+    <h2>If you keep one thing</h2>
+    <p>
+      All models are wrong, and feedback is what lets a wrong one be good enough. A factor-of-four
+      error in the plant gain came out as half a percent at the output, because 1/(1 + kK) was small.
+      That is the licence to model simply — not an excuse to model carelessly.
+    </p>
+  </div>
+
+  <div class="card">
+    <h2>Worth doing this week</h2>
+    <ul>
+      <li>Read <b>Åström &amp; Murray, chapter 3</b> — the suggested reading for this lecture.</li>
+      <li>Play with <a href="../tools/state-memory.html">three pasts, one state</a>: three cups with completely different mornings, all holding 200 ml, all with the same future.</li>
+      <li>Take one system from the worksheet and write it in standard form without looking — boundary, bathtub law, first-order stack.</li>
+    </ul>
+  </div>
+
+  <p class="fine">
+    Written by AI from the lecture slides, so treat it as a reminder rather than a source.<br>
+    <a href="https://video.ethz.ch/lectures/d-mavt/2026/autumn/151-0591-00L">Lecture recording</a> ·
+    <a href="https://idsc.ethz.ch/education/lectures/control-systems-i.html">Course page</a>
+  </p>
+
+</div>
+</body>
+</html>

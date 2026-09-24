@@ -26,7 +26,7 @@
   <div class="rows" id="rows"></div>
 
   <p class="fine">
-    Dates follow the tentative schedule from lecture 1 and may move.<br>
+    Dates follow the tentative schedule as of lecture 2 and may still move.<br>
     <a href="https://video.ethz.ch/lectures/d-mavt/2026/autumn/151-0591-00L">Recordings</a> ·
     <a href="https://idsc.ethz.ch/education/lectures/control-systems-i.html">Course page</a>
   </p>
@@ -34,23 +34,23 @@
 </div>
 
 <script>
-/* The tentative schedule, as given in lecture 1.
+/* The tentative schedule, as given in lecture 2.
    Add "recap" to a row once its page exists and it becomes a link. */
 var LECTURES = [
-  { n: 1,  date: "17 Sept", topic: "Introduction, Control Architectures, Motivation", recap: "lecture-01.html" },
-  { n: 2,  date: "24 Sept", topic: "Modeling, Model examples" },
-  { n: 3,  date: "1 Oct",   topic: "System properties, Linearization" },
-  { n: 4,  date: "8 Oct",   topic: "Analysis: Time response, Stability" },
-  { n: 5,  date: "15 Oct",  topic: "Transfer functions 1: Definition and properties" },
-  { n: 6,  date: "22 Oct",  topic: "Transfer functions 2: Poles and Zeros" },
-  { n: 7,  date: "29 Oct",  topic: "Proportional feedback control, root locus" },
-  { n: 8,  date: "5 Nov",   topic: "Time-domain specifications, PID, Computer implementation" },
-  { n: 9,  date: "12 Nov",  topic: "Frequency response, Bode plots" },
-  { n: 10, date: "19 Nov",  topic: "The Nyquist condition, Time delays" },
-  { n: 11, date: "26 Nov",  topic: "Frequency-domain specifications, PID revisited" },
-  { n: 12, date: "3 Dec",   topic: "Dynamic Compensation, Loop Shaping, performance limitations" },
-  { n: 13, date: "10 Dec",  topic: "Nonlinearities, Describing functions" },
-  { n: 14, date: "17 Dec",  topic: "Intro to Uncertainty and Robustness" }
+  { n: 1,  date: "16 Sept", topic: "Introduction, Control Architectures, Motivation", recap: "lecture-01.html" },
+  { n: 2,  date: "23 Sept", topic: "Modeling, Model examples", recap: "lecture-02.html" },
+  { n: 3,  date: "30 Sept", topic: "System properties, Linearization" },
+  { n: 4,  date: "7 Oct",   topic: "Analysis: Time response, Stability" },
+  { n: 5,  date: "14 Oct",  topic: "Transfer functions 1: Definition and properties" },
+  { n: 6,  date: "21 Oct",  topic: "Transfer functions 2: Poles and Zeros" },
+  { n: 7,  date: "28 Oct",  topic: "Proportional feedback control, root locus" },
+  { n: 8,  date: "4 Nov",   topic: "Time-domain specifications, PID tuning" },
+  { n: 9,  date: "11 Nov",  topic: "Frequency response, Bode plots" },
+  { n: 10, date: "18 Nov",  topic: "Polar plots, the Nyquist condition, stability margins" },
+  { n: 11, date: "25 Nov",  topic: "Frequency-domain specifications, loop shaping, performance limitations" },
+  { n: 12, date: "2 Dec",   topic: "Time delays, computer implementation of compensators" },
+  { n: 13, date: "9 Dec",   topic: "Nonlinearities, describing functions, limit cycles" },
+  { n: 14, date: "16 Dec",  topic: "Uncertainty and robustness, wrap-up" }
 ];
 
 document.getElementById("rows").innerHTML = LECTURES.map(function (l) {
