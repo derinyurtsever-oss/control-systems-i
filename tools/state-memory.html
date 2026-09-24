@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<meta name="robots" content="noindex, nofollow">
+<title>Three pasts, one state</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>☕</text></svg>">
+<style>
+:root {
+  color-scheme: light;
+  --ink:   #1d1d1f;
+  --ink-2: #6e6e73;
+  --ink-3: #a1a1a6;
+  --line:  #e0e3e8;
+  --bg:    #f6f7f9;
+  --card:  #ffffff;
+
+  --a: #0071e3;   /* cup A */
+  --b: #af52de;   /* cup B */
+  --c: #1d9a5b;   /* cup C */
+  --coffee-top: #8a5a3b;
+  --coffee-bot: #5b3925;
+  --now: #ff3b30;
+
+  --font: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text",
+          "Segoe UI Variable Display", "Segoe UI", system-ui, sans-serif;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0; min-height: 100vh;
+  background: var(--bg); color: var(--ink);
+  font-family: var(--font); font-size: 16px; letter-spacing: -0.01em;
+  -webkit-font-smoothing: antialiased;
+  -webkit-user-select: none; user-select: none;
+}
+
+.wrap { max-width: 1240px; margin: 0 auto; padding: 16px 20px 24px; display: flex; flex-direction: column; gap: 12px; }
+:focus-visible { outline: 2.5px solid var(--a); outline-offset: 2px; border-radius: 10px; }
+
+.top { display: flex; align-items: center; justify-content: space-between; gap: 14px; flex-wrap: wrap; }
+.top h1 { margin: 0; font-size: clamp(18px, 2.1vw, 25px); font-weight: 650; letter-spacing: -0.025em; }
+.top .back { font-size: 14px; color: var(--a); text-decoration: none; }
+.top .back:hover { text-decoration: underline; }
+
+.chips { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+.chip {
+  display: inline-flex; align-items: center; gap: 7px;
+  padding: 7px 14px; border-radius: 999px; background: var(--card);
+  box-shadow: inset 0 0 0 1px var(--line);
+  font-size: clamp(13px, 1.4vw, 15px); font-weight: 600; font-variant-numeric: tabular-nums;
+}
+.chip.past { color: var(--ink-2); }
+.chip.future { color: var(--a); }
+
+/* --- the three cups ---------------------------------------------- */
+
+.stage { display: grid; grid-template-columns: 330px minmax(0, 1fr); gap: 12px; }
+
+.panel {
+  background: var(--card); border-radius: 20px;
+  box-shadow: 0 1px 2px rgba(16,24,40,.04), 0 12px 30px -18px rgba(16,24,40,.25);
+  padding: 14px 14px 12px;
+}
+
+.cups { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; height: 100%; align-content: start; }
+.cup { display: flex; flex-direction: column; align-items: center; gap: 7px; }
+
+.mug {
+  position: relative;
+  width: 100%; aspect-ratio: 3 / 4;
+  border-radius: 10px 10px 22px 22px;
+  background: #fbfbfc;
+  box-shadow: inset 0 0 0 3px var(--col), inset 0 -3px 0 var(--col);
+  overflow: hidden;
+}
+.liquid {
+  position: absolute; left: 0; right: 0; bottom: 0;
+  background: linear-gradient(180deg, var(--coffee-top), var(--coffee-bot));
+  transition: none;
+}
+.liquid::before {
+  content: ""; position: absolute; left: 0; right: 0; top: -4px; height: 8px;
+  border-radius: 50%; background: #9c6a47;
+}
+.ml {
+  font-size: clamp(15px, 1.6vw, 19px); font-weight: 700; font-variant-numeric: tabular-nums;
+  color: var(--col);
+}
+.who { font-size: 13px; font-weight: 650; color: var(--ink); }
+.doing { font-size: 12.5px; color: var(--ink-2); text-align: center; min-height: 32px; line-height: 1.3; }
+
+canvas { display: block; width: 100%; height: auto; }
+
+/* --- narration ---------------------------------------------------- */
+
+.say {
+  min-height: 34px;
+  font-size: clamp(16px, 2vw, 23px); font-weight: 550; letter-spacing: -0.02em;
+  text-align: center; color: var(--ink);
+}
+.say .dim { color: var(--ink-3); }
+.say b.now { color: var(--now); }
+
+/* --- controls ----------------------------------------------------- */
+
+.controls { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; justify-content: center; }
+
+button {
+  font: inherit; font-size: 15px; font-weight: 600;
+  padding: 10px 16px; border: 0; border-radius: 999px;
+  background: var(--card); color: var(--ink);
+  box-shadow: inset 0 0 0 1px var(--line); cursor: pointer; transition: background .15s;
+}
+button:hover { background: #f0f2f5; }
+button.primary { background: var(--a); color: #fff; box-shadow: none; min-width: 210px; }
+button.primary:hover { background: #0062c4; }
+kbd { font: inherit; font-size: 11px; font-weight: 700; opacity: .55; margin-left: 7px; letter-spacing: .04em; }
+
+.slider { display: flex; align-items: center; gap: 10px; padding: 6px 14px; background: var(--card); border-radius: 999px; box-shadow: inset 0 0 0 1px var(--line); }
+.slider label { font-size: 14px; font-weight: 600; color: var(--ink-2); white-space: nowrap; }
+.slider output { font-size: 14px; font-weight: 700; font-variant-numeric: tabular-nums; min-width: 96px; text-align: right; }
+input[type=range] { -webkit-appearance: none; appearance: none; width: 160px; height: 5px; border-radius: 999px; background: var(--line); }
+input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; appearance: none; width: 19px; height: 19px; border-radius: 50%; background: #fff; border: 0; box-shadow: 0 1px 4px rgba(0,0,0,.32); cursor: pointer; }
+input[type=range]::-moz-range-thumb { width: 19px; height: 19px; border-radius: 50%; background: #fff; border: 0; box-shadow: 0 1px 4px rgba(0,0,0,.32); cursor: pointer; }
+
+details.sheet { background: var(--card); border-radius: 16px; box-shadow: inset 0 0 0 1px var(--line); padding: 12px 16px; font-size: 14.5px; }
+details.sheet summary { cursor: pointer; font-weight: 650; }
+details.sheet ol { margin: 12px 0 0; padding-left: 20px; display: grid; gap: 10px; color: var(--ink-2); }
+details.sheet b { color: var(--ink); }
+details.sheet .line { color: var(--ink); font-style: italic; }
+
+@media (max-width: 860px) {
+  .stage { grid-template-columns: minmax(0, 1fr); }
+  kbd { display: none; }
+  button.primary { min-width: 100%; }
+}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+
+  <div class="top">
+    <h1>Three pasts, one state</h1>
+    <div class="chips">
+      <span class="chip" id="chipPhase">Rewinding the past</span>
+      <span class="chip future">From now on: <b id="chipInput">drink 50 ml/min</b></span>
+      <a class="back" href="../">← back to the room</a>
+    </div>
+  </div>
+
+  <div class="stage">
+    <div class="panel">
+      <div class="cups" id="cups"></div>
+    </div>
+    <div class="panel"><canvas id="plot" width="2400" height="1220"></canvas></div>
+  </div>
+
+  <p class="say" id="say">Three cups, three completely different mornings. Watch what they have in common.</p>
+
+  <div class="controls">
+    <button class="primary" id="btnGo" type="button">Play the three pasts<kbd>SPACE</kbd></button>
+    <button id="btnReplay" type="button">Replay<kbd>R</kbd></button>
+    <button id="btnNew" type="button">New histories<kbd>N</kbd></button>
+    <div class="slider">
+      <label for="rate">From now on</label>
+      <input type="range" id="rate" min="-120" max="120" step="10" value="-50">
+      <output id="rateOut">drink 50 ml/min</output>
+    </div>
+  </div>
+
+  <details class="sheet">
+    <summary>How to run this</summary>
+    <ol>
+      <li><b>Play the three pasts.</b> Three different mornings — pours, sips, a spill. Let them run and
+        point out how little they have in common.
+        <div class="line">"Nothing about these three mornings is the same."</div></li>
+      <li><b>It stops at "now".</b> All three cups hold 200 ml. Ask what you would need to know to
+        predict the next ten minutes — the whole story, or just the number in the cup?</li>
+      <li><b>Press space again.</b> The same input goes to all three, and the three curves become one.
+        <div class="line">"The future needed one number, not the history. That number is the state."</div>
+        Change the input with the slider and it still holds.</li>
+    </ol>
+  </details>
+
+</div>
+
+<script>
+(function () {
+  "use strict";
+
+  var $ = function (id) { return document.getElementById(id); };
+
+  var CAP = 400;              // the mug holds 400 ml
+  var MEET = 200;             // where every history has to end up
+  var T0 = -6, T1 = 4.5;      // minutes, relative to "now"
+
+  var CUPS = [
+    { key: "a", who: "Cup A", col: "var(--a)", hex: "#0071e3", dash: [] },
+    { key: "b", who: "Cup B", col: "var(--b)", hex: "#af52de", dash: [22, 16] },
+    { key: "c", who: "Cup C", col: "var(--c)", hex: "#1d9a5b", dash: [4, 14] }
+  ];
+
+  /* A history is a list of legs: from one volume to another, with a word for
+     what you were doing. Every one of them has to land on 200 ml at t = 0. */
+  var CLASSIC = [
+    [ [-6, -5, 0, 300, "pouring 300 ml"], [-5, -3, 300, 120, "drinking"],
+      [-3, -1.5, 120, 200, "adding milk"], [-1.5, 0, 200, 200, "letting it sit"] ],
+
+    [ [-6, -5, 350, 330, "sipping"], [-5, -4.7, 330, 110, "spilled it!"],
+      [-4.7, -3, 110, 300, "pouring a refill"], [-3, -0.4, 300, 210, "drinking"],
+      [-0.4, 0, 210, 200, "one last sip"] ],
+
+    [ [-6, -3, 260, 150, "slow sips"], [-3, -2, 150, 330, "big top-up"],
+      [-2, 0, 330, 200, "drinking steadily"] ]
+  ];
+
+  var hist = CLASSIC.map(function (h) { return h.slice(); });
+  var rate = -50;             // ml per minute, applied to all three after now
+  var t = T0;                 // minutes
+  var phase = "idle";         // idle | past | meet | future
+  var playing = false;
+
+  /* ---------- the model ---------- */
+
+  function pastVolume(h, tt) {
+    for (var i = 0; i < h.length; i++) {
+      var g = h[i];
+      if (tt <= g[1] || i === h.length - 1) {
+        var span = g[1] - g[0];
+        var k = span <= 0 ? 1 : Math.max(0, Math.min(1, (tt - g[0]) / span));
+        return g[2] + (g[3] - g[2]) * k;
+      }
+    }
+    return MEET;
+  }
+
+  function doingAt(h, tt) {
+    for (var i = 0; i < h.length; i++) if (tt <= h[i][1]) return h[i][4];
+    return h[h.length - 1][4];
+  }
+
+  // after now, every cup gets exactly the same input
+  function futureVolume(tt) {
+    return Math.max(0, Math.min(CAP, MEET + rate * tt));
+  }
+
+  function volume(h, tt) { return tt <= 0 ? pastVolume(h, tt) : futureVolume(tt); }
+
+  /* ---------- cups ---------- */
+
+  var cupEls = [];
+  $("cups").innerHTML = CUPS.map(function (c) {
+    return '<div class="cup" style="--col:' + c.col + '">' +
+             '<span class="who">' + c.who + "</span>" +
+             '<div class="mug"><div class="liquid"></div></div>' +
+             '<span class="ml">0 ml</span><span class="doing"></span></div>';
+  }).join("");
+  Array.prototype.forEach.call($("cups").children, function (el) {
+    cupEls.push({ liquid: el.querySelector(".liquid"), ml: el.querySelector(".ml"), doing: el.querySelector(".doing") });
+  });
+
+  function paintCups() {
+    CUPS.forEach(function (c, i) {
+      var v = volume(hist[i], t);
+      cupEls[i].liquid.style.height = (v / CAP * 100).toFixed(1) + "%";
+      cupEls[i].ml.textContent = Math.round(v) + " ml";
+      cupEls[i].doing.textContent = t <= 0 ? doingAt(hist[i], t)
+        : (rate < 0 ? "drinking " + Math.abs(rate) + " ml/min" : rate > 0 ? "pouring " + rate + " ml/min" : "not touching it");
+    });
+  }
+
+  /* ---------- the plot ---------- */
+
+  var cv = $("plot"), ctx = cv.getContext("2d");
+
+  function drawPlot() {
+    var W = cv.width, H = cv.height, padL = 130, padR = 60, padT = 40, padB = 86;
+    ctx.clearRect(0, 0, W, H);
+    var X = function (tt) { return padL + ((tt - T0) / (T1 - T0)) * (W - padL - padR); };
+    var Y = function (v) { return padT + (1 - v / CAP) * (H - padT - padB); };
+
+    // the past is shaded, the future is clean
+    ctx.fillStyle = "#f4f6f8";
+    ctx.fillRect(padL, padT, X(0) - padL, H - padT - padB);
+
+    ctx.strokeStyle = "#e9ecf0"; ctx.lineWidth = 2;
+    ctx.beginPath();
+    for (var g = 0; g <= CAP; g += 100) { ctx.moveTo(padL, Y(g)); ctx.lineTo(W - padR, Y(g)); }
+    ctx.stroke();
+
+    ctx.fillStyle = "#a1a1a6"; ctx.font = "600 30px " + getComputedStyle(document.documentElement).getPropertyValue("--font");
+    ctx.textAlign = "right"; ctx.textBaseline = "middle";
+    for (var g2 = 0; g2 <= CAP; g2 += 100) ctx.fillText(g2 + " ml", padL - 18, Y(g2));
+
+    // the 200 ml line everything meets on
+    ctx.strokeStyle = "#c9ced6"; ctx.lineWidth = 3; ctx.setLineDash([12, 12]);
+    ctx.beginPath(); ctx.moveTo(padL, Y(MEET)); ctx.lineTo(W - padR, Y(MEET)); ctx.stroke();
+    ctx.setLineDash([]);
+
+    // now
+    ctx.strokeStyle = "#ff3b30"; ctx.lineWidth = 4;
+    ctx.beginPath(); ctx.moveTo(X(0), padT - 10); ctx.lineTo(X(0), H - padB + 10); ctx.stroke();
+    ctx.fillStyle = "#ff3b30"; ctx.font = "700 30px " + getComputedStyle(document.documentElement).getPropertyValue("--font");
+    ctx.textAlign = "center"; ctx.textBaseline = "bottom";
+    ctx.fillText("now", X(0), padT - 16);
+
+    ctx.fillStyle = "#a1a1a6"; ctx.font = "600 28px " + getComputedStyle(document.documentElement).getPropertyValue("--font");
+    ctx.textAlign = "center"; ctx.textBaseline = "top";
+    ctx.fillText("the past", (padL + X(0)) / 2, H - padB + 22);
+    ctx.fillText("the future", (X(0) + W - padR) / 2, H - padB + 22);
+
+    // the three stories. Past: separate lines. Future: same path, so each one
+    // gets its own dash pattern and they read as a braid rather than one line.
+    CUPS.forEach(function (c, i) {
+      ctx.strokeStyle = c.hex;
+      ctx.lineWidth = t > 0 ? 9 - i * 2 : 8;
+      ctx.lineJoin = "round"; ctx.lineCap = "round";
+      ctx.setLineDash(c.dash);
+      ctx.beginPath();
+      var started = false;
+      for (var tt = T0; tt <= Math.min(t, T1); tt += 0.02) {
+        var x = X(tt), y = Y(volume(hist[i], tt));
+        if (!started) { ctx.moveTo(x, y); started = true; } else ctx.lineTo(x, y);
+      }
+      ctx.stroke();
+      ctx.setLineDash([]);
+    });
+
+    // where each cup is right now
+    CUPS.forEach(function (c, i) {
+      var v = volume(hist[i], Math.min(t, T1));
+      ctx.fillStyle = c.hex;
+      ctx.beginPath(); ctx.arc(X(Math.min(t, T1)), Y(v), t > 0 ? 13 - i * 3 : 13, 0, 7); ctx.fill();
+    });
+
+    // the meeting point, once we are there
+    if (t >= 0) {
+      ctx.fillStyle = "#1d1d1f";
+      ctx.font = "700 34px " + getComputedStyle(document.documentElement).getPropertyValue("--font");
+      ctx.textAlign = "right"; ctx.textBaseline = "bottom";
+      ctx.fillText("200 ml", X(0) - 18, Y(MEET) - 16);
+    }
+  }
+
+  /* ---------- narration ---------- */
+
+  function say(html) { $("say").innerHTML = html; }
+
+  function paintChips() {
+    $("chipPhase").textContent =
+      phase === "future" ? "Same input, all three" :
+      phase === "meet" ? "Now — all at 200 ml" :
+      phase === "past" ? "Three different pasts" : "Ready";
+    $("chipInput").textContent = rateWord();
+    $("rateOut").textContent = rateWord();
+    $("btnGo").innerHTML = (phase === "meet" ? "Now apply the same input" :
+                            phase === "future" ? "Play again" :
+                            playing ? "Pause" : "Play the three pasts") + "<kbd>SPACE</kbd>";
+  }
+
+  function rateWord() {
+    if (rate < 0) return "drink " + Math.abs(rate) + " ml/min";
+    if (rate > 0) return "pour " + rate + " ml/min";
+    return "leave it alone";
+  }
+
+  /* ---------- running ---------- */
+
+  function reset(newHist) {
+    if (newHist) hist = randomHistories();
+    t = T0; phase = "idle"; playing = false;
+    say("Three cups, three completely different mornings. Watch what they have in common.");
+    paintChips(); paintCups(); drawPlot();
+  }
+
+  function toggle() {
+    if (phase === "future" && !playing) { reset(false); }
+    if (phase === "meet") {                       // the second beat: let the future run
+      phase = "future"; playing = true;
+      say("Same input into all three. <span class='dim'>Watch the three lines become one.</span>");
+      paintChips();
+      return;
+    }
+    playing = !playing;
+    if (playing && phase === "idle") phase = "past";
+    paintChips();
+  }
+
+  var last = null, lastRAF = 0;
+
+  function advance(nowMs) {
+    if (last === null) last = nowMs;
+    var dt = Math.min(0.06, (nowMs - last) / 1000);
+    last = nowMs;
+
+    if (playing) {
+      t += dt * (phase === "future" ? 0.85 : 1.6);   // the payoff plays slower than the history
+      if (phase === "past" && t >= 0) {           // stop dead on "now"
+        t = 0; playing = false; phase = "meet";
+        say("Three different mornings. <b class='now'>All three cups: 200 ml.</b> " +
+            "<span class='dim'>What would you need to predict the next ten minutes?</span>");
+      }
+      if (phase === "future" && t >= T1) {
+        t = T1; playing = false;
+        say("One number was enough. <b>That number is the state.</b> " +
+            "<span class='dim'>The history is gone and nothing was lost.</span>");
+      }
+      paintChips();
+    }
+    paintCups();
+    drawPlot();
+  }
+
+  function frame(ts) { requestAnimationFrame(frame); lastRAF = performance.now(); advance(ts); }
+  requestAnimationFrame(frame);
+  // keep going even where animation frames are not delivered (backgrounded window, projector re-sync)
+  setInterval(function () { var n = performance.now(); if (n - lastRAF > 300) advance(n); }, 60);
+  document.addEventListener("visibilitychange", function () { last = null; });
+
+  /* ---------- random histories, all landing on 200 ---------- */
+
+  function randomHistories() {
+    var words = ["pouring", "drinking", "adding milk", "sipping", "spilled some!", "topping up", "letting it sit"];
+    return [0, 1, 2].map(function () {
+      var legs = [], n = 3 + Math.floor(Math.random() * 2), from = 40 + Math.random() * 320, start = T0;
+      for (var i = 0; i < n; i++) {
+        var end = i === n - 1 ? 0 : start + (0 - start) * (0.3 + Math.random() * 0.4);
+        var to = i === n - 1 ? MEET : 30 + Math.random() * 340;
+        legs.push([start, end, from, to, words[Math.floor(Math.random() * words.length)]]);
+        from = to; start = end;
+      }
+      return legs;
+    });
+  }
+
+  /* ---------- controls ---------- */
+
+  $("btnGo").addEventListener("click", toggle);
+  $("btnReplay").addEventListener("click", function () { reset(false); });
+  $("btnNew").addEventListener("click", function () { reset(true); });
+  $("rate").addEventListener("input", function () {
+    rate = +this.value;
+    paintChips(); paintCups(); drawPlot();
+  });
+
+  document.addEventListener("keydown", function (e) {
+    var k = e.key.toLowerCase();
+    if (k === " " || e.code === "Space") { e.preventDefault(); toggle(); }
+    else if (k === "r") reset(false);
+    else if (k === "n") reset(true);
+    else if (e.key === "ArrowUp") { e.preventDefault(); $("rate").value = rate = Math.min(120, rate + 10); paintChips(); paintCups(); drawPlot(); }
+    else if (e.key === "ArrowDown") { e.preventDefault(); $("rate").value = rate = Math.max(-120, rate - 10); paintChips(); paintCups(); drawPlot(); }
+    else if (k === "f") {
+      if (document.fullscreenElement) document.exitFullscreen();
+      else document.documentElement.requestFullscreen();
+    }
+  });
+
+  reset(false);
+})();
+</script>
+</body>
+</html>

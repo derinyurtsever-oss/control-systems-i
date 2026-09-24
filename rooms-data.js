@@ -43,9 +43,8 @@ window.ROOMS = [
           lead: "Start at the top and work down as far as your time allows.",
           // tone: "must" (red), "should" (orange) or "could" (purple)
           tiers: [
-            { label: "Definitely do", tone: "must", items: ["No Homework"] },
-            { label: "If you have time", tone: "should", items: ["No Homework"] },
-            { label: "If you are interested", tone: "could", items: ["No Homework"] }
+            { label: "Definitely do", tone: "must", items: ["1", "4"] },
+            { label: "If you have time", tone: "should", items: ["2", "3"] }
           ]
         }
       },
@@ -54,16 +53,19 @@ window.ROOMS = [
         x: 83, y: 53.3,
         label: "This week's tool",
         panel: {
-          kicker: "Week 1 · Try it yourself",
-          title: "Hold it at two metres",
-          lead: "A drone trying to hold an altitude, with a live trace of where it actually is. Hit it with a gust and see what the loop does about it.",
+          kicker: "Week 2 · Try it yourself",
+          title: "Three pasts, one state",
+          lead: "Three cups of coffee with completely different mornings — pours, sips, a spill — that all end up holding 200 ml.",
           list: [
-            "Sensor cut: one gust and it drifts all the way into the ground",
-            "Sensor connected: it dips, then climbs back to the target",
-            "Reaction turned right up: it overshoots and bounces without settling"
+            "Every history is different, and none of it survives",
+            "At \"now\" all three hold the same 200 ml",
+            "Apply the same input and the three futures are identical"
           ],
-          links: [{ label: "Open the demo", href: "tools/feedback-loop.html" }],
-          note: "More feedback is not automatically better — react too hard and you shake the system apart."
+          links: [
+            { label: "Open the demo", href: "tools/state-memory.html" },
+            { label: "Last week: the drone", href: "tools/feedback-loop.html" }
+          ],
+          note: "The state is the smallest thing you need to know about the past to work out the future."
         }
       },
       {
@@ -71,15 +73,16 @@ window.ROOMS = [
         x: 73.5, y: 44.9,
         label: "Today's exercise",
         panel: {
-          kicker: "Week 1 · Today",
-          title: "Introduction, Feedback",
-          lead: "What we are working through in this session, and everything shown on screen.",
+          kicker: "Week 2 · Today",
+          title: "Modeling, Block Diagrams",
+          lead: "What is actually inside the plant we drew a loop around last week.",
           list: [
-            "What a control system actually is",
-            "Open loop versus closed loop",
-            "Why feedback changes the behaviour of a system"
+            "Draw the boundary: inputs, disturbances, state, parameters",
+            "Physics: the bathtub law, storage in equals flow in minus flow out",
+            "Standard form: first-order ODEs, and state-space when it is linear"
           ],
           links: [
+            { label: "Worksheet 2", href: "files/week-2-worksheet.pdf" },
             { label: "Worksheet 1", href: "files/week-1-worksheet.pdf" }
           ],
           note: "Solutions go up straight after the session."
