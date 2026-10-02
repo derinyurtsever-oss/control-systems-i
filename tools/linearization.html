@@ -1,0 +1,524 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<meta name="robots" content="noindex, nofollow">
+<title>How near is near?</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎢</text></svg>">
+<style>
+:root {
+  color-scheme: light;
+  --ink:   #1d1d1f;
+  --ink-2: #6e6e73;
+  --ink-3: #a1a1a6;
+  --line:  #e0e3e8;
+  --bg:    #f6f7f9;
+  --card:  #ffffff;
+
+  --real:  #0071e3;   /* the real, nonlinear pendulum   */
+  --lin:   #ff9500;   /* its linearization              */
+  --curve: #34a853;   /* sin θ, green as on the sheet   */
+  --tan:   #ff3b30;   /* the tangent, red as on the sheet */
+
+  --font: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text",
+          "Segoe UI Variable Display", "Segoe UI", system-ui, sans-serif;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0; min-height: 100vh;
+  background: var(--bg); color: var(--ink);
+  font-family: var(--font); font-size: 16px; letter-spacing: -0.01em;
+  -webkit-font-smoothing: antialiased;
+  -webkit-user-select: none; user-select: none;
+}
+
+.wrap { max-width: 1260px; margin: 0 auto; padding: 16px 20px 24px; display: flex; flex-direction: column; gap: 12px; }
+:focus-visible { outline: 2.5px solid var(--real); outline-offset: 2px; border-radius: 10px; }
+
+.top { display: flex; align-items: center; justify-content: space-between; gap: 14px; flex-wrap: wrap; }
+.top h1 { margin: 0; font-size: clamp(18px, 2.1vw, 25px); font-weight: 650; letter-spacing: -0.025em; }
+.top .back { font-size: 14px; color: var(--real); text-decoration: none; }
+.top .back:hover { text-decoration: underline; }
+
+.chips { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+.chip {
+  display: inline-flex; align-items: center; gap: 7px;
+  padding: 7px 14px; border-radius: 999px; background: var(--card);
+  box-shadow: inset 0 0 0 1px var(--line);
+  font-size: clamp(13px, 1.4vw, 15px); font-weight: 600; font-variant-numeric: tabular-nums;
+}
+.chip .sw { width: 10px; height: 10px; border-radius: 50%; }
+.chip .sw.lin { background: transparent; box-shadow: inset 0 0 0 2.5px var(--lin); }
+
+.stage { display: grid; grid-template-columns: minmax(0, 0.95fr) minmax(0, 1.25fr); gap: 12px; }
+.right { display: grid; grid-template-rows: auto auto; gap: 12px; }
+
+.panel {
+  background: var(--card); border-radius: 20px;
+  box-shadow: 0 1px 2px rgba(16,24,40,.04), 0 12px 30px -18px rgba(16,24,40,.25);
+  padding: 10px 12px;
+}
+.panel h2 {
+  margin: 4px 6px 4px; font-size: 12.5px; font-weight: 700; letter-spacing: .05em;
+  text-transform: uppercase; color: var(--ink-3);
+}
+canvas { display: block; width: 100%; height: auto; }
+
+.readout { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.stat {
+  background: var(--card); border-radius: 16px; padding: 12px 14px;
+  box-shadow: inset 0 0 0 1px var(--line);
+}
+.stat .k { font-size: 12.5px; font-weight: 650; color: var(--ink-3); letter-spacing: .02em; }
+.stat .v { margin-top: 3px; font-size: clamp(17px, 1.9vw, 22px); font-weight: 700; font-variant-numeric: tabular-nums; letter-spacing: -0.02em; }
+.stat .v small { font-size: 13px; font-weight: 600; color: var(--ink-2); margin-left: 4px; }
+
+.say {
+  min-height: 34px; margin: 2px 0;
+  font-size: clamp(16px, 2vw, 22px); font-weight: 550; letter-spacing: -0.02em;
+  text-align: center; color: var(--ink);
+}
+.say .dim { color: var(--ink-3); }
+.say .lin { color: #b56a00; }
+
+.controls { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; justify-content: center; }
+
+button {
+  font: inherit; font-size: 15px; font-weight: 600;
+  padding: 10px 16px; border: 0; border-radius: 999px;
+  background: var(--card); color: var(--ink);
+  box-shadow: inset 0 0 0 1px var(--line); cursor: pointer; transition: background .15s;
+}
+button:hover { background: #f0f2f5; }
+button.primary { background: var(--real); color: #fff; box-shadow: none; min-width: 150px; }
+button.primary:hover { background: #0062c4; }
+button.preset[aria-pressed="true"] { background: var(--ink); color: #fff; box-shadow: none; }
+button.top[aria-pressed="true"] { background: #c1271f; color: #fff; box-shadow: none; }
+kbd { font: inherit; font-size: 11px; font-weight: 700; opacity: .55; margin-left: 7px; letter-spacing: .04em; }
+.sep { width: 1px; height: 26px; background: var(--line); margin: 0 2px; }
+
+.slider { display: flex; align-items: center; gap: 10px; padding: 6px 14px; background: var(--card); border-radius: 999px; box-shadow: inset 0 0 0 1px var(--line); }
+.slider label { font-size: 14px; font-weight: 600; color: var(--ink-2); white-space: nowrap; }
+.slider output { font-size: 14px; font-weight: 700; font-variant-numeric: tabular-nums; min-width: 44px; text-align: right; }
+input[type=range] { -webkit-appearance: none; appearance: none; width: 170px; height: 5px; border-radius: 999px; background: var(--line); }
+input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; appearance: none; width: 19px; height: 19px; border-radius: 50%; background: #fff; border: 0; box-shadow: 0 1px 4px rgba(0,0,0,.32); cursor: pointer; }
+input[type=range]::-moz-range-thumb { width: 19px; height: 19px; border-radius: 50%; background: #fff; border: 0; box-shadow: 0 1px 4px rgba(0,0,0,.32); cursor: pointer; }
+
+details.sheet { background: var(--card); border-radius: 16px; box-shadow: inset 0 0 0 1px var(--line); padding: 12px 16px; font-size: 14.5px; }
+details.sheet summary { cursor: pointer; font-weight: 650; }
+details.sheet ol { margin: 12px 0 0; padding-left: 20px; display: grid; gap: 10px; color: var(--ink-2); }
+details.sheet b { color: var(--ink); }
+details.sheet .line { color: var(--ink); font-style: italic; }
+
+@media (max-width: 900px) {
+  .stage { grid-template-columns: minmax(0, 1fr); }
+  .readout { grid-template-columns: 1fr; }
+  kbd { display: none; }
+}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+
+  <div class="top">
+    <h1>How near is near?</h1>
+    <div class="chips">
+      <span class="chip"><span class="sw" style="background:var(--real)"></span>Real pendulum · sin θ</span>
+      <span class="chip"><span class="sw lin"></span>Linear model · θ</span>
+      <span class="chip" id="chipPoint">Linearized at the bottom</span>
+      <a class="back" href="../">← back to the room</a>
+    </div>
+  </div>
+
+  <div class="stage">
+    <div class="panel">
+      <h2>The swing · 2.5 m rope</h2>
+      <canvas id="swing" width="1000" height="1000"></canvas>
+    </div>
+    <div class="right">
+      <div class="panel">
+        <h2>Angle from the linearization point, over time</h2>
+        <canvas id="trace" width="1500" height="640"></canvas>
+      </div>
+      <div class="panel">
+        <h2>Zoomed out: the curve, and its tangent at the point</h2>
+        <canvas id="zoom" width="1500" height="560"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <div class="readout">
+    <div class="stat"><div class="k">Released at</div><div class="v" id="vAmp">15°</div></div>
+    <div class="stat"><div class="k">sin θ ≈ θ is off by</div><div class="v" id="vErr">1.2%</div></div>
+    <div class="stat"><div class="k">One full swing takes</div><div class="v" id="vPer">3.19 s <small>model says 3.17 s</small></div></div>
+  </div>
+
+  <p class="say" id="say">Pick an angle and let go. The blue pendulum is real; the orange one is the linear model.</p>
+
+  <div class="controls">
+    <button class="primary" id="btnGo" type="button">Let go<kbd>SPACE</kbd></button>
+    <button id="btnReset" type="button">Reset<kbd>R</kbd></button>
+    <span class="sep"></span>
+    <button class="preset" data-deg="5" type="button">5°<kbd>1</kbd></button>
+    <button class="preset" data-deg="15" type="button" aria-pressed="true">15°<kbd>2</kbd></button>
+    <button class="preset" data-deg="30" type="button">30°<kbd>3</kbd></button>
+    <button class="preset" data-deg="90" type="button">90°<kbd>4</kbd></button>
+    <button class="preset" data-deg="160" type="button">160°<kbd>5</kbd></button>
+    <span class="sep"></span>
+    <div class="slider">
+      <label for="amp">Release</label>
+      <input type="range" id="amp" min="1" max="175" step="1" value="15">
+      <output id="ampOut">15°</output>
+    </div>
+    <button class="top" id="btnTop" type="button" aria-pressed="false">Linearize at the top<kbd>T</kbd></button>
+  </div>
+
+  <details class="sheet">
+    <summary>How to run this</summary>
+    <ol>
+      <li><b>5°, then 15°.</b> Let go: the two pendulums swing as one. Point at the zoom panel — the
+        green curve and the red tangent are on top of each other here.
+        <div class="line">"Zoom in far enough and any smooth curve is a straight line."</div></li>
+      <li><b>30°, then 90°.</b> The orange model pulls ahead, because it thinks the swing is faster than it
+        is. In the zoom panel the dots split apart: that gap is exactly what linearization threw away.
+        <div class="line">"Leave the neighbourhood and the linear model starts telling stories."</div></li>
+      <li><b>Linearize at the top.</b> The other equilibrium. Both start balanced 5° off vertical. For a
+        moment they agree — then the real one falls and swings, while the model says the angle grows forever.
+        <div class="line">"Which point you linearize around is the first question, not a detail."</div></li>
+    </ol>
+    <p style="margin:14px 0 0; color: var(--ink-2)">
+      What was thrown away is second order, so halving the swing quarters the error: 30° is off by 4.7%,
+      15° by 1.2%. Keys: <b>space</b> let go / pause · <b>R</b> reset · <b>1–5</b> presets · <b>T</b> top or bottom · <b>←/→</b> nudge the angle.
+    </p>
+  </details>
+
+</div>
+
+<script>
+(function () {
+  "use strict";
+
+  var $ = function (id) { return document.getElementById(id); };
+  var D2R = Math.PI / 180, R2D = 180 / Math.PI;
+
+  /* ---------------- the model ----------------
+     A swing on a 2.5 m rope: θ'' = -(g/l) sin θ - c θ'. The linear model swaps
+     sin θ for θ around whichever equilibrium is chosen. A little friction keeps
+     it honest without killing the swing during the demo. */
+
+  var A = 9.81 / 2.5;           // g/l
+  var C = 0.035;                // light friction
+  var SPAN = 16;                // seconds shown on the trace
+
+  var mode = "bottom";          // or "top"
+  var ampDeg = 15;
+  var running = false, t = 0;
+  var th, w;                    // real: absolute angle (0 = hanging), rate
+  var d, dw;                    // linear: deviation from the chosen point, rate
+  var hist = [];                // [t, realDev, linDev]
+
+  function eq() { return mode === "bottom" ? 0 : Math.PI; }
+
+  function wrapPi(a) {          // into (-π, π]
+    a = (a + Math.PI) % (2 * Math.PI);
+    if (a < 0) a += 2 * Math.PI;
+    return a - Math.PI;
+  }
+
+  function release() {
+    var a0 = ampDeg * D2R;
+    th = eq() + a0; w = 0;
+    d = a0; dw = 0;
+    t = 0; hist = [[0, a0, a0]];
+  }
+
+  function realAcc(x, v) { return -A * Math.sin(x) - C * v; }
+  function linAcc(x, v)  { return (mode === "bottom" ? -A : A) * x - C * v; }
+
+  function rk4(x, v, f, h) {
+    var k1x = v,             k1v = f(x, v);
+    var k2x = v + k1v * h/2, k2v = f(x + k1x * h/2, v + k1v * h/2);
+    var k3x = v + k2v * h/2, k3v = f(x + k2x * h/2, v + k2v * h/2);
+    var k4x = v + k3v * h,   k4v = f(x + k3x * h,   v + k3v * h);
+    return [x + h/6 * (k1x + 2*k2x + 2*k3x + k4x), v + h/6 * (k1v + 2*k2v + 2*k3v + k4v)];
+  }
+
+  function step(h) {
+    var r = rk4(th, w, realAcc, h); th = r[0]; w = r[1];
+    var l = rk4(d, dw, linAcc, h);  d = l[0];  dw = l[1];
+    t += h;
+    if (!hist.length || t - hist[hist.length - 1][0] > 1 / 60) hist.push([t, wrapPi(th - eq()), d]);
+    if (t >= SPAN) { running = false; paintButtons(); }
+  }
+
+  /* ---------------- the numbers ---------------- */
+
+  function ellipticK(k) {       // complete elliptic integral of the first kind, by AGM
+    var x = 1, y = Math.sqrt(1 - k * k);
+    for (var i = 0; i < 30; i++) { var nx = (x + y) / 2; y = Math.sqrt(x * y); x = nx; }
+    return Math.PI / (2 * x);
+  }
+
+  function readouts() {
+    var a = ampDeg * D2R;
+    var err = (a - Math.sin(a)) / Math.sin(a) * 100;
+    $("vAmp").textContent = ampDeg + "° " + (mode === "bottom" ? "from hanging" : "off the top");
+    $("vErr").textContent = (err < 10 ? err.toFixed(1) : Math.round(err)) + "%";
+    $("vErr").style.color = err < 2 ? "var(--curve)" : err < 10 ? "#b56a00" : "#c1271f";
+
+    var lin = 2 * Math.PI / Math.sqrt(A);
+    if (mode === "bottom") {
+      var real = 4 * ellipticK(Math.sin(a / 2)) / Math.sqrt(A);
+      $("vPer").innerHTML = real.toFixed(2) + " s <small>model says " + lin.toFixed(2) + " s</small>";
+    } else {
+      $("vPer").innerHTML = "no swing <small>model says it never comes back</small>";
+    }
+  }
+
+  /* ---------------- drawing ---------------- */
+
+  var sw = $("swing"), sctx = sw.getContext("2d");
+  var tr = $("trace"), tctx = tr.getContext("2d");
+  var zm = $("zoom"),  zctx = zm.getContext("2d");
+  var FONT = getComputedStyle(document.documentElement).getPropertyValue("--font");
+  function col(n) { return getComputedStyle(document.documentElement).getPropertyValue("--" + n).trim(); }
+
+  function drawSwing() {
+    var W = sw.width, H = sw.height, cx = W / 2, cy = H / 2, L = 380;
+    sctx.clearRect(0, 0, W, H);
+
+    // the circle the bob can travel, and the two equilibria on it
+    sctx.strokeStyle = "#eef0f3"; sctx.lineWidth = 3;
+    sctx.beginPath(); sctx.arc(cx, cy, L, 0, 2 * Math.PI); sctx.stroke();
+
+    [[0, "stable"], [Math.PI, "unstable"]].forEach(function (e) {
+      var ex = cx + L * Math.sin(e[0]), ey = cy + L * Math.cos(e[0]);
+      var here = (e[0] === 0) === (mode === "bottom");
+      sctx.fillStyle = here ? "#1d1d1f" : "#c9ced6";
+      sctx.beginPath(); sctx.arc(ex, ey, 9, 0, 7); sctx.fill();
+      sctx.font = "600 26px " + FONT; sctx.textAlign = "center";
+      sctx.textBaseline = e[0] === 0 ? "top" : "bottom";
+      sctx.fillText((here ? "linearized here · " : "") + e[1], ex, ey + (e[0] === 0 ? 50 : -50));
+    });
+
+    // released-from mark
+    var a0 = eq() + ampDeg * D2R;
+    sctx.strokeStyle = "#d9dde3"; sctx.lineWidth = 3; sctx.setLineDash([8, 10]);
+    sctx.beginPath(); sctx.moveTo(cx, cy); sctx.lineTo(cx + L * Math.sin(a0), cy + L * Math.cos(a0)); sctx.stroke();
+    sctx.setLineDash([]);
+
+    function bob(angle, colour, ghost) {
+      var bx = cx + L * Math.sin(angle), by = cy + L * Math.cos(angle);
+      sctx.strokeStyle = colour; sctx.lineWidth = ghost ? 5 : 6;
+      sctx.setLineDash(ghost ? [16, 12] : []);
+      sctx.beginPath(); sctx.moveTo(cx, cy); sctx.lineTo(bx, by); sctx.stroke();
+      sctx.setLineDash([]);
+      if (ghost) {
+        sctx.lineWidth = 7; sctx.fillStyle = "#fff";
+        sctx.beginPath(); sctx.arc(bx, by, 34, 0, 7); sctx.fill(); sctx.stroke();
+      } else {
+        sctx.fillStyle = colour;
+        sctx.beginPath(); sctx.arc(bx, by, 34, 0, 7); sctx.fill();
+      }
+    }
+
+    // the linear model only means anything within half a turn of its point
+    var linOnChart = Math.abs(d) < Math.PI;
+    if (linOnChart) bob(eq() + d, col("lin"), true);
+    bob(th, col("real"), false);
+
+    sctx.fillStyle = "#1d1d1f";
+    sctx.beginPath(); sctx.arc(cx, cy, 12, 0, 7); sctx.fill();
+
+    if (!linOnChart) {
+      sctx.fillStyle = "#b56a00"; sctx.font = "700 30px " + FONT;
+      sctx.textAlign = "center"; sctx.textBaseline = "top";
+      sctx.fillText("linear model: off the chart", cx, 40);
+    }
+  }
+
+  function drawTrace() {
+    var W = tr.width, H = tr.height, padL = 110, padR = 30, padT = 24, padB = 60;
+    tctx.clearRect(0, 0, W, H);
+    var lim = Math.max(20, Math.min(180, Math.ceil(ampDeg * 1.25 / 10) * 10));
+    if (mode === "top") lim = 180;
+    var X = function (tt) { return padL + tt / SPAN * (W - padL - padR); };
+    var Y = function (deg) { return padT + (1 - (deg + lim) / (2 * lim)) * (H - padT - padB); };
+
+    tctx.strokeStyle = "#edeff3"; tctx.lineWidth = 2;
+    tctx.fillStyle = "#a1a1a6"; tctx.font = "600 26px " + FONT;
+    tctx.textAlign = "right"; tctx.textBaseline = "middle";
+    [-lim, -lim / 2, 0, lim / 2, lim].forEach(function (g) {
+      tctx.beginPath(); tctx.moveTo(padL, Y(g)); tctx.lineTo(W - padR, Y(g)); tctx.stroke();
+      tctx.fillText(Math.round(g) + "°", padL - 14, Y(g));
+    });
+    tctx.textAlign = "center"; tctx.textBaseline = "top";
+    tctx.fillText("time →", (padL + W - padR) / 2, H - 42);
+
+    function line(idx, colour, dash, width) {
+      tctx.strokeStyle = colour; tctx.lineWidth = width; tctx.setLineDash(dash);
+      tctx.lineJoin = "round"; tctx.lineCap = "round";
+      tctx.beginPath();
+      var pen = false, prev = null;
+      hist.forEach(function (p) {
+        var deg = p[idx] * R2D;
+        var off = Math.abs(deg) > lim;
+        var jump = prev !== null && Math.abs(deg - prev) > 180;   // wrap-around, do not draw across
+        if (off || jump) { pen = false; prev = deg; return; }
+        if (!pen) { tctx.moveTo(X(p[0]), Y(deg)); pen = true; } else tctx.lineTo(X(p[0]), Y(deg));
+        prev = deg;
+      });
+      tctx.stroke(); tctx.setLineDash([]);
+    }
+    line(1, col("real"), [], 6);
+    line(2, col("lin"), [18, 12], 5);
+  }
+
+  function drawZoom() {
+    var W = zm.width, H = zm.height, padL = 90, padR = 30, padT = 20, padB = 50;
+    zctx.clearRect(0, 0, W, H);
+    var X = function (deg) { return padL + (deg + 180) / 360 * (W - padL - padR); };
+    var Y = function (v) { return padT + (1 - (v + 3.3) / 6.6) * (H - padT - padB); };
+
+    zctx.strokeStyle = "#e3e6ea"; zctx.lineWidth = 2;
+    zctx.beginPath(); zctx.moveTo(padL, Y(0)); zctx.lineTo(W - padR, Y(0));
+    zctx.moveTo(X(0), padT); zctx.lineTo(X(0), H - padB); zctx.stroke();
+
+    // where the linear model is trustworthy: about ±15°
+    zctx.fillStyle = "rgba(52,168,83,.08)";
+    zctx.fillRect(X(-15), padT, X(15) - X(-15), H - padT - padB);
+
+    // tangent, red dashed as on the worksheet
+    zctx.strokeStyle = col("tan"); zctx.lineWidth = 4; zctx.setLineDash([14, 10]);
+    zctx.beginPath(); zctx.moveTo(X(-180), Y(-Math.PI)); zctx.lineTo(X(180), Y(Math.PI)); zctx.stroke();
+    zctx.setLineDash([]);
+
+    // the real curve, green
+    zctx.strokeStyle = col("curve"); zctx.lineWidth = 6;
+    zctx.beginPath();
+    for (var g = -180; g <= 180; g += 2) {
+      var v = Math.sin(g * D2R);
+      if (g === -180) zctx.moveTo(X(g), Y(v)); else zctx.lineTo(X(g), Y(v));
+    }
+    zctx.stroke();
+
+    zctx.fillStyle = "#a1a1a6"; zctx.font = "600 24px " + FONT;
+    zctx.textAlign = "center"; zctx.textBaseline = "top";
+    [-180, -90, 0, 90, 180].forEach(function (g) { zctx.fillText(g + "°", X(g), H - padB + 10); });
+    zctx.textAlign = "left";
+    zctx.fillStyle = col("curve"); zctx.fillText("sin θ  (real)", X(-175), padT + 4);
+    zctx.fillStyle = col("tan");   zctx.fillText("θ  (tangent)", X(-175), padT + 34);
+
+    // where the real pendulum is right now, on both: the gap is what got thrown away
+    var dev = wrapPi(th - eq());
+    var degNow = dev * R2D;
+    var yCurve = Y(Math.sin(dev)), yLine = Y(dev);
+    zctx.strokeStyle = "#1d1d1f"; zctx.lineWidth = 3;
+    zctx.beginPath(); zctx.moveTo(X(degNow), yCurve); zctx.lineTo(X(degNow), yLine); zctx.stroke();
+    zctx.fillStyle = col("curve"); zctx.beginPath(); zctx.arc(X(degNow), yCurve, 12, 0, 7); zctx.fill();
+    zctx.fillStyle = col("tan");   zctx.beginPath(); zctx.arc(X(degNow), yLine, 12, 0, 7); zctx.fill();
+  }
+
+  function drawAll() { drawSwing(); drawTrace(); drawZoom(); }
+
+  /* ---------------- narration and controls ---------------- */
+
+  function say(html) { $("say").innerHTML = html; }
+
+  function sayForRelease() {
+    if (mode === "top") {
+      say("Balanced " + ampDeg + "° off the top. <span class='dim'>For a moment they agree —</span> then the model says it never stops falling.");
+    } else if (ampDeg <= 15) {
+      say("Released at " + ampDeg + "°. <span class='dim'>Watch the two pendulums: they move as one.</span>");
+    } else if (ampDeg <= 40) {
+      say("Released at " + ampDeg + "°. <span class='lin'>The model is just a little too fast</span> — watch it drift ahead.");
+    } else {
+      say("Released at " + ampDeg + "°. <span class='lin'>Far from the point, the linear model is telling stories.</span>");
+    }
+  }
+
+  function paintButtons() {
+    $("btnGo").innerHTML = (running ? "Pause" : t > 0 && t < SPAN ? "Resume" : "Let go") + "<kbd>SPACE</kbd>";
+    Array.prototype.forEach.call(document.querySelectorAll(".preset"), function (b) {
+      b.setAttribute("aria-pressed", String(mode === "bottom" && +b.dataset.deg === ampDeg));
+    });
+    $("btnTop").setAttribute("aria-pressed", String(mode === "top"));
+    $("btnTop").innerHTML = (mode === "top" ? "Linearize at the bottom" : "Linearize at the top") + "<kbd>T</kbd>";
+    $("chipPoint").textContent = mode === "top" ? "Linearized at the top" : "Linearized at the bottom";
+    $("amp").value = ampDeg; $("ampOut").textContent = ampDeg + "°";
+  }
+
+  function setAmp(deg) {
+    ampDeg = Math.max(1, Math.min(175, Math.round(deg)));
+    running = false; release(); readouts(); paintButtons();
+    say("Ready at " + ampDeg + "°. <span class='dim'>Press space to let go.</span>");
+  }
+
+  function go() {
+    if (t >= SPAN) release();
+    if (!running && t === 0) sayForRelease();
+    running = !running;
+    paintButtons();
+  }
+
+  function setMode(m) {
+    mode = m;
+    if (mode === "top") ampDeg = 5;
+    running = false; release(); readouts(); paintButtons();
+    say(mode === "top"
+      ? "Now linearized around the <b>other</b> equilibrium: straight up. <span class='dim'>Press space.</span>"
+      : "Back to hanging down. <span class='dim'>Pick an angle and let go.</span>");
+  }
+
+  $("btnGo").addEventListener("click", go);
+  $("btnReset").addEventListener("click", function () { running = false; release(); paintButtons(); });
+  $("btnTop").addEventListener("click", function () { setMode(mode === "top" ? "bottom" : "top"); });
+  $("amp").addEventListener("input", function () { setAmp(+this.value); });
+  Array.prototype.forEach.call(document.querySelectorAll(".preset"), function (b) {
+    b.addEventListener("click", function () { if (mode === "top") mode = "bottom"; setAmp(+b.dataset.deg); });
+  });
+
+  var PRESETS = { "1": 5, "2": 15, "3": 30, "4": 90, "5": 160 };
+  document.addEventListener("keydown", function (e) {
+    var k = e.key.toLowerCase();
+    if (k === " " || e.code === "Space") { e.preventDefault(); go(); }
+    else if (k === "r") { running = false; release(); paintButtons(); }
+    else if (k === "t") setMode(mode === "top" ? "bottom" : "top");
+    else if (PRESETS[k]) { if (mode === "top") mode = "bottom"; setAmp(PRESETS[k]); }
+    else if (e.key === "ArrowRight") { e.preventDefault(); setAmp(ampDeg + 1); }
+    else if (e.key === "ArrowLeft") { e.preventDefault(); setAmp(ampDeg - 1); }
+    else if (k === "f") {
+      if (document.fullscreenElement) document.exitFullscreen();
+      else document.documentElement.requestFullscreen();
+    }
+  });
+
+  /* ---------------- the loop ---------------- */
+
+  var acc = 0, last = null, lastRAF = 0;
+  function advance(now) {
+    if (last === null) last = now;
+    var dt = Math.min(0.05, (now - last) / 1000);
+    last = now;
+    if (running) {
+      acc += dt;
+      while (acc > 1 / 240) { step(1 / 240); acc -= 1 / 240; }
+    }
+    drawAll();
+  }
+  function frame(ts) { requestAnimationFrame(frame); lastRAF = performance.now(); advance(ts); }
+  requestAnimationFrame(frame);
+  // keep stepping if the browser stops sending frames (backgrounded window, projector re-sync)
+  setInterval(function () { var n = performance.now(); if (n - lastRAF > 300) advance(n); }, 60);
+  document.addEventListener("visibilitychange", function () { last = null; });
+
+  release(); readouts(); paintButtons(); drawAll();
+})();
+</script>
+</body>
+</html>

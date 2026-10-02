@@ -43,8 +43,8 @@ window.ROOMS = [
           lead: "Start at the top and work down as far as your time allows.",
           // tone: "must" (red), "should" (orange) or "could" (purple)
           tiers: [
-            { label: "Definitely do", tone: "must", items: ["1", "4"] },
-            { label: "If you have time", tone: "should", items: ["2", "3"] }
+            { label: "Definitely do", tone: "must", items: ["1", "2"] },
+            { label: "If you have time", tone: "should", items: ["3"] }
           ]
         }
       },
@@ -53,19 +53,19 @@ window.ROOMS = [
         x: 83, y: 53.3,
         label: "This week's tool",
         panel: {
-          kicker: "Week 2 · Try it yourself",
-          title: "Three pasts, one state",
-          lead: "Three cups of coffee with completely different mornings — pours, sips, a spill — that all end up holding 200 ml.",
+          kicker: "Week 3 · Try it yourself",
+          title: "How near is near?",
+          lead: "A real swing and its linear model, released side by side — with the curve and its tangent drawn underneath, so you can watch the gap open up.",
           list: [
-            "Every history is different, and none of it survives",
-            "At \"now\" all three hold the same 200 ml",
-            "Apply the same input and the three futures are identical"
+            "Small angles: the two pendulums move as one",
+            "Large angles: the linear model runs ahead and starts telling stories",
+            "Linearize at the top instead, and it never comes back"
           ],
           links: [
-            { label: "Open the demo", href: "tools/state-memory.html" },
-            { label: "Last week: the drone", href: "tools/feedback-loop.html" }
+            { label: "Open the demo", href: "tools/linearization.html" },
+            { label: "Last week: the coffee", href: "tools/state-memory.html" }
           ],
-          note: "The state is the smallest thing you need to know about the past to work out the future."
+          note: "What linearization throws away is second order: halve the swing, and the error drops to a quarter."
         }
       },
       {
@@ -73,17 +73,17 @@ window.ROOMS = [
         x: 73.5, y: 44.9,
         label: "Today's exercise",
         panel: {
-          kicker: "Week 2 · Today",
-          title: "Modeling, Block Diagrams",
-          lead: "What is actually inside the plant we drew a loop around last week.",
+          kicker: "Week 3 · Today",
+          title: "Linearization, System Classification",
+          lead: "Last week's cliffhanger: the spring fits into state-space form, the drone does not. Today we fix that.",
           list: [
-            "Draw the boundary: inputs, disturbances, state, parameters",
-            "Physics: the bathtub law, storage in equals flow in minus flow out",
-            "Standard form: first-order ODEs, and state-space when it is linear"
+            "Equilibrium points: where the state stays put",
+            "Linearize with a Taylor expansion and read off A, B, C, D",
+            "Classify systems: linear, causal, static, time-invariant"
           ],
           links: [
-            { label: "Worksheet 2", href: "files/week-2-worksheet.pdf" },
-            { label: "Worksheet 1", href: "files/week-1-worksheet.pdf" }
+            { label: "Worksheet 3", href: "files/week-3-worksheet.pdf" },
+            { label: "Worksheet 2", href: "files/week-2-worksheet.pdf" }
           ],
           note: "Solutions go up straight after the session."
         }
@@ -138,7 +138,7 @@ window.ROOMS = [
           title: "Lecture recaps",
           lead: "A short AI-generated summary of each lecture, for catching up or revising. If something looks off, the slides are the reference.",
           links: [
-            { label: "This week's recap", href: "recaps/lecture-02.html" },
+            { label: "This week's recap", href: "recaps/lecture-03.html" },
             { label: "All recaps", href: "recaps/" }
           ]
         }

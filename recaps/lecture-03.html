@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<meta name="robots" content="noindex, nofollow">
+<title>Lecture 3 recap — State-Space Models, Linearization</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📝</text></svg>">
+<link rel="stylesheet" href="recap.css">
+</head>
+<body>
+<div class="wrap">
+
+  <a class="back" href="./">← All recaps</a>
+
+  <p class="eyebrow">Lecture 3 · 30 September</p>
+  <h1>State-space models, linearization</h1>
+  <p class="robot"><span>✨</span><span>AI-generated recap — check anything important against the slides</span></p>
+
+  <p class="lede">
+    Almost nothing you will meet is linear. This lecture is about why that matters far less than
+    it sounds — as long as you pick the right point and stay close to it.
+  </p>
+
+  <div class="card">
+    <h2>Four questions to ask of any system</h2>
+    <div class="arch">
+      <div>
+        <h3>Linear?</h3>
+        <p>Do sums and scalings go straight through? Then superposition works: split the input, solve each piece, add.</p>
+      </div>
+      <div>
+        <h3>Causal?</h3>
+        <p>Does the output need the future? Anything you can actually build is causal.</p>
+      </div>
+      <div>
+        <h3>Static?</h3>
+        <p>Is the present input enough? If the system remembers anything — any ODE — it is dynamic.</p>
+      </div>
+      <div>
+        <h3>Time-invariant?</h3>
+        <p>Does it matter <i>when</i> you apply the input? Shift the input, and the output just shifts with it.</p>
+      </div>
+    </div>
+    <p style="margin:14px 0 0; color: var(--ink-2); font-size:15px">
+      The course works only with systems that pass all four (and have one input, one output): LTI SISO.
+      Very restrictive — and yet most real controllers are designed exactly this way.
+    </p>
+  </div>
+
+  <div class="card">
+    <h2>A trap worth remembering</h2>
+    <ul>
+      <li>ẋ = 1 + u looks linear, and is not. An input of 1 gives y = 2t; an input of 2 gives 3t, not 4t. The constant breaks homogeneity.</li>
+      <li>The fix is the whole idea of the lecture in miniature: hold u at −1, where the system sits still, and work in deviations from there. Then δẋ = δu, which is perfectly linear.</li>
+    </ul>
+  </div>
+
+  <div class="card">
+    <h2>State-space, formally</h2>
+    <ul>
+      <li>The <b>state</b> at t₀, together with the input from then on, is enough to predict the output for all later times. It is the system's memory.</li>
+      <li>Its dimension is the system's <b>order</b>. A memoryless system has a zero-dimensional state; a pure time delay needs an infinite one.</li>
+      <li>LTI systems all fit one form: ẋ = Ax + Bu, y = Cx + Du. If D = 0, the system is <b>strictly causal</b>.</li>
+    </ul>
+  </div>
+
+  <div class="card">
+    <h2>Linearization in three moves</h2>
+    <ul>
+      <li><b>Find an equilibrium</b>: an (x<sub>e</sub>, u<sub>e</sub>) where f(x<sub>e</sub>, u<sub>e</sub>) = 0. Start there, hold the input there, and nothing moves.</li>
+      <li><b>Take the Taylor expansion</b> around it and throw away everything past first order.</li>
+      <li><b>Read off the Jacobians</b>: A = ∂f/∂x, B = ∂f/∂u, C = ∂g/∂x, D = ∂g/∂u, all evaluated at the equilibrium.</li>
+      <li>The x, u and y in the result are <b>deviations</b> from the equilibrium, not the real quantities — the δ's usually get dropped, and that is where mistakes come from.</li>
+    </ul>
+  </div>
+
+  <div class="card">
+    <h2>The pendulum has two answers</h2>
+    <div class="arch">
+      <div>
+        <h3>Hanging down · (0, 0)</h3>
+        <p>A = [0 1; −g/l −c/ml²]. The stable equilibrium.</p>
+      </div>
+      <div>
+        <h3>Balanced up · (π, 0)</h3>
+        <p>A = [0 1; +g/l −c/ml²]. The unstable one.</p>
+      </div>
+    </div>
+    <p style="margin:14px 0 0; color: var(--ink-2); font-size:15px">
+      Same system, one sign different, completely different behaviour. Which point you linearize around is the first decision, not a detail.
+    </p>
+  </div>
+
+  <div class="card">
+    <h2>How near is near?</h2>
+    <ul>
+      <li>For the pendulum the only approximation is sin θ ≈ θ, and its error grows like θ²/6: <b>0.1%</b> at 5°, <b>1.2%</b> at 15°, <b>4.7%</b> at 30°.</li>
+      <li>So a swing kept inside ±15° obeys the linear model to about a percent — better than you know the friction, and far better than you know the child. Past 30° the linear model starts telling stories.</li>
+      <li>What was thrown away is second order, so <b>halving the excursion quarters the error</b>.</li>
+    </ul>
+  </div>
+
+  <div class="keep">
+    <h2>If you keep one thing</h2>
+    <p>
+      Near an equilibrium the linear model is not a compromise you tolerate — it is the right picture.
+      If the linearization is stable, so is the real system near that point (Lyapunov). That is the
+      licence for everything else in the course. Just never forget which point, and how far you have strayed.
+    </p>
+  </div>
+
+  <div class="card">
+    <h2>Worth doing this week</h2>
+    <ul>
+      <li>Read <b>Åström &amp; Murray, chapter 3</b>.</li>
+      <li>Release the <a href="../tools/linearization.html">two pendulums</a> at 5°, 30° and 90°, then linearize at the top — and watch the linear model fall apart in both directions.</li>
+      <li>Find the drone's equilibrium from the worksheet, then explain in one sentence why it makes sense for something that is hovering.</li>
+    </ul>
+  </div>
+
+  <p class="fine">
+    Written by AI from the lecture slides, so treat it as a reminder rather than a source.<br>
+    <a href="https://video.ethz.ch/lectures/d-mavt/2026/autumn/151-0591-00L">Lecture recording</a> ·
+    <a href="https://idsc.ethz.ch/education/lectures/control-systems-i.html">Course page</a>
+  </p>
+
+</div>
+</body>
+</html>
