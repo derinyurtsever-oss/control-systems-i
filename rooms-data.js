@@ -54,19 +54,21 @@ window.ROOMS = [
         x: 83, y: 53.3,
         label: "This week's tool",
         panel: {
-          kicker: "Week 3 · Try it yourself",
-          title: "How near is near?",
-          lead: "A real swing and its linear model, released side by side — with the curve and its tangent drawn underneath, so you can watch the gap open up.",
+          kicker: "Week 4 · Try it yourself",
+          title: "Eigenvalues decide",
+          lead: "Two demos this week. First the pendulum linearized at both equilibria: one sign apart, two completely different futures. Then the phase portrait, with eigenvalues you can drag.",
           list: [
-            "Small angles: the two pendulums move as one",
-            "Large angles: the linear model runs ahead and starts telling stories",
-            "Linearize at the top instead, and it never comes back"
+            "Hanging vs balanced: A₀ rings down, A_π leaves",
+            "Full response = initial condition + forced, live",
+            "Drag the eigenvalues: spiral in, spiral out, circle, saddle",
+            "The page 10 stability tree, filled in as you move"
           ],
           links: [
-            { label: "Open the demo", href: "tools/linearization.html" },
-            { label: "Last week: the coffee", href: "tools/state-memory.html" }
+            { label: "Two matrices, two futures", href: "tools/pendulum-matrices.html" },
+            { label: "Eigenvalues decide", href: "tools/phase-portrait.html" },
+            { label: "Last week: the linear pendulum", href: "tools/linearization.html" }
           ],
-          note: "What linearization throws away is second order: halve the swing, and the error drops to a quarter."
+          note: "Real part: in or out. Imaginary part: how much it turns."
         }
       },
       {
@@ -74,17 +76,17 @@ window.ROOMS = [
         x: 73.5, y: 44.9,
         label: "Today's exercise",
         panel: {
-          kicker: "Week 3 · Today",
-          title: "Linearization, System Classification",
-          lead: "Last week's cliffhanger: the spring fits into state-space form, the drone does not. Today we fix that.",
+          kicker: "Week 4 · Today",
+          title: "Time response, Stability",
+          lead: "Last week we linearized the pendulum at the bottom and at the top. Today: what those two A matrices actually do over time.",
           list: [
-            "Equilibrium points: where the state stays put",
-            "Linearize with a Taylor expansion and read off A, B, C, D",
-            "Classify systems: linear, causal, static, time-invariant"
+            "Full response = initial-condition response + forced response",
+            "The matrix exponential and phase portraits of ẋ = Ax",
+            "Read stability off the eigenvalues: Lyapunov, asymptotic, BIBO"
           ],
           links: [
-            { label: "Worksheet 3", href: "files/week-3-worksheet.pdf" },
-            { label: "Worksheet 2", href: "files/week-2-worksheet.pdf" }
+            { label: "Worksheet 4", href: "files/week-4-worksheet.pdf" },
+            { label: "Worksheet 3", href: "files/week-3-worksheet.pdf" }
           ],
           note: "Solutions go up straight after the session."
         }

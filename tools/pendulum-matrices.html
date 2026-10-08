@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<meta name="robots" content="noindex, nofollow">
+<title>Two matrices, two futures</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚖️</text></svg>">
+<style>
+:root {
+  color-scheme: light;
+  --ink:   #1d1d1f;
+  --ink-2: #6e6e73;
+  --ink-3: #a1a1a6;
+  --line:  #e0e3e8;
+  --bg:    #f6f7f9;
+  --card:  #ffffff;
+
+  /* the worksheet's own colours */
+  --full:  #0a84ff;   /* full response, blue  */
+  --ic:    #34a853;   /* initial condition, green */
+  --frc:   #ff3b30;   /* forced, red */
+  --good:  #1d9a5b;
+  --bad:   #d4231a;
+  --flat:  #0071e3;
+
+  --font: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text",
+          "Segoe UI Variable Display", "Segoe UI", system-ui, sans-serif;
+  --mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0; min-height: 100vh;
+  background: var(--bg); color: var(--ink);
+  font-family: var(--font); font-size: 16px; letter-spacing: -0.01em;
+  -webkit-font-smoothing: antialiased;
+  -webkit-user-select: none; user-select: none;
+}
+
+.wrap { max-width: 1260px; margin: 0 auto; padding: 16px 20px 24px; display: flex; flex-direction: column; gap: 12px; }
+:focus-visible { outline: 2.5px solid var(--full); outline-offset: 2px; border-radius: 10px; }
+
+.top { display: flex; align-items: center; justify-content: space-between; gap: 14px; flex-wrap: wrap; }
+.top h1 { margin: 0; font-size: clamp(18px, 2.1vw, 25px); font-weight: 650; letter-spacing: -0.025em; }
+.top .back { font-size: 14px; color: var(--full); text-decoration: none; }
+.top .back:hover { text-decoration: underline; }
+.sub { margin: -6px 0 0; color: var(--ink-2); font-size: 15px; }
+
+/* --- the two sides ------------------------------------------------- */
+
+.pair { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+.side {
+  background: var(--card); border-radius: 20px; padding: 16px 16px 12px;
+  box-shadow: 0 1px 2px rgba(16,24,40,.04), 0 12px 30px -18px rgba(16,24,40,.25);
+  display: flex; flex-direction: column; gap: 12px;
+  border-top: 4px solid var(--tone, var(--line));
+}
+.side.stable   { --tone: var(--good); }
+.side.unstable { --tone: var(--bad); }
+.side.edge     { --tone: var(--flat); }
+
+.head { display: grid; grid-template-columns: auto 1fr; gap: 16px; align-items: center; }
+.head h2 { margin: 0; font-size: 18px; font-weight: 650; letter-spacing: -0.02em; }
+.head p { margin: 2px 0 0; font-size: 13.5px; color: var(--ink-2); }
+
+/* a matrix drawn the way it is on the sheet */
+.mat { display: flex; align-items: center; gap: 8px; font-family: var(--mono); font-size: 16px; font-weight: 600; }
+.mat .name { font-family: var(--font); font-weight: 700; font-size: 18px; }
+.mat .br {
+  display: grid; grid-template-columns: auto auto; gap: 4px 16px; padding: 6px 12px;
+  border-left: 2.5px solid var(--ink); border-right: 2.5px solid var(--ink); border-radius: 12px;
+  font-variant-numeric: tabular-nums; text-align: right;
+}
+.mat .hot { color: var(--tone); }
+
+.eig { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; font-size: 13.5px; color: var(--ink-2); }
+.eig b { font-family: var(--mono); font-size: 14px; color: var(--ink); font-weight: 650; padding: 4px 10px; border-radius: 999px; background: #f2f3f5; }
+.verdict { font-weight: 700; font-size: 14px; color: var(--tone); }
+
+.viz { display: grid; grid-template-columns: 34% 1fr; gap: 10px; align-items: center; }
+canvas { display: block; width: 100%; height: auto; }
+
+.legend { display: flex; gap: 14px; justify-content: center; flex-wrap: wrap; font-size: 13px; color: var(--ink-2); }
+.legend span { display: inline-flex; align-items: center; gap: 6px; }
+.legend i { width: 16px; height: 4px; border-radius: 2px; background: var(--c); }
+
+/* --- narration & controls ----------------------------------------- */
+
+.say {
+  min-height: 34px; margin: 2px 0;
+  font-size: clamp(16px, 2vw, 22px); font-weight: 550; letter-spacing: -0.02em;
+  text-align: center;
+}
+.say .dim { color: var(--ink-3); }
+.say .g { color: var(--good); } .say .r { color: var(--bad); }
+
+.controls { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; justify-content: center; }
+button {
+  font: inherit; font-size: 15px; font-weight: 600;
+  padding: 10px 16px; border: 0; border-radius: 999px;
+  background: var(--card); color: var(--ink);
+  box-shadow: inset 0 0 0 1px var(--line); cursor: pointer; transition: background .15s;
+}
+button:hover { background: #f0f2f5; }
+button.primary { background: var(--full); color: #fff; box-shadow: none; min-width: 140px; }
+button.primary:hover { background: #0070e0; }
+button[aria-pressed="true"] { background: var(--ink); color: #fff; box-shadow: none; }
+kbd { font: inherit; font-size: 11px; font-weight: 700; opacity: .55; margin-left: 7px; letter-spacing: .04em; }
+.sep { width: 1px; height: 26px; background: var(--line); margin: 0 2px; }
+
+.slider { display: flex; align-items: center; gap: 10px; padding: 6px 14px; background: var(--card); border-radius: 999px; box-shadow: inset 0 0 0 1px var(--line); }
+.slider label { font-size: 14px; font-weight: 600; color: var(--ink-2); white-space: nowrap; }
+.slider output { font-size: 14px; font-weight: 700; font-variant-numeric: tabular-nums; min-width: 46px; text-align: right; }
+input[type=range] { -webkit-appearance: none; appearance: none; width: 140px; height: 5px; border-radius: 999px; background: var(--line); }
+input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; appearance: none; width: 19px; height: 19px; border-radius: 50%; background: #fff; border: 0; box-shadow: 0 1px 4px rgba(0,0,0,.32); cursor: pointer; }
+input[type=range]::-moz-range-thumb { width: 19px; height: 19px; border-radius: 50%; background: #fff; border: 0; box-shadow: 0 1px 4px rgba(0,0,0,.32); cursor: pointer; }
+
+details.sheet { background: var(--card); border-radius: 16px; box-shadow: inset 0 0 0 1px var(--line); padding: 12px 16px; font-size: 14.5px; }
+details.sheet summary { cursor: pointer; font-weight: 650; }
+details.sheet ol { margin: 12px 0 0; padding-left: 20px; display: grid; gap: 10px; color: var(--ink-2); }
+details.sheet b { color: var(--ink); }
+details.sheet .line { color: var(--ink); font-style: italic; }
+
+@media (max-width: 980px) {
+  .pair { grid-template-columns: 1fr; }
+  kbd { display: none; }
+}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+
+  <div class="top">
+    <h1>Two matrices, two futures</h1>
+    <a class="back" href="../">← back to the room</a>
+  </div>
+  <p class="sub">Last week's pendulum, linearized at both equilibria. One sign differs between the two A matrices — watch what that does to the time response.</p>
+
+  <div class="pair">
+    <section class="side" id="sideDown">
+      <div class="head">
+        <div class="mat"><span class="name">A<sub>0</sub> =</span><div class="br" id="matDown"></div></div>
+        <div>
+          <h2>Hanging · θ<sub>e</sub> = 0</h2>
+          <div class="eig">eigenvalues <span id="eigDown"></span></div>
+          <div class="verdict" id="verDown"></div>
+        </div>
+      </div>
+      <div class="viz">
+        <canvas id="penDown" width="500" height="500"></canvas>
+        <canvas id="plotDown" width="1000" height="620"></canvas>
+      </div>
+    </section>
+
+    <section class="side" id="sideUp">
+      <div class="head">
+        <div class="mat"><span class="name">A<sub>π</sub> =</span><div class="br" id="matUp"></div></div>
+        <div>
+          <h2>Balanced · θ<sub>e</sub> = π</h2>
+          <div class="eig">eigenvalues <span id="eigUp"></span></div>
+          <div class="verdict" id="verUp"></div>
+        </div>
+      </div>
+      <div class="viz">
+        <canvas id="penUp" width="500" height="500"></canvas>
+        <canvas id="plotUp" width="1000" height="620"></canvas>
+      </div>
+    </section>
+  </div>
+
+  <div class="legend" id="legend">
+    <span><i style="--c: var(--full)"></i>full response x(t)</span>
+    <span class="split"><i style="--c: var(--ic)"></i>initial condition x<sub>IC</sub></span>
+    <span class="split"><i style="--c: var(--frc)"></i>forced x<sub>F</sub></span>
+  </div>
+
+  <p class="say" id="say">Both pendulums start 15° away from their equilibrium. Press space.</p>
+
+  <div class="controls">
+    <button class="primary" id="btnGo" type="button">Play<kbd>SPACE</kbd></button>
+    <button id="btnReset" type="button">Restart<kbd>R</kbd></button>
+    <span class="sep"></span>
+    <div class="slider">
+      <label for="th0">Start θ̂</label>
+      <input type="range" id="th0" min="0" max="30" step="1" value="15">
+      <output id="th0Out">15°</output>
+    </div>
+    <div class="slider">
+      <label for="fric">Friction c/ml²</label>
+      <input type="range" id="fric" min="0" max="1.6" step="0.05" value="0.4">
+      <output id="fricOut">0.40</output>
+    </div>
+    <span class="sep"></span>
+    <button id="btnPulse" type="button" aria-pressed="false">Pulse input u at t = 0<kbd>P</kbd></button>
+    <button id="btnSplit" type="button" aria-pressed="false">Split: IC + forced<kbd>S</kbd></button>
+  </div>
+
+  <details class="sheet">
+    <summary>How to run this</summary>
+    <ol>
+      <li><b>Play it as it is.</b> Same pendulum, same 15° start, the only difference is the sign of g/l.
+        On the left it rings down; on the right it is off the chart within a couple of seconds.
+        <div class="line">"Everything about the future is already sitting in A."</div></li>
+      <li><b>Point at the eigenvalues.</b> Left: a complex pair with negative real part — an oscillation that
+        decays. Right: one eigenvalue is positive, and one diverging term is enough.</li>
+      <li><b>Turn the friction to zero.</b> The left side keeps swinging forever: Re(λ) = 0, neither growing
+        nor decaying. The right side does not care.</li>
+      <li><b>Pulse input, then Split.</b> Kick both pendulums at t = 0. The full response (blue) is the
+        initial-condition response (green) plus the forced response (red) — page 2, live.
+        <div class="line">"We can solve the start and the input separately, because the system is linear."</div></li>
+    </ol>
+    <p style="margin:14px 0 0; color: var(--ink-2)">
+      Both are the <i>linear</i> models, 2.5 m rope, m = 1 kg. Keys: <b>space</b> play / pause · <b>R</b> restart ·
+      <b>P</b> pulse · <b>S</b> split · <b>0</b> friction off · <b>←/→</b> start angle.
+    </p>
+  </details>
+
+</div>
+
+<script>
+(function () {
+  "use strict";
+
+  var $ = function (id) { return document.getElementById(id); };
+  var D2R = Math.PI / 180, R2D = 180 / Math.PI;
+
+  /* ---------------- the two linear models ----------------
+     x = (δθ, δθ'),  ẋ = A x + B u,  A = [0 1; ±g/l  -c/ml²],  B = [0; 1/(ml)]
+     m = 1 kg on a 2.5 m rope. The pulse is a short push at t = 0. */
+
+  var GL = 9.81 / 2.5;
+  var B2 = 1 / 2.5;
+  var PULSE_U = 6, PULSE_T = 0.25;
+  var T_END = 10, DT = 1 / 200;
+
+  var th0 = 15, fric = 0.4, pulse = false, split = false;
+  var t = 0, playing = false;
+  var runs = {};      // down / up -> { ic: [...], frc: [...], full: [...] }  angle samples in radians
+
+  function u(tt) { return pulse && tt < PULSE_T ? PULSE_U : 0; }
+
+  function simulate(k, x1, x2, withInput) {
+    // k is the (2,1) entry of A: -g/l hanging, +g/l balanced
+    var out = new Float64Array(Math.round(T_END / DT) + 1);
+    var a = x1, b = x2;
+    function f(tt, p, q) { return [q, k * p - fric * q + (withInput ? B2 * u(tt) : 0)]; }
+    for (var i = 0; i < out.length; i++) {
+      out[i] = a;
+      var tt = i * DT;
+      var k1 = f(tt, a, b);
+      var k2 = f(tt + DT / 2, a + k1[0] * DT / 2, b + k1[1] * DT / 2);
+      var k3 = f(tt + DT / 2, a + k2[0] * DT / 2, b + k2[1] * DT / 2);
+      var k4 = f(tt + DT, a + k3[0] * DT, b + k3[1] * DT);
+      a += DT / 6 * (k1[0] + 2 * k2[0] + 2 * k3[0] + k4[0]);
+      b += DT / 6 * (k1[1] + 2 * k2[1] + 2 * k3[1] + k4[1]);
+      if (!isFinite(a) || Math.abs(a) > 1e6) { for (var j = i + 1; j < out.length; j++) out[j] = a > 0 ? 1e6 : -1e6; break; }
+    }
+    return out;
+  }
+
+  function recompute() {
+    [["down", -GL], ["up", GL]].forEach(function (s) {
+      var ic = simulate(s[1], th0 * D2R, 0, false);   // x(0) = x̂, no input
+      var frc = simulate(s[1], 0, 0, true);           // x(0) = 0, the input only
+      var full = new Float64Array(ic.length);
+      for (var i = 0; i < ic.length; i++) full[i] = ic[i] + frc[i];   // linearity
+      runs[s[0]] = { k: s[1], ic: ic, frc: frc, full: full };
+    });
+    paintMatrices();
+  }
+
+  /* ---------------- eigenvalues & verdicts ---------------- */
+
+  function eig(k) {            // λ² + fric·λ - k = 0
+    var disc = fric * fric + 4 * k;
+    if (disc >= 0) { var r = Math.sqrt(disc); return { re: [(-fric + r) / 2, (-fric - r) / 2], im: 0 }; }
+    return { re: [-fric / 2, -fric / 2], im: Math.sqrt(-disc) / 2 };
+  }
+  function fmt(x) { var v = Math.abs(x) < 0.005 ? 0 : x; return (v < 0 ? "−" : "") + Math.abs(v).toFixed(2); }
+
+  function paintMatrices() {
+    [["down", "Down", -GL], ["up", "Up", GL]].forEach(function (s) {
+      var e = eig(s[2]);
+      $("mat" + s[1]).innerHTML =
+        "<span>0</span><span>1</span>" +
+        '<span class="hot">' + fmt(s[2]) + "</span><span>" + fmt(-fric) + "</span>";
+      $("eig" + s[1]).innerHTML = e.im
+        ? "<b>" + fmt(e.re[0]) + " ± " + e.im.toFixed(2) + "j</b>"
+        : "<b>" + fmt(e.re[0]) + "</b><b>" + fmt(e.re[1]) + "</b>";
+
+      var maxRe = Math.max(e.re[0], e.re[1]);
+      var cls, text;
+      if (maxRe > 0.005) { cls = "unstable"; text = "Re(λ) > 0 — diverges · unstable"; }
+      else if (maxRe < -0.005) { cls = "stable"; text = "Re(λ) < 0 — decays · asymptotically stable"; }
+      else { cls = "edge"; text = "Re(λ) = 0 — neither grows nor decays · Lyapunov stable"; }
+      $("side" + s[1]).className = "side " + cls;
+      $("ver" + s[1]).textContent = text;
+    });
+  }
+
+  /* ---------------- drawing ---------------- */
+
+  var FONT = getComputedStyle(document.documentElement).getPropertyValue("--font");
+  function col(n) { return getComputedStyle(document.documentElement).getPropertyValue("--" + n).trim(); }
+
+  function sample(arr, tt) {
+    var i = Math.min(arr.length - 1, Math.max(0, Math.round(tt / DT)));
+    return arr[i];
+  }
+
+  function drawPendulum(canvas, upright, dev) {
+    var ctx = canvas.getContext("2d"), W = canvas.width, H = canvas.height;
+    var cx = W / 2, cy = H / 2, L = 180;
+    ctx.clearRect(0, 0, W, H);
+
+    ctx.strokeStyle = "#eef0f3"; ctx.lineWidth = 3;
+    ctx.beginPath(); ctx.arc(cx, cy, L, 0, 7); ctx.stroke();
+
+    var base = upright ? Math.PI : 0;
+    // the equilibrium, dotted, as on the sheet
+    ctx.strokeStyle = "#c9ced6"; ctx.lineWidth = 3; ctx.setLineDash([6, 8]);
+    ctx.beginPath(); ctx.moveTo(cx, cy); ctx.lineTo(cx + L * Math.sin(base), cy + L * Math.cos(base)); ctx.stroke();
+    ctx.setLineDash([]);
+
+    var off = Math.abs(dev) > Math.PI;              // the linear model has left the picture
+    if (!off) {
+      var bx = cx + L * Math.sin(base + dev), by = cy + L * Math.cos(base + dev);
+      ctx.strokeStyle = "#1d1d1f"; ctx.lineWidth = 6;
+      ctx.beginPath(); ctx.moveTo(cx, cy); ctx.lineTo(bx, by); ctx.stroke();
+      ctx.fillStyle = col("full");
+      ctx.beginPath(); ctx.arc(bx, by, 30, 0, 7); ctx.fill();
+    }
+    ctx.fillStyle = "#1d1d1f";
+    ctx.beginPath(); ctx.arc(cx, cy, 9, 0, 7); ctx.fill();
+
+    ctx.font = "700 30px " + FONT; ctx.textAlign = "center"; ctx.textBaseline = "top";
+    ctx.fillStyle = off ? col("bad") : "#6e6e73";
+    ctx.fillText(off ? "left the picture" : "δθ = " + Math.round(dev * R2D) + "°", cx, 10);
+  }
+
+  function drawPlot(canvas, run, lim) {
+    var ctx = canvas.getContext("2d"), W = canvas.width, H = canvas.height;
+    var padL = 96, padR = 24, padT = 26, padB = 60;
+    ctx.clearRect(0, 0, W, H);
+    var X = function (tt) { return padL + tt / T_END * (W - padL - padR); };
+    var Y = function (deg) { return padT + (1 - (deg + lim) / (2 * lim)) * (H - padT - padB); };
+
+    ctx.strokeStyle = "#edeff3"; ctx.lineWidth = 2;
+    ctx.fillStyle = "#a1a1a6"; ctx.font = "600 26px " + FONT;
+    ctx.textAlign = "right"; ctx.textBaseline = "middle";
+    [-lim, 0, lim].forEach(function (g) {
+      ctx.beginPath(); ctx.moveTo(padL, Y(g)); ctx.lineTo(W - padR, Y(g)); ctx.stroke();
+      ctx.fillText(Math.round(g) + "°", padL - 14, Y(g));
+    });
+    ctx.textAlign = "center"; ctx.textBaseline = "top";
+    ctx.fillText("t →", (padL + W - padR) / 2, H - 44);
+
+    function trace(arr, colour, width, dash) {
+      ctx.strokeStyle = colour; ctx.lineWidth = width; ctx.setLineDash(dash || []);
+      ctx.lineJoin = "round"; ctx.lineCap = "round";
+      ctx.beginPath();
+      var pen = false, n = Math.round(t / DT), escaped = false;
+      for (var i = 0; i <= n && i < arr.length; i += 2) {
+        var deg = arr[i] * R2D;
+        if (Math.abs(deg) > lim) { escaped = true; pen = false; continue; }
+        if (!pen) { ctx.moveTo(X(i * DT), Y(deg)); pen = true; } else ctx.lineTo(X(i * DT), Y(deg));
+      }
+      ctx.stroke(); ctx.setLineDash([]);
+      return escaped;
+    }
+
+    if (split) {
+      trace(run.ic, col("ic"), 5, [14, 10]);
+      trace(run.frc, col("frc"), 5, [14, 10]);
+    }
+    var gone = trace(run.full, col("full"), 7);
+    if (gone) {
+      ctx.fillStyle = col("bad"); ctx.font = "700 28px " + FONT;
+      ctx.textAlign = "right"; ctx.textBaseline = "top";
+      ctx.fillText("↑ off the chart", W - padR - 6, padT + 4);
+    }
+  }
+
+  function drawAll() {
+    // the hanging side is scaled to fit; the balanced side gets the full ±180°,
+    // which is where its pendulum leaves the picture too
+    var m = 0, d = runs.down;
+    for (var i = 0; i < d.full.length; i++) m = Math.max(m, Math.abs(d.full[i]), Math.abs(d.ic[i]), Math.abs(d.frc[i]));
+    var lim = Math.max(20, Math.ceil(m * R2D * 1.2 / 5) * 5);
+
+    drawPendulum($("penDown"), false, sample(runs.down.full, t));
+    drawPendulum($("penUp"), true, sample(runs.up.full, t));
+    drawPlot($("plotDown"), runs.down, lim);
+    drawPlot($("plotUp"), runs.up, 180);
+  }
+
+  /* ---------------- narration & controls ---------------- */
+
+  function say(html) { $("say").innerHTML = html; }
+
+  function paintControls() {
+    $("btnGo").innerHTML = (playing ? "Pause" : t >= T_END ? "Play again" : t > 0 ? "Resume" : "Play") + "<kbd>SPACE</kbd>";
+    $("btnPulse").setAttribute("aria-pressed", String(pulse));
+    $("btnSplit").setAttribute("aria-pressed", String(split));
+    $("th0").value = th0; $("th0Out").textContent = th0 + "°";
+    $("fric").value = fric; $("fricOut").textContent = fric.toFixed(2);
+    Array.prototype.forEach.call(document.querySelectorAll(".legend .split"), function (s) { s.style.opacity = split ? 1 : 0.35; });
+  }
+
+  function restart(msg) {
+    t = 0; playing = false; recompute(); paintControls(); drawAll();
+    if (msg) say(msg);
+  }
+
+  function go() {
+    if (t >= T_END) t = 0;
+    playing = !playing;
+    if (playing && t === 0) {
+      say(pulse
+        ? "Both start at " + th0 + "° and get the same kick at t = 0. <span class='dim'>Same input, different A.</span>"
+        : "Same start, same pendulum. <span class='g'>Left: it rings down.</span> <span class='r'>Right: it leaves.</span>");
+    }
+    paintControls();
+  }
+
+  $("btnGo").addEventListener("click", go);
+  $("btnReset").addEventListener("click", function () { restart(); });
+  $("th0").addEventListener("input", function () { th0 = +this.value; restart("Both start " + th0 + "° away from their equilibrium."); });
+  $("fric").addEventListener("input", function () {
+    fric = +this.value;
+    restart(fric === 0
+      ? "No friction: <span class='dim'>the hanging pendulum's eigenvalues sit on the imaginary axis.</span>"
+      : "Friction " + fric.toFixed(2) + ". <span class='dim'>Watch the real part of the eigenvalues move.</span>");
+  });
+  $("btnPulse").addEventListener("click", function () {
+    pulse = !pulse;
+    restart(pulse ? "A short push at t = 0 on both. <span class='dim'>Now there is a forced response too.</span>"
+                  : "No input — just the initial condition.");
+  });
+  $("btnSplit").addEventListener("click", function () {
+    split = !split; paintControls(); drawAll();
+    say(split ? "<span style='color:var(--full)'>Blue</span> = <span style='color:var(--ic)'>green</span> + <span style='color:var(--frc)'>red</span>. <span class='dim'>Start and input, solved separately and added.</span>"
+              : "Full response only.");
+  });
+
+  document.addEventListener("keydown", function (e) {
+    var k = e.key.toLowerCase();
+    if (k === " " || e.code === "Space") { e.preventDefault(); go(); }
+    else if (k === "r") restart();
+    else if (k === "p") $("btnPulse").click();
+    else if (k === "s") $("btnSplit").click();
+    else if (k === "0") { $("fric").value = 0; $("fric").dispatchEvent(new Event("input")); }
+    else if (e.key === "ArrowRight") { e.preventDefault(); th0 = Math.min(30, th0 + 1); restart(); }
+    else if (e.key === "ArrowLeft") { e.preventDefault(); th0 = Math.max(0, th0 - 1); restart(); }
+    else if (k === "f") {
+      if (document.fullscreenElement) document.exitFullscreen();
+      else document.documentElement.requestFullscreen();
+    }
+  });
+
+  /* ---------------- the loop ---------------- */
+
+  var last = null, lastRAF = 0;
+  function advance(now) {
+    if (last === null) last = now;
+    var dt = Math.min(0.05, (now - last) / 1000);
+    last = now;
+    if (playing) {
+      t = Math.min(T_END, t + dt);
+      if (t >= T_END) { playing = false; paintControls(); }
+    }
+    drawAll();
+  }
+  function frame(ts) { requestAnimationFrame(frame); lastRAF = performance.now(); advance(ts); }
+  requestAnimationFrame(frame);
+  setInterval(function () { var n = performance.now(); if (n - lastRAF > 300) advance(n); }, 60);
+  document.addEventListener("visibilitychange", function () { last = null; });
+
+  recompute(); paintControls(); drawAll();
+})();
+</script>
+</body>
+</html>
