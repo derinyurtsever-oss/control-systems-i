@@ -44,7 +44,8 @@ window.ROOMS = [
           // tone: "must" (red), "should" (orange) or "could" (purple)
           tiers: [
             { label: "Definitely do", tone: "must", items: ["1", "2"] },
-            { label: "If you have time", tone: "should", items: ["3"] }
+            { label: "If you have time", tone: "should", items: ["3", "4", "5"] },
+            { label: "If you are interested", tone: "could", items: ["6"] }
           ]
         }
       },
@@ -138,7 +139,7 @@ window.ROOMS = [
           title: "Lecture recaps",
           lead: "A short AI-generated summary of each lecture, for catching up or revising. If something looks off, the slides are the reference.",
           links: [
-            { label: "This week's recap", href: "recaps/lecture-03.html" },
+            { label: "This week's recap", href: "recaps/lecture-04.html" },
             { label: "All recaps", href: "recaps/" }
           ]
         }

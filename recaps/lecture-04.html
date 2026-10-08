@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<meta name="robots" content="noindex, nofollow">
+<title>Lecture 4 recap — Time Response</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📝</text></svg>">
+<link rel="stylesheet" href="recap.css">
+</head>
+<body>
+<div class="wrap">
+
+  <a class="back" href="./">← All recaps</a>
+
+  <p class="eyebrow">Lecture 4 · 7 October</p>
+  <h1>Time response</h1>
+  <p class="robot"><span>✨</span><span>AI-generated recap — check anything important against the slides</span></p>
+
+  <p class="lede">
+    You get back to a mountain cabin at 3 °C and turn the heater up to 5. The whole lecture is
+    the answer to one question: what happens next — and how to read it off the matrix A without
+    solving anything.
+  </p>
+
+  <div class="card">
+    <h2>The cabin, worked through</h2>
+    <ul>
+      <li>The model is ẋ = −2x + 6u, with time in hours. Start at x₀ = 3, heater set to u = 5.</li>
+      <li>Leave the heater off and the room just cools: <b>3e<sup>−2t</sup></b>. That is the <b>initial-condition response</b>.</li>
+      <li>Start from 0 °C with the heater on: <b>15(1 − e<sup>−2t</sup>)</b>. That is the <b>forced response</b>.</li>
+      <li>Add them: <b>y(t) = 15 − 12e<sup>−2t</sup></b>. It climbs from 3 °C to 15 °C, and it is done in about two hours.</li>
+    </ul>
+  </div>
+
+  <div class="card">
+    <h2>Why you are allowed to split it</h2>
+    <ul>
+      <li><b>Linearity</b> lets you solve the starting state and the input separately and add the answers.</li>
+      <li><b>Causality</b> means the whole past is packed into the state at t = 0, so the history never has to be looked at again.</li>
+      <li><b>Time-invariance</b> means you can always call "now" t = 0.</li>
+      <li>In general: x(t) = e<sup>At</sup>x₀ + ∫ e<sup>A(t−τ)</sup>Bu(τ) dτ. The first term is the system's own dynamics, the second is what the input drives.</li>
+    </ul>
+  </div>
+
+  <div class="card">
+    <h2>The matrix exponential</h2>
+    <ul>
+      <li>e<sup>At</sup> = I + At + (At)²/2! + … — defined so that its derivative is A·e<sup>At</sup>, just as for a scalar.</li>
+      <li>You will never compute it by hand. In MATLAB it is <code>expm(A*t)</code> — with the <b>m</b>; plain <code>exp</code> does something else entirely.</li>
+      <li>For analysis, change coordinates until A is diagonal (or Jordan form). The response does not change, and the exponential of a diagonal matrix is just e<sup>λt</sup> down the diagonal.</li>
+    </ul>
+  </div>
+
+  <div class="card">
+    <h2>Every response is built from four kinds of term</h2>
+    <div class="arch">
+      <div>
+        <h3>Real λ</h3>
+        <p>e<sup>λt</sup> — a plain exponential that dies away, or grows if λ is positive.</p>
+      </div>
+      <div>
+        <h3>Complex σ ± jω</h3>
+        <p>e<sup>σt</sup> sin(ωt + φ) — oscillation inside an envelope that decays or grows.</p>
+      </div>
+      <div>
+        <h3>Repeated λ</h3>
+        <p>t<sup>m</sup> e<sup>λt</sup> — from a Jordan block. With λ = 0 these are plain polynomials.</p>
+      </div>
+      <div>
+        <h3>The input</h3>
+        <p>Plus the input itself and its derivatives, carried through by the forced response.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Reading the response straight off the eigenvalues</h2>
+    <ul>
+      <li>A real eigenvalue gives a time constant <b>τ = 1/|λ|</b>, and its term is gone after about <b>4τ</b>. The cabin has λ = −2 per hour: τ is half an hour, done in two.</li>
+      <li>A complex pair rings about <b>N ≈ 0.6 · ω/|σ|</b> times before it settles.</li>
+      <li>So the <b>ratio</b> of imaginary to real part decides how oscillatory it looks: −1 ± 10j rings about six times, −10 ± 10j barely completes one swing. That ratio comes back later as the damping ratio ζ.</li>
+    </ul>
+  </div>
+
+  <div class="card">
+    <h2>Stability, three ways</h2>
+    <ul>
+      <li><b>Lyapunov stable</b>: start anywhere bounded with no input, and the state stays bounded.</li>
+      <li><b>Asymptotically stable</b>: it also returns to zero.</li>
+      <li><b>BIBO stable</b>: any bounded input gives a bounded output. For minimal LTI systems this is the same as asymptotic stability.</li>
+      <li>The test is the eigenvalues of A. All real parts <b>&lt; 0</b>: asymptotically stable. Real parts <b>≤ 0</b>: Lyapunov stable, provided no eigenvalue on the imaginary axis sits in a larger Jordan block, since that is what creates a growing t<sup>m</sup> term.</li>
+    </ul>
+  </div>
+
+  <div class="keep">
+    <h2>If you keep one thing</h2>
+    <p>
+      The eigenvalues of A already tell you the shape of every response the system can produce.
+      The real part is how fast a term dies away — or grows. The imaginary part is how fast it rings.
+      Stability is just the sign of the real parts.
+    </p>
+  </div>
+
+  <div class="card">
+    <h2>Worth doing this week</h2>
+    <ul>
+      <li>Read <b>Åström &amp; Murray, chapters 4–5</b>.</li>
+      <li>Redo the cabin with the heater on 2 instead of 5. Before calculating, say where it ends up and how long it takes — then check.</li>
+      <li>Take a few 2×2 A matrices, find the eigenvalues, and sketch the response shape <i>before</i> running <code>expm</code> to see if you were right.</li>
+    </ul>
+  </div>
+
+  <p class="fine">
+    Written by AI from the lecture slides, so treat it as a reminder rather than a source.<br>
+    <a href="https://video.ethz.ch/lectures/d-mavt/2026/autumn/151-0591-00L">Lecture recording</a> ·
+    <a href="https://idsc.ethz.ch/education/lectures/control-systems-i.html">Course page</a>
+  </p>
+
+</div>
+</body>
+</html>
