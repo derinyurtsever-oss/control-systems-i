@@ -1,0 +1,611 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<meta name="robots" content="noindex, nofollow">
+<title>Shake the spring</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>〰️</text></svg>">
+<style>
+:root {
+  color-scheme: light;
+  --ink:   #1d1d1f;
+  --ink-2: #6e6e73;
+  --ink-3: #a1a1a6;
+  --line:  #e0e3e8;
+  --bg:    #f6f7f9;
+  --card:  #ffffff;
+
+  /* the worksheet's colours: the hand is red, the mass is blue */
+  --hand:  #ff3b30;
+  --mass:  #0a84ff;
+  --delay: #8e44ad;
+  --blue:  #0a84ff;
+
+  --font: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text",
+          "Segoe UI Variable Display", "Segoe UI", system-ui, sans-serif;
+  --mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+}
+
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+
+body {
+  margin: 0; min-height: 100vh;
+  background: var(--bg); color: var(--ink);
+  font-family: var(--font); font-size: 16px; letter-spacing: -0.01em;
+  -webkit-font-smoothing: antialiased;
+  -webkit-user-select: none; user-select: none;
+}
+
+.wrap { max-width: 1260px; margin: 0 auto; padding: 16px 20px 24px; display: flex; flex-direction: column; gap: 12px; }
+:focus-visible { outline: 2.5px solid var(--blue); outline-offset: 2px; border-radius: 10px; }
+
+.top { display: flex; align-items: center; justify-content: space-between; gap: 14px; flex-wrap: wrap; }
+.top h1 { margin: 0; font-size: clamp(18px, 2.1vw, 25px); font-weight: 650; letter-spacing: -0.025em; }
+.top .back { font-size: 14px; color: var(--blue); text-decoration: none; }
+.top .back:hover { text-decoration: underline; }
+.sub { margin: -6px 0 0; color: var(--ink-2); font-size: 15px; }
+
+.card {
+  background: var(--card); border-radius: 20px; padding: 14px 16px;
+  box-shadow: 0 1px 2px rgba(16,24,40,.04), 0 12px 30px -18px rgba(16,24,40,.25);
+}
+.formula { margin: -4px 0 6px; font-size: 14px; color: var(--ink-2); font-weight: 600; }
+.card h2 { margin: 0 0 8px; font-size: 13px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; color: var(--ink-3); }
+
+.stage { display: grid; grid-template-columns: minmax(0, 0.42fr) minmax(0, 1fr); gap: 16px; align-items: center; }
+.below { display: grid; grid-template-columns: minmax(0, 0.9fr) minmax(0, 0.9fr) minmax(0, 1.5fr); gap: 12px; align-items: stretch; }
+
+canvas { display: block; width: 100%; height: auto; }
+
+.legend { display: flex; gap: 16px; justify-content: center; flex-wrap: wrap; font-size: 13.5px; color: var(--ink-2); margin-top: 6px; }
+.legend span { display: inline-flex; align-items: center; gap: 6px; }
+.legend i { width: 16px; height: 4px; border-radius: 2px; background: var(--c); }
+
+/* the two numbers */
+.nums { display: grid; gap: 14px; }
+.num .k { font-size: 13.5px; color: var(--ink-2); font-weight: 600; }
+.num .v { font-size: clamp(30px, 3.6vw, 44px); font-weight: 700; letter-spacing: -0.03em; font-variant-numeric: tabular-nums; line-height: 1.1; }
+.num .v.mass { color: var(--mass); }
+.num .v.delay { color: var(--delay); }
+.num .d { font-size: 13.5px; color: var(--ink-3); }
+.num.wait .v { color: var(--ink-3); }
+.omega { font-size: 15px; color: var(--ink-2); }
+.omega b { color: var(--ink); font-variant-numeric: tabular-nums; }
+.bar { height: 6px; border-radius: 999px; background: #eef0f3; overflow: hidden; margin-top: 6px; }
+.bar i { display: block; height: 100%; width: 0; background: var(--ink-3); border-radius: inherit; }
+
+.say {
+  min-height: 34px; margin: 2px 0;
+  font-size: clamp(16px, 2vw, 22px); font-weight: 550; letter-spacing: -0.02em;
+  text-align: center;
+}
+.say .dim { color: var(--ink-3); }
+
+.controls { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; justify-content: center; }
+button {
+  font: inherit; font-size: 15px; font-weight: 600;
+  padding: 10px 16px; border: 0; border-radius: 999px;
+  background: var(--card); color: var(--ink);
+  box-shadow: inset 0 0 0 1px var(--line); cursor: pointer; transition: background .15s;
+}
+button:hover { background: #f0f2f5; }
+button.primary { background: var(--blue); color: #fff; box-shadow: none; min-width: 120px; }
+button.primary:hover { background: #0070e0; }
+button[aria-pressed="true"] { background: var(--ink); color: #fff; box-shadow: none; }
+button.w[aria-pressed="true"] { background: var(--hand); }
+kbd { font: inherit; font-size: 11px; font-weight: 700; opacity: .55; margin-left: 7px; letter-spacing: .04em; }
+.sep { width: 1px; height: 26px; background: var(--line); margin: 0 2px; }
+
+.slider { display: flex; align-items: center; gap: 10px; padding: 6px 14px; background: var(--card); border-radius: 999px; box-shadow: inset 0 0 0 1px var(--line); }
+.slider label { font-size: 14px; font-weight: 600; color: var(--ink-2); white-space: nowrap; }
+.slider output { font-size: 14px; font-weight: 700; font-variant-numeric: tabular-nums; min-width: 40px; text-align: right; }
+input[type=range] { -webkit-appearance: none; appearance: none; width: 160px; height: 5px; border-radius: 999px; background: var(--line); }
+input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; appearance: none; width: 19px; height: 19px; border-radius: 50%; background: #fff; border: 0; box-shadow: 0 1px 4px rgba(0,0,0,.32); cursor: pointer; }
+input[type=range]::-moz-range-thumb { width: 19px; height: 19px; border-radius: 50%; background: #fff; border: 0; box-shadow: 0 1px 4px rgba(0,0,0,.32); cursor: pointer; }
+
+details.sheet { background: var(--card); border-radius: 16px; box-shadow: inset 0 0 0 1px var(--line); padding: 12px 16px; font-size: 14.5px; }
+details.sheet summary { cursor: pointer; font-weight: 650; }
+details.sheet ol { margin: 12px 0 0; padding-left: 20px; display: grid; gap: 10px; color: var(--ink-2); }
+details.sheet b { color: var(--ink); }
+details.sheet .line { color: var(--ink); font-style: italic; }
+
+@media (max-width: 980px) {
+  .below { grid-template-columns: 1fr 1fr; }
+  .below .gcard { grid-column: 1 / -1; }
+  kbd { display: none; }
+}
+@media (max-width: 600px) {
+  .stage { grid-template-columns: minmax(0, 0.45fr) minmax(0, 1fr); gap: 8px; }
+  .below { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+
+  <div class="top">
+    <h1>Shake the spring</h1>
+    <a class="back" href="../">← back to the room</a>
+  </div>
+  <p class="sub">A mass on a rubber band. Move the hand up and down as u(t) = cos(ωt) and watch the mass y(t): ÿ + 0.4ẏ + y = u.</p>
+
+  <section class="card">
+    <div class="stage">
+      <canvas id="scene" width="500" height="760"></canvas>
+      <div>
+        <canvas id="plot" width="1400" height="640"></canvas>
+        <div class="legend">
+          <span><i style="--c: var(--hand)"></i>hand u(t) = cos(ωt)</span>
+          <span><i style="--c: var(--mass)"></i>mass y(t)</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <p class="say" id="say">Pick a speed for the hand. Before you press play, guess: how far will the mass swing?</p>
+
+  <div class="below">
+    <section class="card">
+      <h2>What the spring does</h2>
+      <div class="nums">
+        <div class="omega">hand speed ω = <b id="wOut">1.00</b> rad/s</div>
+        <div class="num" id="numM">
+          <div class="k">stretch |G(jω)|</div>
+          <div class="v mass" id="vM">—</div>
+          <div class="d" id="dM">the mass swings this many times as far as the hand</div>
+        </div>
+        <div class="num" id="numP">
+          <div class="k">delay ∠G(jω)</div>
+          <div class="v delay" id="vP">—</div>
+          <div class="d" id="dP"></div>
+        </div>
+        <div class="bar" id="bar"><i></i></div>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>One complex number</h2>
+      <canvas id="phasor" width="600" height="600"></canvas>
+    </section>
+
+    <section class="card gcard">
+      <h2>Every speed at once</h2>
+      <p class="formula">G(jω) = 1 / ((jω)² + 0.4·jω + 1)</p>
+      <canvas id="bode" width="1000" height="640"></canvas>
+    </section>
+  </div>
+
+  <div class="controls">
+    <button class="w" type="button" data-w="0.3">ω₁ · slow<kbd>1</kbd></button>
+    <button class="w" type="button" data-w="1">ω₂<kbd>2</kbd></button>
+    <button class="w" type="button" data-w="2.5">ω₃ · fast<kbd>3</kbd></button>
+    <div class="slider">
+      <label for="wIn">any ω</label>
+      <input type="range" id="wIn" min="0.1" max="3" step="0.05" value="1">
+      <output id="wInOut">1.00</output>
+    </div>
+  </div>
+  <div class="controls">
+    <button class="primary" id="btnGo" type="button">Play<kbd>SPACE</kbd></button>
+    <button id="btnReset" type="button">Restart<kbd>R</kbd></button>
+    <span class="sep"></span>
+    <button id="btnSkip" type="button" aria-pressed="false">Skip the start-up<kbd>S</kbd></button>
+    <button id="btnCurve" type="button" aria-pressed="false">Show G(jω) for every ω<kbd>G</kbd></button>
+  </div>
+
+  <details class="sheet">
+    <summary>How to run this</summary>
+    <ol>
+      <li><b>The three experiments from page 3.</b> Press 1, 2, 3 in turn. Before each one, ask the room how far the
+        mass will swing compared to the hand. Let the start-up die out (the grey bar), then read off the two numbers.
+        <div class="line">"Same frequency as the hand, every time. Only the size and the delay change."</div></li>
+      <li><b>ω₂ is the surprise.</b> The hand moves at the spring's own speed: the mass swings 2.5× as far, exactly a quarter
+        period late. ω₃: it barely moves and goes the opposite way to the hand (half a period late).</li>
+      <li><b>One complex number (page 4).</b> Point at the arrows: the blue arrow is always the red one, stretched and turned
+        back by the same angle. What you see on the plot is just their shadows on the real axis.</li>
+      <li><b>Every speed at once.</b> Each experiment you finish drops a dot. Then press G: the curve is |G(jω)| and ∠G(jω),
+        computed without solving the ODE once. Drag the slider along it — the peak near ω = 1 is resonance.</li>
+    </ol>
+    <p style="margin:14px 0 0; color: var(--ink-2)">
+      m = k = 1, c = 0.4. The mass starts hanging still under the hand. Time runs 2.5× faster than real time.<br>
+      Keys: <b>1 2 3</b> experiments · <b>←/→</b> nudge ω · <b>space</b> play / pause · <b>R</b> restart · <b>S</b> skip the start-up · <b>G</b> curve · <b>F</b> fullscreen.
+    </p>
+  </details>
+
+</div>
+
+<script>
+(function () {
+  "use strict";
+
+  var $ = function (id) { return document.getElementById(id); };
+  var C = 0.4;                // ÿ + 0.4ẏ + y = u
+  var SPEED = 2.5;            // simulated seconds per real second
+  var H = 0.005;              // integration step
+  var WINDOW = 40;            // seconds shown on the plot
+  var TOL = 0.03;             // the start-up counts as gone below this
+
+  var w = 1, skip = false, curve = false, playing = false;
+  var t = 0, y = 1, v = 0;
+  var hist = { t: [], u: [], y: [] };
+  var settleT = 0, logged = false;
+  var tried = [];             // finished experiments: { w, M, phi }
+
+  /* ---------------- the transfer function on the imaginary axis ---------------- */
+
+  function G(om) {            // 1 / (1 - ω² + 0.4jω)
+    var re = 1 - om * om, im = C * om, d = re * re + im * im;
+    var gr = re / d, gi = -im / d;
+    return { M: Math.hypot(gr, gi), phi: Math.atan2(gi, gr) };   // phi in (-π, 0]
+  }
+
+  /* ---------------- the run ---------------- */
+
+  function restart() {
+    t = 0; playing = false;
+    var g = G(w);
+    var yss = g.M * Math.cos(g.phi), vss = -g.M * w * Math.sin(g.phi);
+    if (skip) { y = yss; v = vss; settleT = 0; }
+    else {
+      // the mass hangs still under the hand (u = 1 at t = 0, so y = 1, no tension)
+      y = 1; v = 0;
+      var gap = Math.hypot(y - yss, v - vss);
+      settleT = gap > TOL ? Math.log(gap / TOL) / (C / 2) : 0;
+    }
+    logged = false;
+    hist = { t: [0], u: [1], y: [y] };
+    paint();
+  }
+
+  function step(dt) {
+    var n = Math.max(1, Math.round(dt / H)), h = dt / n;
+    function f(tt, p, q) { return [q, Math.cos(w * tt) - C * q - p]; }
+    for (var i = 0; i < n; i++) {
+      var k1 = f(t, y, v);
+      var k2 = f(t + h / 2, y + k1[0] * h / 2, v + k1[1] * h / 2);
+      var k3 = f(t + h / 2, y + k2[0] * h / 2, v + k2[1] * h / 2);
+      var k4 = f(t + h, y + k3[0] * h, v + k3[1] * h);
+      y += h / 6 * (k1[0] + 2 * k2[0] + 2 * k3[0] + k4[0]);
+      v += h / 6 * (k1[1] + 2 * k2[1] + 2 * k3[1] + k4[1]);
+      t += h;
+      if (t - hist.t[hist.t.length - 1] >= 0.02) { hist.t.push(t); hist.u.push(Math.cos(w * t)); hist.y.push(y); }
+    }
+    while (hist.t.length > 2 && hist.t[1] < t - WINDOW - 2) { hist.t.shift(); hist.u.shift(); hist.y.shift(); }
+
+    if (!logged && t >= settleT) {
+      logged = true;
+      var g = G(w);
+      tried = tried.filter(function (e) { return Math.abs(e.w - w) > 0.02; });
+      tried.push({ w: w, M: g.M, phi: g.phi });
+      settledSay();
+    }
+  }
+
+  /* ---------------- text ---------------- */
+
+  function delayWords(phi) {
+    var frac = -phi / (2 * Math.PI);
+    if (frac < 0.03) return "barely late";
+    if (Math.abs(frac - 0.25) < 0.015) return "¼ period late";
+    if (frac > 0.46) return "≈ ½ period late — it moves against the hand";
+    return frac.toFixed(2) + " of a period late";
+  }
+
+  function settledSay() {
+    var g = G(w), frac = -g.phi / (2 * Math.PI);
+    var msg;
+    if (g.M > 1.6) msg = "Near the spring's own speed: the mass swings <b style='color:var(--mass)'>" + g.M.toFixed(1) + "×</b> as far as the hand, a quarter period behind.";
+    else if (g.M < 0.5) msg = "Too fast for the spring: the mass hardly moves, and it moves the <b>opposite</b> way to the hand.";
+    else if (frac < 0.06) msg = "Slow hand: the mass simply follows it. <span class='dim'>Same frequency, about the same size.</span>";
+    else msg = "Same frequency as the hand. <span class='dim'>Only the size and the delay have changed.</span>";
+    say(msg);
+  }
+
+  function say(html) { $("say").innerHTML = html; }
+
+  function paint() {
+    $("btnGo").innerHTML = (playing ? "Pause" : t > 0 ? "Resume" : "Play") + "<kbd>SPACE</kbd>";
+    $("btnSkip").setAttribute("aria-pressed", String(skip));
+    $("btnCurve").setAttribute("aria-pressed", String(curve));
+    Array.prototype.forEach.call(document.querySelectorAll("button.w"), function (b) {
+      b.setAttribute("aria-pressed", String(Math.abs(+b.dataset.w - w) < 1e-9));
+    });
+    $("wIn").value = w; $("wInOut").textContent = w.toFixed(2); $("wOut").textContent = w.toFixed(2);
+    paintNumbers();
+  }
+
+  function paintNumbers() {
+    var g = G(w), ready = t >= settleT && (t > 0 || skip);
+    $("numM").className = "num" + (ready ? "" : " wait");
+    $("numP").className = "num" + (ready ? "" : " wait");
+    if (ready) {
+      $("vM").textContent = "× " + g.M.toFixed(2);
+      $("vP").textContent = String(Math.round(g.phi * 180 / Math.PI)).replace("-", "−") + "°";
+      $("dP").textContent = delayWords(g.phi);
+    } else {
+      $("vM").textContent = "× ?";
+      $("vP").textContent = "?";
+      $("dP").textContent = t > 0 ? "wait for the start-up to die out…" : "press play";
+    }
+    var p = settleT > 0 ? Math.min(1, t / settleT) : 1;
+    $("bar").firstElementChild.style.width = (p * 100) + "%";
+    $("bar").style.visibility = settleT > 0 && p < 1 ? "visible" : "hidden";
+  }
+
+  /* ---------------- drawing ---------------- */
+
+  var FONT = getComputedStyle(document.documentElement).getPropertyValue("--font");
+  function col(n) { return getComputedStyle(document.documentElement).getPropertyValue("--" + n).trim(); }
+
+  var PX = 42;                // pixels per unit of displacement, the same for hand and mass
+
+  function drawScene() {
+    var cv = $("scene"), ctx = cv.getContext("2d"), W = cv.width, Hh = cv.height;
+    ctx.clearRect(0, 0, W, Hh);
+    var cx = W / 2 + 20;
+    var hand0 = 140, mass0 = 520;
+    var u = Math.cos(w * t);
+    var hy = hand0 - u * PX, my = mass0 - y * PX;
+
+    // rest lines
+    ctx.strokeStyle = "#e6e8ec"; ctx.lineWidth = 2; ctx.setLineDash([8, 8]);
+    [hand0, mass0].forEach(function (yy) { ctx.beginPath(); ctx.moveTo(30, yy); ctx.lineTo(W - 20, yy); ctx.stroke(); });
+    ctx.setLineDash([]);
+
+    // how far each one swings: a bracket to the left
+    var g = G(w);
+    function bracket(y0, amp, colour) {
+      ctx.strokeStyle = colour; ctx.lineWidth = 4; ctx.lineCap = "round";
+      ctx.beginPath();
+      ctx.moveTo(56, y0 - amp * PX); ctx.lineTo(44, y0 - amp * PX); ctx.lineTo(44, y0 + amp * PX); ctx.lineTo(56, y0 + amp * PX);
+      ctx.stroke();
+    }
+    bracket(hand0, 1, "rgba(255,59,48,.45)");
+    if (t >= settleT && (t > 0 || skip)) bracket(mass0, g.M, "rgba(10,132,255,.45)");
+
+    // the spring, from the hand to the mass
+    var top = hy + 32, bot = my - 44, coils = 12, amp = 26;
+    ctx.strokeStyle = "#8e8e93"; ctx.lineWidth = 4; ctx.lineJoin = "round";
+    ctx.beginPath(); ctx.moveTo(cx, top); ctx.lineTo(cx, top + 14);
+    var seg = (bot - top - 28) / coils;
+    for (var i = 0; i < coils; i++) ctx.lineTo(cx + (i % 2 ? -amp : amp), top + 14 + seg * (i + 0.5));
+    ctx.lineTo(cx, bot - 14); ctx.lineTo(cx, bot); ctx.stroke();
+
+    // the hand
+    ctx.fillStyle = "#fff0ef"; ctx.strokeStyle = col("hand"); ctx.lineWidth = 4;
+    roundRect(ctx, cx - 80, hy - 32, 160, 64, 14); ctx.fill(); ctx.stroke();
+    ctx.fillStyle = col("hand"); ctx.font = "700 30px " + FONT; ctx.textAlign = "center"; ctx.textBaseline = "middle";
+    ctx.fillText("hand", cx, hy);
+
+    // the mass
+    ctx.fillStyle = "#eaf3ff"; ctx.strokeStyle = col("mass");
+    roundRect(ctx, cx - 64, my - 44, 128, 88, 12); ctx.fill(); ctx.stroke();
+    ctx.fillStyle = col("mass"); ctx.font = "700 36px " + FONT;
+    ctx.fillText("m", cx, my);
+
+    // labels
+    ctx.font = "700 26px " + FONT; ctx.textAlign = "left";
+    ctx.fillStyle = col("hand"); ctx.fillText("u", 14, hand0);
+    ctx.fillStyle = col("mass"); ctx.fillText("y", 14, mass0);
+  }
+
+  function roundRect(ctx, x, y0, wd, ht, r) {
+    ctx.beginPath();
+    ctx.moveTo(x + r, y0); ctx.arcTo(x + wd, y0, x + wd, y0 + ht, r); ctx.arcTo(x + wd, y0 + ht, x, y0 + ht, r);
+    ctx.arcTo(x, y0 + ht, x, y0, r); ctx.arcTo(x, y0, x + wd, y0, r); ctx.closePath();
+  }
+
+  function drawPlot() {
+    var cv = $("plot"), ctx = cv.getContext("2d"), W = cv.width, Hh = cv.height;
+    var padL = 70, padR = 24, padT = 24, padB = 56, LIM = 3;
+    ctx.clearRect(0, 0, W, Hh);
+    var t0 = Math.max(0, t - WINDOW * 0.9);
+    var X = function (tt) { return padL + (tt - t0) / WINDOW * (W - padL - padR); };
+    var Y = function (v) { return padT + (1 - (v + LIM) / (2 * LIM)) * (Hh - padT - padB); };
+
+    // the start-up, shaded until it has died out
+    if (settleT > 0 && t0 < settleT) {
+      var xe = X(Math.min(settleT, t0 + WINDOW));
+      ctx.fillStyle = "rgba(142,142,147,.07)"; ctx.fillRect(X(t0), padT, xe - X(t0), Hh - padT - padB);
+      if (t >= settleT) {
+        ctx.strokeStyle = "#c7cbd1"; ctx.lineWidth = 2; ctx.setLineDash([6, 8]);
+        ctx.beginPath(); ctx.moveTo(xe, padT); ctx.lineTo(xe, Hh - padB); ctx.stroke(); ctx.setLineDash([]);
+      }
+      ctx.fillStyle = "#a1a1a6"; ctx.font = "600 22px " + FONT; ctx.textAlign = "left"; ctx.textBaseline = "top";
+      if (X(t0) + 10 < xe - 60) ctx.fillText("start-up", X(t0) + 10, padT + 8);
+    }
+
+    ctx.strokeStyle = "#edeff3"; ctx.lineWidth = 2;
+    ctx.fillStyle = "#a1a1a6"; ctx.font = "600 24px " + FONT; ctx.textAlign = "right"; ctx.textBaseline = "middle";
+    [-2, -1, 0, 1, 2].forEach(function (g) {
+      ctx.beginPath(); ctx.moveTo(padL, Y(g)); ctx.lineTo(W - padR, Y(g)); ctx.stroke();
+      ctx.fillText(String(g).replace("-", "−"), padL - 14, Y(g));
+    });
+    ctx.textAlign = "center"; ctx.textBaseline = "top";
+    for (var s = Math.ceil(t0 / 10) * 10; s <= t0 + WINDOW; s += 10) ctx.fillText(s + " s", X(s), Hh - padB + 12);
+
+    function trace(arr, colour, width) {
+      ctx.strokeStyle = colour; ctx.lineWidth = width; ctx.lineJoin = "round"; ctx.lineCap = "round";
+      ctx.beginPath(); var pen = false;
+      for (var i = 0; i < hist.t.length; i++) {
+        if (hist.t[i] < t0) continue;
+        var vv = Math.max(-LIM, Math.min(LIM, arr[i]));
+        if (!pen) { ctx.moveTo(X(hist.t[i]), Y(vv)); pen = true; } else ctx.lineTo(X(hist.t[i]), Y(vv));
+      }
+      ctx.stroke();
+    }
+    trace(hist.u, col("hand"), 5);
+    trace(hist.y, col("mass"), 6);
+
+    // now
+    var xn = X(t);
+    ctx.fillStyle = col("hand"); ctx.beginPath(); ctx.arc(xn, Y(Math.cos(w * t)), 9, 0, 7); ctx.fill();
+    ctx.fillStyle = col("mass"); ctx.beginPath(); ctx.arc(xn, Y(Math.max(-LIM, Math.min(LIM, y))), 10, 0, 7); ctx.fill();
+  }
+
+  function drawPhasor() {
+    var cv = $("phasor"), ctx = cv.getContext("2d"), W = cv.width;
+    var c = W / 2, S = 92;
+    ctx.clearRect(0, 0, W, W);
+    var g = G(w), a = w * t;
+
+    ctx.strokeStyle = "#e6e8ec"; ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.moveTo(20, c); ctx.lineTo(W - 20, c); ctx.moveTo(c, 20); ctx.lineTo(c, W - 20); ctx.stroke();
+    ctx.beginPath(); ctx.arc(c, c, S, 0, 7); ctx.stroke();
+    ctx.fillStyle = "#a1a1a6"; ctx.font = "600 26px " + FONT; ctx.textAlign = "right"; ctx.textBaseline = "bottom";
+    ctx.fillText("real axis", W - 22, c - 8);
+
+    function arrow(len, ang, colour, width) {
+      var x = c + len * S * Math.cos(ang), yy = c - len * S * Math.sin(ang);
+      ctx.strokeStyle = colour; ctx.fillStyle = colour; ctx.lineWidth = width; ctx.lineCap = "round";
+      ctx.beginPath(); ctx.moveTo(c, c); ctx.lineTo(x, yy); ctx.stroke();
+      var h = 18, q = Math.atan2(yy - c, x - c);
+      ctx.beginPath(); ctx.moveTo(x, yy);
+      ctx.lineTo(x - h * Math.cos(q - 0.4), yy - h * Math.sin(q - 0.4));
+      ctx.lineTo(x - h * Math.cos(q + 0.4), yy - h * Math.sin(q + 0.4));
+      ctx.closePath(); ctx.fill();
+      // the shadow on the real axis: what you actually see
+      ctx.setLineDash([4, 6]); ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.moveTo(x, yy); ctx.lineTo(x, c); ctx.stroke(); ctx.setLineDash([]);
+      ctx.beginPath(); ctx.arc(x, c, 8, 0, 7); ctx.fill();
+      return [x, yy];
+    }
+
+    // the delay, as an arc from the hand's arrow back to the mass's
+    if (Math.abs(g.phi) > 0.03) {
+      ctx.strokeStyle = col("delay"); ctx.lineWidth = 4;
+      ctx.beginPath(); ctx.arc(c, c, S * 0.45, -a, -(a + g.phi), false); ctx.stroke();
+    }
+    arrow(Math.min(g.M, 2.9), a + g.phi, col("mass"), 7);
+    arrow(1, a, col("hand"), 6);
+
+    ctx.font = "700 30px " + FONT; ctx.textAlign = "left"; ctx.textBaseline = "top";
+    ctx.fillStyle = col("hand"); ctx.fillText("hand", 18, 14);
+    ctx.fillStyle = col("mass"); ctx.fillText("mass", 18, 50);
+    ctx.fillStyle = col("delay"); ctx.textBaseline = "bottom"; ctx.font = "700 30px " + FONT;
+    ctx.fillText("× " + g.M.toFixed(2) + ", turned " + String(Math.round(g.phi * 180 / Math.PI)).replace("-", "−") + "°", 18, W - 14);
+  }
+
+  function drawBode() {
+    var cv = $("bode"), ctx = cv.getContext("2d"), W = cv.width, Hh = cv.height;
+    ctx.clearRect(0, 0, W, Hh);
+    var padL = 96, padR = 24, WMAX = 3;
+    var X = function (om) { return padL + om / WMAX * (W - padL - padR); };
+    // two strips: stretch on top, delay below
+    var A = { top: 20, bot: 360, max: 3 }, P = { top: 410, bot: 580, max: 180 };
+    var YA = function (m) { return A.bot - m / A.max * (A.bot - A.top); };
+    var YP = function (deg) { return P.top + deg / P.max * (P.bot - P.top); };   // 0 at the top, -180 at the bottom
+
+    ctx.font = "600 22px " + FONT; ctx.fillStyle = "#a1a1a6"; ctx.strokeStyle = "#edeff3"; ctx.lineWidth = 2;
+    ctx.textAlign = "right"; ctx.textBaseline = "middle";
+    [0, 1, 2, 3].forEach(function (m) { ctx.beginPath(); ctx.moveTo(padL, YA(m)); ctx.lineTo(W - padR, YA(m)); ctx.stroke(); ctx.fillText("×" + m, padL - 14, YA(m)); });
+    [0, 90, 180].forEach(function (d) { ctx.beginPath(); ctx.moveTo(padL, YP(d)); ctx.lineTo(W - padR, YP(d)); ctx.stroke(); ctx.fillText(d ? "−" + d + "°" : "0°", padL - 14, YP(d)); });
+    ctx.textAlign = "center"; ctx.textBaseline = "top";
+    [0, 1, 2, 3].forEach(function (om) { ctx.fillText(String(om), X(om), P.bot + 12); });
+    ctx.fillText("ω →", X(1.5), P.bot + 12);
+    ctx.textAlign = "left"; ctx.fillStyle = col("mass"); ctx.fillText("stretch", padL + 10, A.top);
+    ctx.fillStyle = col("delay"); ctx.fillText("delay", padL + 10, P.top + 8);
+
+    if (curve) {
+      ctx.lineWidth = 5; ctx.lineJoin = "round";
+      ctx.strokeStyle = col("mass"); ctx.beginPath();
+      for (var i = 0; i <= 300; i++) { var om = i / 300 * WMAX, g = G(om); var p = [X(om), YA(Math.min(A.max, g.M))]; i ? ctx.lineTo(p[0], p[1]) : ctx.moveTo(p[0], p[1]); }
+      ctx.stroke();
+      ctx.strokeStyle = col("delay"); ctx.beginPath();
+      for (var k = 0; k <= 300; k++) { var o2 = k / 300 * WMAX, g2 = G(o2); var q = [X(o2), YP(-g2.phi * 180 / Math.PI)]; k ? ctx.lineTo(q[0], q[1]) : ctx.moveTo(q[0], q[1]); }
+      ctx.stroke();
+    }
+
+    // the speed we are at
+    ctx.strokeStyle = "rgba(255,59,48,.5)"; ctx.lineWidth = 3; ctx.setLineDash([6, 8]);
+    ctx.beginPath(); ctx.moveTo(X(w), A.top); ctx.lineTo(X(w), P.bot); ctx.stroke(); ctx.setLineDash([]);
+
+    // the experiments we have finished
+    tried.forEach(function (e) {
+      [[X(e.w), YA(e.M), col("mass")], [X(e.w), YP(-e.phi * 180 / Math.PI), col("delay")]].forEach(function (d) {
+        ctx.fillStyle = "#fff"; ctx.beginPath(); ctx.arc(d[0], d[1], 13, 0, 7); ctx.fill();
+        ctx.fillStyle = d[2]; ctx.beginPath(); ctx.arc(d[0], d[1], 9, 0, 7); ctx.fill();
+      });
+    });
+    if (!curve && !tried.length) {
+      ctx.fillStyle = "#a1a1a6"; ctx.font = "600 24px " + FONT; ctx.textAlign = "center"; ctx.textBaseline = "middle";
+      ctx.fillText("finish an experiment and its dot lands here", X(1.5), YA(1.6));
+    }
+  }
+
+  function drawAll() { drawScene(); drawPlot(); drawPhasor(); drawBode(); }
+
+  /* ---------------- controls ---------------- */
+
+  function setW(om, msg) {
+    w = Math.round(om * 100) / 100;
+    restart();
+    say(msg || "ω = " + w.toFixed(2) + ". <span class='dim'>Guess first: bigger or smaller than the hand, and how late?</span>");
+  }
+
+  var PRESET_SAY = {
+    "0.3": "ω₁: a slow hand. <span class='dim'>Guess: how far does the mass swing?</span>",
+    "1": "ω₂: a bit faster. <span class='dim'>Guess before you press play.</span>",
+    "2.5": "ω₃: a fast hand. <span class='dim'>Guess: more or less than the hand?</span>"
+  };
+
+  Array.prototype.forEach.call(document.querySelectorAll("button.w"), function (b) {
+    b.addEventListener("click", function () { setW(+b.dataset.w, PRESET_SAY[b.dataset.w]); });
+  });
+  $("wIn").addEventListener("input", function () { setW(+this.value); playing = true; paint(); });
+
+  function go() {
+    playing = !playing;
+    if (playing && t === 0 && !skip) say("The mass starts hanging still. <span class='dim'>First there is a start-up — wait for it to die out.</span>");
+    paint();
+  }
+  $("btnGo").addEventListener("click", go);
+  $("btnReset").addEventListener("click", function () { restart(); });
+  $("btnSkip").addEventListener("click", function () {
+    skip = !skip; restart();
+    say(skip ? "Start-up skipped: <span class='dim'>straight to the steady state.</span>" : "With the start-up: <span class='dim'>the mass starts hanging still.</span>");
+  });
+  $("btnCurve").addEventListener("click", function () {
+    curve = !curve; paint();
+    if (curve) say("G(jω) predicts every dot — <span class='dim'>without solving the ODE even once.</span>");
+  });
+
+  document.addEventListener("keydown", function (e) {
+    var k = e.key.toLowerCase();
+    if (k === " " || e.code === "Space") { e.preventDefault(); go(); }
+    else if (k === "1" || k === "2" || k === "3") document.querySelectorAll("button.w")[+k - 1].click();
+    else if (k === "r") restart();
+    else if (k === "s") $("btnSkip").click();
+    else if (k === "g") $("btnCurve").click();
+    else if (e.key === "ArrowRight") { e.preventDefault(); setW(Math.min(3, w + 0.05)); playing = true; paint(); }
+    else if (e.key === "ArrowLeft") { e.preventDefault(); setW(Math.max(0.1, w - 0.05)); playing = true; paint(); }
+    else if (k === "f") {
+      if (document.fullscreenElement) document.exitFullscreen();
+      else document.documentElement.requestFullscreen();
+    }
+  });
+
+  /* ---------------- the loop ---------------- */
+
+  var last = null, lastRAF = 0;
+  function advance(now) {
+    if (last === null) last = now;
+    var dt = Math.min(0.05, (now - last) / 1000);
+    last = now;
+    if (playing) { step(dt * SPEED); paintNumbers(); }
+    drawAll();
+  }
+  function frame(ts) { requestAnimationFrame(frame); lastRAF = performance.now(); advance(ts); }
+  requestAnimationFrame(frame);
+  setInterval(function () { var n = performance.now(); if (n - lastRAF > 300) advance(n); }, 60);
+  document.addEventListener("visibilitychange", function () { last = null; });
+
+  restart(); drawAll();
+})();
+</script>
+</body>
+</html>

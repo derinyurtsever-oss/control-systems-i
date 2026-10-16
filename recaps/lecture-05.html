@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<meta name="robots" content="noindex, nofollow">
+<title>Lecture 5 recap — Transfer Functions</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📝</text></svg>">
+<link rel="stylesheet" href="recap.css">
+</head>
+<body>
+<div class="wrap">
+
+  <a class="back" href="./">← All recaps</a>
+
+  <p class="eyebrow">Lecture 5 · 14 October</p>
+  <h1>Transfer functions</h1>
+  <p class="robot"><span>✨</span><span>AI-generated recap — check anything important against the slides</span></p>
+
+  <p class="lede">
+    Last week the initial-condition response became easy: just read the eigenvalues. The forced
+    response was still a convolution integral you had to grind through for every new input. This
+    lecture makes it just as easy, using one idea: there is a kind of input that every LTI system
+    simply hands back, multiplied by a number.
+  </p>
+
+  <div class="card">
+    <h2>The trick: exponential inputs</h2>
+    <ul>
+      <li>Feed in u(t) = e<sup>st</sup>, where s = σ + jω is a complex number. Real s gives a growing or decaying exponential, imaginary s gives "half" a sinusoid, and anything in between gives a sinusoid inside an exponential envelope.</li>
+      <li>Work the integral through and the output splits cleanly in two:
+        <b>Ce<sup>At</sup>[x(0) − (sI − A)<sup>−1</sup>B]</b>, the <b>transient</b>, plus
+        <b>[C(sI − A)<sup>−1</sup>B + D] e<sup>st</sup></b>, the <b>steady state</b>.</li>
+      <li>If the system is asymptotically stable the transient dies out, and what is left is just the input times a number.</li>
+    </ul>
+  </div>
+
+  <div class="card">
+    <h2>The transfer function</h2>
+    <ul>
+      <li>That number is <b>G(s) = C(sI − A)<sup>−1</sup>B + D</b>: in steady state the input e<sup>st</sup> comes out as G(s)·e<sup>st</sup>.</li>
+      <li>For a finite-dimensional system it is always a <b>proper</b> ratio of two polynomials in s: the numerator degree is never higher than the denominator degree.</li>
+      <li>Two examples: ẋ = −x + u gives 1/(s + 1). The mass-spring-damper with m = k = c = 1 gives 1/(s² + s + 1).</li>
+      <li>An integrator is 1/s and a differentiator is s. The differentiator is not proper, so no state-space model realizes it exactly; in practice you use s/(εs + 1) instead.</li>
+    </ul>
+  </div>
+
+  <div class="card">
+    <h2>Sinusoid in, sinusoid out</h2>
+    <ul>
+      <li>Write cos(ωt) = ½e<sup>jωt</sup> + ½e<sup>−jωt</sup> and push each half through G separately.</li>
+      <li>In steady state the output is <b>|G(jω)| · cos(ωt + ∠G(jω))</b>: the same frequency, stretched by |G(jω)| and shifted by ∠G(jω).</li>
+      <li>For 1/(s + 1) at ω = 2π, the output is about 0.16 times as large and 81° behind.</li>
+    </ul>
+  </div>
+
+  <div class="card">
+    <h2>Poles, and what happens at them</h2>
+    <ul>
+      <li>The denominator of G(s) is the characteristic polynomial of A, so the <b>poles are the eigenvalues</b> — unless a factor cancels, which comes up next week.</li>
+      <li>If you feed in e<sup>st</sup> with s exactly at a pole, G(s) blows up and the response gains a <b>t·e<sup>st</sup></b> term.</li>
+      <li>A pole at 0 driven by a constant grows like t. A pole at ±jω driven by cos(ωt) gives an oscillation that keeps growing: <b>resonance</b>. A bounded input then gives an unbounded output, so the system is not BIBO stable.</li>
+    </ul>
+  </div>
+
+  <div class="card">
+    <h2>Any input is a sum of exponentials</h2>
+    <ul>
+      <li>Think of signals as vectors with a scalar product. The exponentials e<sup>st</sup> then form a basis: for periodic signals this is the Fourier series.</li>
+      <li>The weights of that basis are the <b>Laplace transform</b>, U(s) = ∫ u(t)e<sup>−st</sup> dt. Analysis III teaches you how to compute it; here you only need the idea.</li>
+      <li>By superposition every weight just gets multiplied by G(s): <b>Y(s) = G(s)·U(s)</b>. This is the complete output, transient included.</li>
+    </ul>
+  </div>
+
+  <div class="card">
+    <h2>Going back and forth</h2>
+    <div class="arch">
+      <div>
+        <h3>In series</h3>
+        <p>G<sub>2</sub>(s)·G<sub>1</sub>(s): you just multiply.</p>
+      </div>
+      <div>
+        <h3>In parallel</h3>
+        <p>G<sub>1</sub>(s) + G<sub>2</sub>(s): you just add.</p>
+      </div>
+      <div>
+        <h3>In feedback</h3>
+        <p>G<sub>1</sub> / (1 + G<sub>1</sub>G<sub>2</sub>), with negative feedback.</p>
+      </div>
+      <div>
+        <h3>Back to state space</h3>
+        <p>Use partial fractions for a diagonal A, or the <b>controllable canonical form</b>: the denominator coefficients go in the last row of A, the numerator coefficients into C.</p>
+      </div>
+    </div>
+    <ul style="margin-top: 14px">
+      <li>Why bother going back: you design a controller C(s) as a transfer function, but a microcontroller needs state space. Euler steps x ← x + (Ax + Be)dt and u = Cx + De, run forever.</li>
+    </ul>
+  </div>
+
+  <div class="keep">
+    <h2>If you keep one thing</h2>
+    <p>
+      Exponentials pass through any LTI system unchanged in shape, only multiplied by G(s). For a
+      sinusoid that means the same frequency comes out, stretched by |G(jω)| and delayed by ∠G(jω).
+      Calculus becomes algebra.
+    </p>
+  </div>
+
+  <div class="card">
+    <h2>Worth doing this week</h2>
+    <ul>
+      <li>Read <b>Åström &amp; Murray, sections 8.1–8.3 and 8.5</b>; skip time delays and PDEs.</li>
+      <li>Compute G(s) for the mass-spring-damper yourself with the 2×2 inverse formula, then check that the poles are the eigenvalues of A.</li>
+      <li>Pick an ω, work out |G(jω)| and ∠G(jω) by hand, and sketch the steady-state output on top of the input.</li>
+    </ul>
+  </div>
+
+  <p class="fine">
+    Written by AI from the lecture slides, so treat it as a reminder rather than a source.<br>
+    <a href="https://video.ethz.ch/lectures/d-mavt/2026/autumn/151-0591-00L">Lecture recording</a> ·
+    <a href="https://idsc.ethz.ch/education/lectures/control-systems-i.html">Course page</a>
+  </p>
+
+</div>
+</body>
+</html>
