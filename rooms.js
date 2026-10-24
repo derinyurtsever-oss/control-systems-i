@@ -316,7 +316,7 @@
       (p.links ? '<div class="s-links">' + p.links.map(function (l) {
         return isPh(l.href)
           ? '<a href="#" data-placeholder title="Link not set yet">' + h(l.label) + "</a>"
-          : '<a href="' + esc(l.href) + '" target="_blank" rel="noopener">' + h(l.label) + "</a>";
+          : '<a href="' + esc(l.href) + '"' + (l.primary ? ' class="primary"' : "") + ' target="_blank" rel="noopener">' + h(l.label) + "</a>";
       }).join("") + "</div>" : "") +
       (p.note ? '<p class="s-note">' + h(p.note) + "</p>" : "");
     body.scrollTop = 0;

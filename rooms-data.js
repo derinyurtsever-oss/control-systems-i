@@ -85,7 +85,7 @@ window.ROOMS = [
           ],
           links: [
             { label: "Watch the session video", href: "https://youtu.be/-3Soc61c7F0" },
-            { label: "Worksheet 6", href: "files/week-6-worksheet.pdf" },
+            { label: "Worksheet 6", href: "files/week-6-worksheet.pdf", primary: true },
             { label: "Worksheet 5", href: "files/week-5-worksheet.pdf" }
           ],
           note: "The last page has the solutions to the your-turns. Try them first."

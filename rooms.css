@@ -372,8 +372,9 @@ html:has(.sheet[open]) { overflow: hidden; }
   transition: background .2s;
 }
 .s-links a:hover { background: #e4e6ea; }
-.s-links a:first-child { background: var(--blue); color: #fff; }
-.s-links a:first-child:hover { background: #0062c4; }
+/* the first link is always blue; add primary: true to a link in rooms-data.js to make it blue too */
+.s-links a:first-child, .s-links a.primary { background: var(--blue); color: #fff; }
+.s-links a:first-child:hover, .s-links a.primary:hover { background: #0062c4; }
 
 /* homework tiers: one tinted card per priority, exercises as chips */
 .s-tiers { display: grid; gap: 10px; margin-top: 22px; }
