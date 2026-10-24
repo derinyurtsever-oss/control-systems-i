@@ -44,7 +44,7 @@ window.ROOMS = [
           // tone: "must" (red), "should" (orange) or "could" (purple)
           tiers: [
             { label: "Definitely do", tone: "must", items: ["1", "2", "3"] },
-                        { label: "If you are interested", tone: "could", items: ["4", "5"] }
+            { label: "If you have time", tone: "should", items: ["4", "5", "6"] }
           ]
         }
       },
@@ -53,21 +53,20 @@ window.ROOMS = [
         x: 83, y: 53.3,
         label: "This week's tool",
         panel: {
-          kicker: "Week 5 · Try it yourself",
-          title: "Shake the spring",
-          lead: "The experiment from the worksheet: a mass on a rubber band, a hand moving up and down at three different speeds. Same frequency out every time — only the size and the delay change.",
+          kicker: "Week 6 · No new demo",
+          title: "Catch up on the demos",
+          lead: "No new tool this week — the videos do the showing. The earlier demos all turn out to be about poles.",
           list: [
-            "Slow hand: the mass just follows",
-            "The spring's own speed: 2.5× the swing, a quarter period late",
-            "Fast hand: it barely moves, and goes the other way",
-            "Then G(jω) predicts all of it without solving the ODE"
+            "Shake the spring: |G(jω)| peaks where jω passes closest to the poles",
+            "Eigenvalues decide: the poles are exactly those eigenvalues",
+            "Two matrices: one pole in the right half-plane is enough to fall over"
           ],
           links: [
-            { label: "Open the demo", href: "tools/spring-frequency.html" },
-            { label: "Last week: eigenvalues decide", href: "tools/phase-portrait.html" },
-            { label: "Last week: two matrices", href: "tools/pendulum-matrices.html" }
+            { label: "Shake the spring", href: "tools/spring-frequency.html" },
+            { label: "Eigenvalues decide", href: "tools/phase-portrait.html" },
+            { label: "Two matrices, two futures", href: "tools/pendulum-matrices.html" }
           ],
-          note: "Sinusoid in, sinusoid out: |G(jω)| is the stretch, ∠G(jω) the delay."
+          note: "s close to a pole: |G| large. s close to a zero: |G| close to 0."
         }
       },
       {
@@ -75,19 +74,21 @@ window.ROOMS = [
         x: 73.5, y: 44.9,
         label: "Today's exercise",
         panel: {
-          kicker: "Week 5 · Today",
-          title: "Transfer Functions",
-          lead: "Last week the initial-condition response became easy to read. Today the forced response gets the same treatment.",
+          kicker: "Week 6 · Today",
+          title: "Poles and Zeros, s-Plane",
+          lead: "I couldn't be there this week, so the session is a recorded video. Watch it with the worksheet open.",
           list: [
-            "Why a sinusoid comes out with exactly the frequency it went in with",
-            "Feed in e^st and you get G(s)·e^st back: G(s) = C(sI − A)⁻¹B + D",
-            "Stretch and delay from |G(jω)| and ∠G(jω); poles, zeros and interconnections"
+            "G(s) = N(s)/D(s): poles are the eigenvalues of A, zeros also depend on B and C",
+            "Read |G| and ∠G off the pole-zero map with arrows",
+            "Impulse and step responses: every pole adds one mode",
+            "Zeros borrow the derivative; right half-plane zeros start the wrong way"
           ],
           links: [
-            { label: "Worksheet 5", href: "files/week-5-worksheet.pdf" },
-            { label: "Worksheet 4", href: "files/week-4-worksheet.pdf" }
+            { label: "Watch the session video", href: "https://youtu.be/-3Soc61c7F0" },
+            { label: "Worksheet 6", href: "files/week-6-worksheet.pdf" },
+            { label: "Worksheet 5", href: "files/week-5-worksheet.pdf" }
           ],
-          note: "Solutions go up straight after the session."
+          note: "The last page has the solutions to the your-turns. Try them first."
         }
       },
       {
@@ -140,7 +141,7 @@ window.ROOMS = [
           title: "Lecture recaps",
           lead: "A short AI-generated summary of each lecture, for catching up or revising. If something looks off, the slides are the reference.",
           links: [
-            { label: "This week's recap", href: "recaps/lecture-05.html" },
+            { label: "This week's recap", href: "recaps/lecture-06.html" },
             { label: "All recaps", href: "recaps/" }
           ]
         }

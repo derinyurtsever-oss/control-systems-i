@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<meta name="robots" content="noindex, nofollow">
+<title>Lecture 6 recap — Poles and Zeros</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📝</text></svg>">
+<link rel="stylesheet" href="recap.css">
+</head>
+<body>
+<div class="wrap">
+
+  <a class="back" href="./">← All recaps</a>
+
+  <p class="eyebrow">Lecture 6 · 21 October</p>
+  <h1>Poles and zeros</h1>
+  <p class="robot"><span>✨</span><span>AI-generated recap — check anything important against the slides</span></p>
+
+  <p class="lede">
+    Last week gave us G(s). This lecture is about reading it: factor the top and the bottom, mark
+    the roots in the complex plane, and almost everything about the response can be seen from where
+    those points sit.
+  </p>
+
+  <div class="card">
+    <h2>One transfer function, four ways to write it</h2>
+    <div class="arch">
+      <div>
+        <h3>Polynomials</h3>
+        <p>N(s)/D(s) + d — what you get straight from C(sI − A)<sup>−1</sup>B + D.</p>
+      </div>
+      <div>
+        <h3>Partial fractions</h3>
+        <p>Σ r<sub>i</sub>/(s − p<sub>i</sub>) + r<sub>0</sub>. One term per pole; the residues r<sub>i</sub> say how much each one contributes.</p>
+      </div>
+      <div>
+        <h3>Root-locus form</h3>
+        <p>k·Π(s − z<sub>i</sub>)/Π(s − p<sub>i</sub>). Best for computing G by hand, and for the root locus next week.</p>
+      </div>
+      <div>
+        <h3>Bode form</h3>
+        <p>Factors written as (s/(−p) + 1). Used for Bode plots in a few weeks.</p>
+      </div>
+    </div>
+    <ul style="margin-top: 14px">
+      <li>The <b>poles</b> p<sub>i</sub> are the roots of the denominator, which are the eigenvalues of A. The <b>zeros</b> z<sub>i</sub> are the roots of the numerator.</li>
+      <li>In MATLAB: <code>ss</code> and <code>tf</code> build the system, <code>residue</code> gives partial fractions, <code>zpk</code> gives the factored form.</li>
+    </ul>
+  </div>
+
+  <div class="card">
+    <h2>Computing G(s) with arrows</h2>
+    <ul>
+      <li>Every factor (s − p) is the <b>arrow from p to s</b> in the complex plane. Multiplying complex numbers multiplies their lengths and adds their angles.</li>
+      <li>So <b>|G(s)| = k · (product of distances from the zeros) / (product of distances from the poles)</b>.</li>
+      <li>And <b>∠G(s) = (sum of angles from the zeros) − (sum of angles from the poles)</b>.</li>
+      <li>The worked example: G(s) = 2(s + 1)/(s³ + 4s² + 6s + 4) has poles at −2 and −1 ± j. At s = j the arrows give |G(j)| = 2√2/5 ≈ 0.57 and ∠G(j) = −45°, so sin(t) comes out as about 0.57·sin(t − 45°).</li>
+      <li>Rule of thumb: s close to a pole makes |G| large, and s close to a zero makes it small.</li>
+    </ul>
+  </div>
+
+  <div class="card">
+    <h2>Test inputs</h2>
+    <ul>
+      <li><b>Step</b>: u = 1 for t ≥ 0. For a stable system it ends at <b>G(0)</b> — 0.5 in the example above.</li>
+      <li><b>Impulse</b>: one hammer blow with area 1. Its response is Ce<sup>At</sup>B, the same as starting from x(0) = B. It is G(s) itself in disguise: the impulse response determines the system completely.</li>
+      <li>The step response is the running area under the impulse response.</li>
+    </ul>
+  </div>
+
+  <div class="card">
+    <h2>Poles make the shapes</h2>
+    <ul>
+      <li>Write G in partial fractions and the impulse response is <b>Σ r<sub>i</sub>e<sup>p<sub>i</sub>t</sup></b>: each pole contributes one mode.</li>
+      <li>A real pole gives an exponential. A complex pair gives an oscillation inside the envelope r·e<sup>σt</sup>. The further left the pole, the faster it fades; the higher up, the faster it oscillates.</li>
+      <li>Find the residues with the <b>cover-up method</b>: hide the factor (s − p<sub>i</sub>) and evaluate what is left at s = p<sub>i</sub>.</li>
+    </ul>
+  </div>
+
+  <div class="card">
+    <h2>Zeros change the residues</h2>
+    <ul>
+      <li>Zeros never change which modes exist — those come from the poles. They change <b>how much of each mode</b> you see.</li>
+      <li>A zero right next to a pole makes that residue tiny, so the mode is muffled.</li>
+      <li>If a zero lands exactly on a pole, they <b>cancel</b>: the mode disappears from G, but not from the system. That is fine for a stable pole and dangerous for an unstable one. Never cancel an unstable pole.</li>
+    </ul>
+  </div>
+
+  <div class="card">
+    <h2>Zeros borrow the derivative</h2>
+    <ul>
+      <li>Multiplying by s means taking the derivative. So adding a zero, G = (s/(−z) + 1)·G̃, gives <b>y = ỹ + (1/(−z))·dỹ/dt</b>.</li>
+      <li>A <b>left half-plane</b> zero adds a positive derivative: the response is earlier, faster, and tends to overshoot.</li>
+      <li>A <b>right half-plane</b> zero is called <b>non-minimum phase</b>. It adds a negative derivative, so the output first moves the <b>wrong way</b>. Stability does not change, but it makes control much harder; often the fix is to measure a different output.</li>
+    </ul>
+  </div>
+
+  <div class="keep">
+    <h2>If you keep one thing</h2>
+    <p>
+      The poles decide which shapes the response is built from. The zeros decide how much of each
+      shape you actually get. With the arrows from the poles and zeros you can read |G| and ∠G
+      straight off the plane.
+    </p>
+  </div>
+
+  <div class="card">
+    <h2>Worth doing this week</h2>
+    <ul>
+      <li>Read <b>Åström &amp; Murray, section 6.3</b>.</li>
+      <li>Redo the arrow calculation for G(j) yourself with a ruler and protractor, then check it in MATLAB.</li>
+      <li>Take the step response of 2(s + 1)/(s³ + 4s² + 6s + 4), then flip the zero to (1 − s). Predict the start before you plot it.</li>
+    </ul>
+  </div>
+
+  <p class="fine">
+    Written by AI from the lecture slides, so treat it as a reminder rather than a source.<br>
+    <a href="https://video.ethz.ch/lectures/d-mavt/2026/autumn/151-0591-00L">Lecture recording</a> ·
+    <a href="https://idsc.ethz.ch/education/lectures/control-systems-i.html">Course page</a>
+  </p>
+
+</div>
+</body>
+</html>
