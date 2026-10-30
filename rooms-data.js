@@ -53,20 +53,20 @@ window.ROOMS = [
         x: 83, y: 53.3,
         label: "This week's tool",
         panel: {
-          kicker: "Week 6 · No new demo",
-          title: "Catch up on the demos",
-          lead: "No new tool this week — the videos do the showing. The earlier demos all turn out to be about poles.",
+          kicker: "Week 7 · Try it yourself",
+          title: "Draw the root locus",
+          lead: "The example from page 8: P(s) = 0.2 / ((s + 2)(s − 1)) with a gain K in front. Turn K up and watch the closed-loop poles trace out the root locus.",
           list: [
-            "Shake the spring: |G(jω)| peaks where jω passes closest to the poles",
-            "Eigenvalues decide: the poles are exactly those eigenvalues",
-            "Two matrices: one pole in the right half-plane is enough to fall over"
+            "K = 1, 10, 20: the three snapshots from the sheet",
+            "K = 10: the unstable pole reaches 0, and the loop becomes stable",
+            "K = 11.25: the poles meet at −0.5 and break away",
+            "Then the rules give the same picture without solving anything"
           ],
           links: [
-            { label: "Shake the spring", href: "tools/spring-frequency.html" },
-            { label: "Eigenvalues decide", href: "tools/phase-portrait.html" },
-            { label: "Two matrices, two futures", href: "tools/pendulum-matrices.html" }
+            { label: "Open the demo", href: "tools/root-locus.html" },
+            { label: "Earlier: shake the spring", href: "tools/spring-frequency.html" }
           ],
-          note: "s close to a pole: |G| large. s close to a zero: |G| close to 0."
+          note: "Closed-loop poles start at the open-loop poles and end at the zeros — or at infinity."
         }
       },
       {
@@ -74,21 +74,21 @@ window.ROOMS = [
         x: 73.5, y: 44.9,
         label: "Today's exercise",
         panel: {
-          kicker: "Week 6 · Today",
-          title: "Poles and Zeros, s-Plane",
-          lead: "I couldn't be there this week, so the session is a recorded video. Watch it with the worksheet open.",
+          kicker: "Week 7 · Today",
+          title: "Feedback, Root Locus",
+          lead: "Synthesis at last: close the loop with a simple controller and change the poles.",
           list: [
-            "G(s) = N(s)/D(s): poles are the eigenvalues of A, zeros also depend on B and C",
-            "Read |G| and ∠G off the pole-zero map with arrows",
-            "Impulse and step responses: every pole adds one mode",
-            "Zeros borrow the derivative; right half-plane zeros start the wrong way"
+            "Open loop vs closed loop: why the controller has to see the output",
+            "T(s) = CP / (1 + CP): the closed-loop poles are the roots of D(s) + N(s)",
+            "Proportional feedback, and how the poles move as K grows",
+            "Sketching the root locus: the rules, centroid and asymptotes"
           ],
           links: [
-            { label: "Watch the session video", href: "https://youtu.be/-3Soc61c7F0" },
-            { label: "Worksheet 6", href: "files/week-6-worksheet.pdf", primary: true },
-            { label: "Worksheet 5", href: "files/week-5-worksheet.pdf" }
+            { label: "Worksheet 7", href: "files/week-7-worksheet.pdf" },
+            { label: "Worksheet 6", href: "files/week-6-worksheet.pdf" },
+            { label: "Last week's video", href: "https://youtu.be/-3Soc61c7F0" }
           ],
-          note: "The last page has the solutions to the your-turns. Try them first."
+          note: "Solutions go up straight after the session."
         }
       },
       {

@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<meta name="robots" content="noindex, nofollow">
+<title>Draw the root locus</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>✖️</text></svg>">
+<style>
+:root {
+  color-scheme: light;
+  --ink:   #1d1d1f;
+  --ink-2: #6e6e73;
+  --ink-3: #a1a1a6;
+  --line:  #e0e3e8;
+  --bg:    #f6f7f9;
+  --card:  #ffffff;
+
+  /* the worksheet's colours */
+  --ol:    #0a84ff;   /* open-loop poles, blue */
+  --cl:    #ff8a00;   /* closed-loop poles at the current K, orange */
+  --brA:   #0a84ff;   /* the branch that starts at -2 */
+  --brB:   #1fa64a;   /* the branch that starts at +1 */
+  --good:  #1d9a5b;
+  --bad:   #d4231a;
+  --edge:  #0071e3;
+  --blue:  #0a84ff;
+
+  --font: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text",
+          "Segoe UI Variable Display", "Segoe UI", system-ui, sans-serif;
+  --mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+}
+
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+
+body {
+  margin: 0; min-height: 100vh;
+  background: var(--bg); color: var(--ink);
+  font-family: var(--font); font-size: 16px; letter-spacing: -0.01em;
+  -webkit-font-smoothing: antialiased;
+  -webkit-user-select: none; user-select: none;
+}
+
+.wrap { max-width: 1260px; margin: 0 auto; padding: 16px 20px 24px; display: flex; flex-direction: column; gap: 12px; }
+:focus-visible { outline: 2.5px solid var(--blue); outline-offset: 2px; border-radius: 10px; }
+
+.top { display: flex; align-items: center; justify-content: space-between; gap: 14px; flex-wrap: wrap; }
+.top h1 { margin: 0; font-size: clamp(18px, 2.1vw, 25px); font-weight: 650; letter-spacing: -0.025em; }
+.top .back { font-size: 14px; color: var(--blue); text-decoration: none; }
+.top .back:hover { text-decoration: underline; }
+.sub { margin: -6px 0 0; color: var(--ink-2); font-size: 15px; }
+
+.card {
+  background: var(--card); border-radius: 20px; padding: 14px 16px;
+  box-shadow: 0 1px 2px rgba(16,24,40,.04), 0 12px 30px -18px rgba(16,24,40,.25);
+}
+.card h2 { margin: 0 0 8px; font-size: 13px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; color: var(--ink-3); }
+
+.grid { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); gap: 12px; align-items: start; }
+.right { display: grid; gap: 12px; }
+
+canvas { display: block; width: 100%; height: auto; }
+#plane { border-radius: 12px; }
+
+/* the loop, as on page 8 */
+.loop { display: flex; align-items: center; justify-content: center; gap: 0; font-weight: 650; font-size: 15px; flex-wrap: nowrap; }
+.loop .blk { padding: 8px 12px; border-radius: 10px; border: 2px solid var(--ink-3); background: #f6f7f9; white-space: nowrap; }
+.loop .blk.k { border-color: #e2b100; background: #fff8dc; color: #8a6a00; min-width: 74px; text-align: center; font-variant-numeric: tabular-nums; }
+.loop .wire { width: 22px; height: 2px; background: var(--ink-3); }
+.loop .frac { display: inline-flex; flex-direction: column; align-items: center; font-size: 13px; line-height: 1.25; }
+.loop .frac span:first-child { border-bottom: 1.5px solid var(--ink); padding: 0 4px; }
+
+.kbig { display: flex; align-items: baseline; gap: 12px; }
+.kbig .v { font-size: clamp(36px, 4.4vw, 54px); font-weight: 700; letter-spacing: -0.03em; font-variant-numeric: tabular-nums; color: #8a6a00; }
+.kbig .l { font-size: 15px; color: var(--ink-2); font-weight: 600; }
+
+input[type=range] { -webkit-appearance: none; appearance: none; width: 100%; height: 6px; border-radius: 999px; background: var(--line); margin: 10px 0 2px; }
+input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; appearance: none; width: 22px; height: 22px; border-radius: 50%; background: #fff; border: 0; box-shadow: 0 1px 4px rgba(0,0,0,.32); cursor: pointer; }
+input[type=range]::-moz-range-thumb { width: 22px; height: 22px; border-radius: 50%; background: #fff; border: 0; box-shadow: 0 1px 4px rgba(0,0,0,.32); cursor: pointer; }
+
+.eq { font-family: var(--mono); font-size: 16px; font-weight: 600; padding: 10px 12px; border-radius: 12px; background: #f6f7f9; margin-top: 10px; }
+.eq .c { color: #8a6a00; }
+.poles { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; align-items: center; font-size: 14px; color: var(--ink-2); }
+.poles b { font-family: var(--mono); font-size: 15px; color: var(--ink); font-weight: 650; padding: 4px 10px; border-radius: 999px; background: #fff3e3; box-shadow: inset 0 0 0 1.5px rgba(255,138,0,.5); }
+.verdict { margin-top: 12px; padding: 12px 14px; border-radius: 14px; font-size: 18px; font-weight: 700; letter-spacing: -0.02em; color: #fff; background: var(--tone, var(--ink)); }
+.verdict small { display: block; font-size: 13.5px; font-weight: 550; opacity: .92; margin-top: 2px; letter-spacing: 0; }
+.verdict.stable   { --tone: var(--good); }
+.verdict.unstable { --tone: var(--bad); }
+.verdict.edge     { --tone: var(--edge); }
+
+.say {
+  min-height: 34px; margin: 2px 0;
+  font-size: clamp(16px, 2vw, 22px); font-weight: 550; letter-spacing: -0.02em;
+  text-align: center;
+}
+.say .dim { color: var(--ink-3); }
+
+.controls { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; justify-content: center; }
+button {
+  font: inherit; font-size: 15px; font-weight: 600;
+  padding: 10px 16px; border: 0; border-radius: 999px;
+  background: var(--card); color: var(--ink);
+  box-shadow: inset 0 0 0 1px var(--line); cursor: pointer; transition: background .15s;
+}
+button:hover { background: #f0f2f5; }
+button.primary { background: var(--blue); color: #fff; box-shadow: none; min-width: 150px; }
+button.primary:hover { background: #0070e0; }
+button[aria-pressed="true"] { background: var(--ink); color: #fff; box-shadow: none; }
+kbd { font: inherit; font-size: 11px; font-weight: 700; opacity: .55; margin-left: 7px; letter-spacing: .04em; }
+.sep { width: 1px; height: 26px; background: var(--line); margin: 0 2px; }
+
+details.sheet { background: var(--card); border-radius: 16px; box-shadow: inset 0 0 0 1px var(--line); padding: 12px 16px; font-size: 14.5px; }
+details.sheet summary { cursor: pointer; font-weight: 650; }
+details.sheet ol { margin: 12px 0 0; padding-left: 20px; display: grid; gap: 10px; color: var(--ink-2); }
+details.sheet b { color: var(--ink); }
+details.sheet .line { color: var(--ink); font-style: italic; }
+
+@media (max-width: 980px) {
+  .grid { grid-template-columns: 1fr; }
+  kbd { display: none; }
+}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+
+  <div class="top">
+    <h1>Draw the root locus</h1>
+    <a class="back" href="../">← back to the room</a>
+  </div>
+  <p class="sub">The example from page 8: P(s) = 0.2 / ((s + 2)(s − 1)) with a gain K in the loop. Turn K up and watch the closed-loop poles trace out the root locus.</p>
+
+  <div class="grid">
+
+    <section class="card">
+      <h2>s-plane · closed-loop poles as K grows</h2>
+      <canvas id="plane" width="1000" height="1000"></canvas>
+    </section>
+
+    <div class="right">
+      <section class="card">
+        <h2>The loop</h2>
+        <div class="loop">
+          <span class="blk">r</span><span class="wire"></span>
+          <span class="blk k" id="kBlock">K = 0</span><span class="wire"></span>
+          <span class="blk"><span class="frac"><span>0.2</span><span>(s + 2)(s − 1)</span></span></span><span class="wire"></span>
+          <span class="blk">y</span>
+        </div>
+        <p style="margin: 10px 0 0; font-size: 14px; color: var(--ink-2); text-align: center">with y fed back: T(s) = 0.2K / (s² + s − 2 + 0.2K)</p>
+      </section>
+
+      <section class="card">
+        <h2>The gain</h2>
+        <div class="kbig"><span class="v" id="kOut">0.0</span><span class="l">K</span></div>
+        <input type="range" id="kIn" min="0" max="40" step="0.05" value="0" aria-label="Gain K">
+        <canvas id="kbar" width="1000" height="96"></canvas>
+        <div class="eq">s² + s <span class="c" id="eqC">− 2.00</span> = 0</div>
+        <div class="poles">closed-loop poles <span id="poles"></span></div>
+        <div class="verdict" id="verdict"></div>
+      </section>
+    </div>
+  </div>
+
+  <p class="say" id="say">K = 0: no feedback yet. The poles are just the open-loop poles. Press space to sweep K.</p>
+
+  <div class="controls">
+    <button class="primary" id="btnGo" type="button">Sweep K<kbd>SPACE</kbd></button>
+    <button id="btnReset" type="button">Start over<kbd>0</kbd></button>
+    <span class="sep"></span>
+    <button type="button" data-k="1">K = 1<kbd>1</kbd></button>
+    <button type="button" data-k="10">K = 10<kbd>2</kbd></button>
+    <button type="button" data-k="20">K = 20<kbd>3</kbd></button>
+    <span class="sep"></span>
+    <button id="btnRules" type="button" aria-pressed="false">Show the rules<kbd>H</kbd></button>
+  </div>
+
+  <details class="sheet">
+    <summary>How to run this</summary>
+    <ol>
+      <li><b>The three snapshots first.</b> Press 1, 2, 3 for K = 1, 10, 20 — the three little plots at the top of page 8.
+        Each leaves an orange pair behind. Ask the room where the poles will be at K = 5 before you go further.</li>
+      <li><b>Then start over and sweep.</b> The unstable pole at +1 walks left and reaches 0 at K = 10: exactly on the edge.
+        Just after that both poles are in the left half-plane.
+        <div class="line">"A single number in front of the plant, and the system is stable."</div></li>
+      <li><b>The breakaway.</b> At K = 11.25 the two poles meet at −0.5 and leave the real axis. From then on the real part
+        never changes — more gain only makes it oscillate faster.</li>
+      <li><b>Show the rules.</b> Start at the poles, real axis between them (odd number of poles to the right), two poles and
+        no zeros so two asymptotes at ±90° through the centroid (−2 + 1)/2 = −0.5. That is the whole locus, without solving
+        anything. Best saved until after the students have tried the first example on page 9 themselves.</li>
+    </ol>
+    <p style="margin:14px 0 0; color: var(--ink-2)">
+      Keys: <b>space</b> sweep / pause · <b>1 2 3</b> K = 1, 10, 20 · <b>←/→</b> nudge K · <b>0</b> start over · <b>H</b> rules · <b>F</b> fullscreen.
+    </p>
+  </details>
+
+</div>
+
+<script>
+(function () {
+  "use strict";
+
+  var $ = function (id) { return document.getElementById(id); };
+  var K_MAX = 40;
+  var K_EDGE = 10;        // a pole reaches 0
+  var K_MEET = 11.25;     // the poles meet at -0.5
+
+  /* ---------------- the closed loop ----------------
+     1 + K·0.2/((s+2)(s-1)) = 0   →   s² + s − 2 + 0.2K = 0
+     s = (−1 ± √(9 − 0.8K)) / 2
+     branch A starts at −2 (and goes down once complex), branch B starts at +1 (and goes up) */
+
+  function poles(K) {
+    var d = 9 - 0.8 * K;
+    if (d >= 0) { var r = Math.sqrt(d); return [{ re: (-1 - r) / 2, im: 0 }, { re: (-1 + r) / 2, im: 0 }]; }
+    var w = Math.sqrt(-d) / 2;
+    return [{ re: -0.5, im: -w }, { re: -0.5, im: w }];
+  }
+
+  var K = 0, kMax = 0, target = 0, rate = 2.5, moving = false, rules = false, dwell = 0;
+  var pins = [];                 // snapshots left behind at K = 1, 10, 20
+  var PIN_AT = [1, 10, 20];
+
+  /* ---------------- the s-plane ---------------- */
+
+  var FONT = getComputedStyle(document.documentElement).getPropertyValue("--font");
+  function col(n) { return getComputedStyle(document.documentElement).getPropertyValue("--" + n).trim(); }
+
+  var cv = $("plane"), W = cv.width, H = cv.height;
+  var S = 180, OX = 3.1 * S + 5, OY = H / 2;
+  var X = function (re) { return OX + re * S; }, Y = function (im) { return OY - im * S; };
+
+  function cross(ctx, x, y, r, colour, width) {
+    ctx.strokeStyle = colour; ctx.lineWidth = width; ctx.lineCap = "round";
+    ctx.beginPath(); ctx.moveTo(x - r, y - r); ctx.lineTo(x + r, y + r); ctx.moveTo(x + r, y - r); ctx.lineTo(x - r, y + r); ctx.stroke();
+  }
+
+  function arrowAt(ctx, a, b, colour) {
+    // a small arrowhead at b, pointing from a to b
+    var q = Math.atan2(Y(b.im) - Y(a.im), X(b.re) - X(a.re)), x = X(b.re), y = Y(b.im), h = 22;
+    ctx.fillStyle = colour; ctx.beginPath(); ctx.moveTo(x + 6 * Math.cos(q), y + 6 * Math.sin(q));
+    ctx.lineTo(x - h * Math.cos(q - 0.45), y - h * Math.sin(q - 0.45));
+    ctx.lineTo(x - h * Math.cos(q + 0.45), y - h * Math.sin(q + 0.45));
+    ctx.closePath(); ctx.fill();
+  }
+
+  function drawPlane() {
+    var ctx = cv.getContext("2d");
+    ctx.clearRect(0, 0, W, H);
+    ctx.fillStyle = "rgba(29,154,91,.06)"; ctx.fillRect(0, 0, OX, H);
+    ctx.fillStyle = "rgba(212,35,26,.06)"; ctx.fillRect(OX, 0, W - OX, H);
+    ctx.font = "700 26px " + FONT; ctx.textBaseline = "top";
+    ctx.fillStyle = col("good"); ctx.textAlign = "left"; ctx.fillText("stable side", 16, 14);
+    ctx.fillStyle = col("bad"); ctx.textAlign = "right"; ctx.fillText("unstable side", W - 16, 14);
+
+    // grid and axes
+    ctx.strokeStyle = "#e6e8ec"; ctx.lineWidth = 1.5;
+    for (var g = -3; g <= 2; g++) { if (g) { ctx.beginPath(); ctx.moveTo(X(g), 0); ctx.lineTo(X(g), H); ctx.stroke(); } }
+    for (var h = -2; h <= 2; h++) { if (h) { ctx.beginPath(); ctx.moveTo(0, Y(h)); ctx.lineTo(W, Y(h)); ctx.stroke(); } }
+    ctx.strokeStyle = "#9aa0a8"; ctx.lineWidth = 2.5;
+    ctx.beginPath(); ctx.moveTo(0, OY); ctx.lineTo(W, OY); ctx.moveTo(OX, 0); ctx.lineTo(OX, H); ctx.stroke();
+    ctx.fillStyle = "#8e8e93"; ctx.font = "600 24px " + FONT; ctx.textAlign = "center"; ctx.textBaseline = "top";
+    [-3, -2, -1, 1, 2].forEach(function (v) { ctx.fillText(String(v).replace("-", "−"), X(v), OY + 10); });
+    ctx.textAlign = "right"; ctx.textBaseline = "middle";
+    [-2, -1, 1, 2].forEach(function (v) { ctx.fillText((v < 0 ? "−" : "") + Math.abs(v) + "j", OX - 12, Y(v)); });
+    ctx.textAlign = "right"; ctx.textBaseline = "bottom"; ctx.fillText("Re", W - 14, OY - 8);
+    ctx.textAlign = "left"; ctx.textBaseline = "top"; ctx.fillText("Im", OX + 10, 50);
+
+    // the rules, as a ghost of the answer
+    if (rules) {
+      ctx.strokeStyle = "rgba(142,68,173,.35)"; ctx.lineWidth = 16; ctx.lineCap = "butt";
+      ctx.beginPath(); ctx.moveTo(X(-2), OY); ctx.lineTo(X(1), OY); ctx.stroke();
+      ctx.strokeStyle = "rgba(142,68,173,.7)"; ctx.lineWidth = 3; ctx.setLineDash([12, 10]);
+      ctx.beginPath(); ctx.moveTo(X(-0.5), 40); ctx.lineTo(X(-0.5), H - 40); ctx.stroke(); ctx.setLineDash([]);
+      ctx.fillStyle = "#8e44ad"; ctx.beginPath(); ctx.arc(X(-0.5), OY, 9, 0, 7); ctx.fill();
+      ctx.font = "700 22px " + FONT; ctx.textAlign = "left"; ctx.textBaseline = "top";
+      ctx.fillText("centroid (−2 + 1)/2 = −0.5", X(-0.5) + 14, OY + 130);
+      ctx.fillText("asymptotes at ±90°", X(-0.5) + 14, OY + 158);
+      ctx.textBaseline = "bottom";
+      ctx.fillText("real axis: odd count to the right", X(-2) - 10, OY - 70);
+    }
+
+    // the locus drawn so far, sampled in K up to the furthest K reached
+    ctx.save(); ctx.lineJoin = "round"; ctx.lineCap = "round";
+    [0, 1].forEach(function (b) {
+      ctx.strokeStyle = b ? col("brB") : col("brA"); ctx.lineWidth = 7;
+      ctx.beginPath();
+      var n = Math.max(2, Math.ceil(kMax / 0.02));
+      for (var i = 0; i <= n; i++) {
+        var k = Math.min(kMax, i / n * kMax);
+        if (k > K_MEET - 0.02 && k < K_MEET + 0.02) k = K_MEET;
+        var p = poles(k)[b];
+        if (!i) ctx.moveTo(X(p.re), Y(p.im)); else ctx.lineTo(X(p.re), Y(p.im));
+      }
+      if (kMax > 0) ctx.stroke();
+      // arrowheads showing the direction of increasing K
+      [5, 22, 34].forEach(function (ka) {
+        if (kMax > ka + 1) arrowAt(ctx, poles(ka - 0.6)[b], poles(ka)[b], b ? col("brB") : col("brA"));
+      });
+    });
+    ctx.restore();
+
+    // the snapshots left behind, as on the sheet
+    pins.forEach(function (k) {
+      poles(k).forEach(function (p, i) {
+        cross(ctx, X(p.re), Y(p.im), 11, "rgba(255,138,0,.55)", 5);
+      });
+      var p = poles(k)[1];
+      ctx.fillStyle = "#c26a00"; ctx.font = "700 22px " + FONT;
+      if (p.im) { ctx.textAlign = "left"; ctx.textBaseline = "middle"; ctx.fillText("K = " + k, X(p.re) + 22, Y(p.im)); }
+      else {
+        // real snapshots: label under the right-hand pole, below the tick numbers
+        ctx.textAlign = "center"; ctx.textBaseline = "top";
+        ctx.fillText("K = " + k, X(p.re), OY + 44);
+      }
+    });
+
+    // the special points
+    if (kMax >= K_EDGE) {
+      ctx.strokeStyle = col("edge"); ctx.lineWidth = 3;
+      ctx.beginPath(); ctx.arc(X(0), OY, 22, 0, 7); ctx.stroke();
+    }
+    if (kMax >= K_MEET) {
+      ctx.fillStyle = "#8e8e93"; ctx.font = "600 21px " + FONT; ctx.textAlign = "right"; ctx.textBaseline = "top";
+      ctx.fillText("break-away at −0.5", X(-0.5) - 16, OY + 44);
+      ctx.fillText("(K = 11.25)", X(-0.5) - 16, OY + 70);
+    }
+
+    // the open-loop poles
+    [-2, 1].forEach(function (re) { cross(ctx, X(re), OY, 17, col("ol"), 6); });
+    ctx.fillStyle = col("ol"); ctx.font = "700 24px " + FONT; ctx.textAlign = "center"; ctx.textBaseline = "bottom";
+    ctx.fillText("p₁ = −2", X(-2), OY - 30); ctx.fillText("p₂ = 1", X(1), OY - 30);
+
+    // the closed-loop poles right now
+    poles(K).forEach(function (p) {
+      var x = X(p.re), y = Y(p.im);
+      ctx.fillStyle = "rgba(255,138,0,.16)"; ctx.beginPath(); ctx.arc(x, y, 30, 0, 7); ctx.fill();
+      cross(ctx, x, y, 15, col("cl"), 7);
+    });
+  }
+
+  /* ---------------- the K bar ---------------- */
+
+  function drawBar() {
+    var c = $("kbar"), ctx = c.getContext("2d"), w = c.width, h = c.height;
+    var pad = 12, XK = function (k) { return pad + k / K_MAX * (w - 2 * pad); };
+    ctx.clearRect(0, 0, w, h);
+    ctx.fillStyle = "rgba(212,35,26,.18)"; ctx.fillRect(XK(0), 12, XK(K_EDGE) - XK(0), 26);
+    ctx.fillStyle = "rgba(29,154,91,.18)"; ctx.fillRect(XK(K_EDGE), 12, XK(K_MAX) - XK(K_EDGE), 26);
+    ctx.font = "700 20px " + FONT; ctx.textBaseline = "middle"; ctx.textAlign = "left";
+    ctx.fillStyle = col("bad"); ctx.fillText("unstable", XK(0) + 8, 25);
+    ctx.fillStyle = col("good"); ctx.fillText("stable  (oscillating from K = 11.25)", XK(K_EDGE) + 8, 25);
+    ctx.fillStyle = "#8e8e93"; ctx.font = "600 19px " + FONT; ctx.textAlign = "center"; ctx.textBaseline = "top";
+    [0, 10, 20, 30, 40].forEach(function (k) { ctx.fillText(String(k), XK(k), 50); });
+    ctx.fillStyle = col("cl"); ctx.beginPath(); ctx.moveTo(XK(K), 40); ctx.lineTo(XK(K) - 9, 52); ctx.lineTo(XK(K) + 9, 52); ctx.closePath(); ctx.fill();
+    ctx.fillRect(XK(K) - 2, 8, 4, 34);
+  }
+
+  /* ---------------- text ---------------- */
+
+  function fmt(x) { var v = Math.abs(x) < 0.005 ? 0 : x; return (v < 0 ? "−" : "") + Math.abs(v).toFixed(2); }
+  function pstr(p) { return p.im ? fmt(p.re) + (p.im > 0 ? " + " : " − ") + Math.abs(p.im).toFixed(2) + "j" : fmt(p.re); }
+
+  var region = null;
+  function paintText() {
+    $("kOut").textContent = K.toFixed(K < 10 ? 2 : 1);
+    $("kBlock").textContent = "K = " + K.toFixed(1);
+    if (document.activeElement !== $("kIn")) $("kIn").value = K;
+    var c = 0.2 * K - 2;
+    $("eqC").textContent = (c < -0.004 ? "− " : "+ ") + Math.abs(c).toFixed(2);
+    var ps = poles(K);
+    $("poles").innerHTML = "<b>" + pstr(ps[1]) + "</b><b>" + pstr(ps[0]) + "</b>";
+
+    var v = $("verdict"), r;
+    if (K < K_EDGE - 0.08) { v.className = "verdict unstable"; v.innerHTML = "Unstable<small>One closed-loop pole is still in the right half-plane.</small>"; r = K < 0.05 ? "zero" : "low"; }
+    else if (K <= K_EDGE + 0.08) { v.className = "verdict edge"; v.innerHTML = "On the edge<small>A pole sits exactly at s = 0.</small>"; r = "edge"; }
+    else if (K < K_MEET - 0.05) { v.className = "verdict stable"; v.innerHTML = "Stable<small>Both poles in the left half-plane, both real: no oscillation.</small>"; r = "stable"; }
+    else if (K <= K_MEET + 0.05) { v.className = "verdict stable"; v.innerHTML = "Stable · the poles meet<small>A double pole at −0.5: the break-away point.</small>"; r = "meet"; }
+    else { v.className = "verdict stable"; v.innerHTML = "Stable, but oscillating<small>A complex pair: the real part stays at −0.5.</small>"; r = "osc"; }
+
+    if (r !== region) {
+      region = r;
+      var SAY = {
+        zero: "K = 0: no feedback yet. The poles are just the open-loop poles, −2 and +1.",
+        low: "The pole at +1 walks left, the one at −2 walks right. <span class='dim'>Still one in the right half-plane.</span>",
+        edge: "K = 10: the unstable pole reaches s = 0. <span class='dim'>Exactly on the edge.</span>",
+        stable: "Both poles in the left half-plane: <b style='color:var(--good)'>the feedback has stabilized the system.</b>",
+        meet: "K = 11.25: the two poles meet at −0.5 … <span class='dim'>and break away from the real axis.</span>",
+        osc: "More gain now only adds oscillation: <span class='dim'>the poles climb straight up, the real part stays at −0.5.</span>"
+      };
+      $("say").innerHTML = SAY[r];
+    }
+    $("btnGo").innerHTML = (moving && target === K_MAX ? "Pause" : K >= K_MAX ? "Sweep again" : K > 0 ? "Keep sweeping" : "Sweep K") + "<kbd>SPACE</kbd>";
+    $("btnRules").setAttribute("aria-pressed", String(rules));
+  }
+
+  /* ---------------- moving K ---------------- */
+
+  function reach(k) {
+    // the locus is drawn wherever K has been, and the snapshots drop as K passes them
+    if (k > kMax) {
+      PIN_AT.forEach(function (p) { if (kMax < p && k >= p && pins.indexOf(p) < 0) pins.push(p); });
+      kMax = k;
+    }
+  }
+
+  function goTo(k, r) {
+    target = Math.max(0, Math.min(K_MAX, k)); rate = r; moving = true;
+  }
+
+  function startOver() { K = 0; kMax = 0; target = 0; moving = false; dwell = 0; pins = []; region = null; paintText(); }
+
+  $("btnGo").addEventListener("click", function () {
+    if (moving && target === K_MAX) { moving = false; }
+    else { if (K >= K_MAX) startOver(); goTo(K_MAX, 2.5); }
+    paintText();
+  });
+  $("btnReset").addEventListener("click", startOver);
+  Array.prototype.forEach.call(document.querySelectorAll("button[data-k]"), function (b) {
+    b.addEventListener("click", function () { var k = +b.dataset.k; goTo(k, Math.max(4, Math.abs(k - K) / 1.2)); paintText(); });
+  });
+  $("btnRules").addEventListener("click", function () { rules = !rules; paintText(); });
+  $("kIn").addEventListener("input", function () { moving = false; K = +this.value; reach(K); paintText(); });
+
+  document.addEventListener("keydown", function (e) {
+    var k = e.key.toLowerCase();
+    if (k === " " || e.code === "Space") { e.preventDefault(); $("btnGo").click(); }
+    else if (k === "1") document.querySelector("button[data-k='1']").click();
+    else if (k === "2") document.querySelector("button[data-k='10']").click();
+    else if (k === "3") document.querySelector("button[data-k='20']").click();
+    else if (k === "0" || k === "r") startOver();
+    else if (k === "h") $("btnRules").click();
+    else if (e.key === "ArrowRight") { e.preventDefault(); moving = false; K = Math.min(K_MAX, K + 0.5); reach(K); paintText(); }
+    else if (e.key === "ArrowLeft") { e.preventDefault(); moving = false; K = Math.max(0, K - 0.5); paintText(); }
+    else if (k === "f") {
+      if (document.fullscreenElement) document.exitFullscreen();
+      else document.documentElement.requestFullscreen();
+    }
+  });
+
+  /* ---------------- the loop ---------------- */
+
+  var last = null, lastRAF = 0;
+  function advance(now) {
+    if (last === null) last = now;
+    var dt = Math.min(0.05, (now - last) / 1000);
+    last = now;
+    if (moving && dwell > 0) dwell -= dt;
+    else if (moving) {
+      var step = rate * dt, before = K;
+      if (Math.abs(target - K) <= step) { K = target; moving = false; }
+      else K += step * Math.sign(target - K);
+      // during a sweep, stop for a moment at the edge and at the break-away
+      if (target === K_MAX) [K_EDGE, K_MEET].forEach(function (k) { if (before < k && K >= k) { K = k; dwell = 1.4; } });
+      reach(K);
+      paintText();
+    }
+    drawPlane(); drawBar();
+  }
+  function frame(ts) { requestAnimationFrame(frame); lastRAF = performance.now(); advance(ts); }
+  requestAnimationFrame(frame);
+  setInterval(function () { var n = performance.now(); if (n - lastRAF > 300) advance(n); }, 60);
+  document.addEventListener("visibilitychange", function () { last = null; });
+
+  startOver(); drawPlane(); drawBar();
+})();
+</script>
+</body>
+</html>
