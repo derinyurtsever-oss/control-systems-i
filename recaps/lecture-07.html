@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<meta name="robots" content="noindex, nofollow">
+<title>Lecture 7 recap — Feedback and the Root Locus</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📝</text></svg>">
+<link rel="stylesheet" href="recap.css">
+</head>
+<body>
+<div class="wrap">
+
+  <a class="back" href="./">← All recaps</a>
+
+  <p class="eyebrow">Lecture 7 · 28 October</p>
+  <h1>Feedback and the root locus</h1>
+  <p class="robot"><span>✨</span><span>AI-generated recap — check anything important against the slides</span></p>
+
+  <p class="lede">
+    Close the loop with a gain k and the poles move. Doing the algebra again for every k is tedious
+    and tells you little. The root locus is a quick sketch of where the closed-loop poles go as k
+    runs from 0 to ∞, drawn from nothing but the open-loop poles and zeros.
+  </p>
+
+  <div class="card">
+    <h2>Watching the poles move</h2>
+    <ul>
+      <li>With k in front of 1/(s + 1), the closed loop is k/(s + 1 + k), so the single pole sits at <b>−1 − k</b>. Turning up k pushes it further left, which makes the system faster.</li>
+      <li>With (s + 2)/(s² + 2s + 2) the poles start at −1 ± j. As k grows they swing round, meet on the real axis, and then one heads to the zero at −2 while the other runs off to −∞.</li>
+      <li>In general, with kL(s) = kN(s)/D(s), the closed loop is T = kL/(1 + kL) and its poles are the roots of <b>D(s) + kN(s) = 0</b>.</li>
+    </ul>
+  </div>
+
+  <div class="card">
+    <h2>The rules for sketching it</h2>
+    <ul>
+      <li><b>Symmetric</b> about the real axis: poles are real or come in conjugate pairs.</li>
+      <li>There are as many closed-loop poles as open-loop poles.</li>
+      <li>They <b>start at the open-loop poles</b> (k → 0) and <b>end at the open-loop zeros</b> (k → ∞). Any poles left over head off to infinity.</li>
+      <li><b>Angle rule</b>: s is on the locus when the angles from the zeros minus the angles from the poles add up to 180° (for k &gt; 0). This is the rule the others come from.</li>
+      <li><b>Magnitude rule</b>: once s is on the locus, |N(s)|/|D(s)| = 1/|k| tells you which k puts the pole there.</li>
+    </ul>
+  </div>
+
+  <div class="card">
+    <h2>Shortcuts that come out of the angle rule</h2>
+    <ul>
+      <li><b>On the real axis</b>: a point is on the positive-k locus if there is an <b>odd</b> number of real poles and zeros to its right. Where two branches meet on the axis they break away from it or break back in.</li>
+      <li><b>Asymptotes</b>: the n − m poles that go to infinity leave at angles of 180°/(n − m) plus multiples of 360°/(n − m). So two excess poles go straight up and down, and three leave at ±60° and 180°.</li>
+      <li>The asymptotes meet on the real axis at the "centre of mass": (Σ poles − Σ zeros)/(n − m), with poles counting as positive masses and zeros as negative ones.</li>
+    </ul>
+  </div>
+
+  <div class="card">
+    <h2>The inverted pendulum, three ways</h2>
+    <div class="arch">
+      <div>
+        <h3>P control</h3>
+        <p>P(s) = 1/(s² − g/l) has a pole on each side of zero. A big enough k pulls them onto the imaginary axis, but no further. It works like attaching a spring: it swings forever.</p>
+      </div>
+      <div>
+        <h3>PI control</h3>
+        <p>Adds a pole at 0 and a zero. The two asymptotes then sit in the right half-plane, so it still does not help.</p>
+      </div>
+      <div>
+        <h3>PD control</h3>
+        <p>The zero from the derivative term attracts the branches into the left half-plane, and the pendulum can be stabilized.</p>
+      </div>
+      <div>
+        <h3>Realizable PD</h3>
+        <p>A pure s cannot be built, so the D term becomes s/(s/100 + 1). That adds a far-away pole at −100 and barely changes the picture.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Dynamic compensators and the names that come with them</h2>
+    <ul>
+      <li>A plain gain is often not enough, so the controller itself becomes a transfer function C(s): <b>PI</b>, <b>PD</b>, <b>PID</b>, and <b>lead</b> (zero closer to the origin than the pole) or <b>lag</b> (pole closer than the zero).</li>
+      <li>The loop gain is <b>L(s) = P(s)C(s)</b>. Its poles and zeros are those of the plant plus those of the controller.</li>
+      <li>From r to y: the <b>complementary sensitivity</b> T = kL/(1 + kL). From r to e: the <b>sensitivity</b> S = 1/(1 + kL).</li>
+    </ul>
+  </div>
+
+  <div class="card">
+    <h2>Two traps</h2>
+    <ul>
+      <li><b>Well-posedness</b>: if both blocks pass the input straight through (non-zero D), the loop can turn into 1 + D<sub>1</sub>D<sub>2</sub> = 0, which has no meaning. Avoid direct feedthrough in feedback loops.</li>
+      <li><b>Internal stability</b>: with C = 1/(s − 1) and P = (s − 1)/(s + 1), the r → y transfer function 1/(s + 2) looks fine — but r → u is unstable, so the controller is blowing up inside. Every transfer function between any two signals in the loop has to be stable. Never cancel an unstable pole with a zero.</li>
+    </ul>
+  </div>
+
+  <div class="keep">
+    <h2>If you keep one thing</h2>
+    <p>
+      Closed-loop poles start at the open-loop poles and end at the zeros or at infinity. Poles push
+      the branches away and zeros pull them in. A rough sketch is usually enough to see whether a
+      controller can work at all.
+    </p>
+  </div>
+
+  <div class="card">
+    <h2>Worth doing this week</h2>
+    <ul>
+      <li>Sketch the root locus for Examples 1–5 from the slides by hand before checking them with <code>rlocus</code> in MATLAB.</li>
+      <li>For the inverted pendulum, compute the asymptote centre for PI and PD control and see why only one of them can work.</li>
+    </ul>
+  </div>
+
+  <p class="fine">
+    Written by AI from the lecture slides, so treat it as a reminder rather than a source.<br>
+    <a href="https://video.ethz.ch/lectures/d-mavt/2026/autumn/151-0591-00L">Lecture recording</a> ·
+    <a href="https://idsc.ethz.ch/education/lectures/control-systems-i.html">Course page</a>
+  </p>
+
+</div>
+</body>
+</html>
