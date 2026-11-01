@@ -299,6 +299,48 @@
     sheet.style.setProperty("--from", from + "px");
   }
 
+  function tiersHtml(w) {
+    if (!w.tiers.length) return '<p class="tier-none">No homework in week ' + h(String(w.week)) + "</p>";
+    return w.tiers.map(function (t) {
+      return '<div class="tier tier-' + esc(t.tone || "must") + '">' +
+        '<p class="tier-head"><span class="tier-dot"></span>' + h(t.label) + "</p>" +
+        '<div class="tier-chips">' + (t.items || []).map(function (i) {
+          return '<span class="tier-chip">' + h(i) + "</span>";
+        }).join("") + "</div></div>";
+    }).join("");
+  }
+
+  /* Every week sits in the same grid cell, so the panel is always as tall as the
+     longest week and the arrows stay under the cursor while clicking through. */
+  function weeksHtml(p) {
+    return '<div class="s-week">' +
+      '<button class="week-step" type="button" data-step="-1" aria-label="Previous week"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5 L8 12 L15 19"/></svg></button>' +
+      '<p class="week-label" id="weekLabel" aria-live="polite"></p>' +
+      '<button class="week-step" type="button" data-step="1" aria-label="Next week"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5 L16 12 L9 19"/></svg></button>' +
+      "</div>" +
+      '<div class="s-weeks">' + p.weeks.map(function (w) {
+        return '<div class="s-tiers week-pane">' + tiersHtml(w) + "</div>";
+      }).join("") + "</div>";
+  }
+
+  var openWeeks = null, weekAt = 0;
+
+  function showWeek(i) {
+    var last = openWeeks.length - 1;
+    weekAt = Math.max(0, Math.min(last, i));
+    var w = openWeeks[weekAt], now = weekAt === last;
+    body.querySelector("#sheetTitle").textContent = now ? "This week's homework" : "Week " + w.week + " homework";
+    body.querySelector("#weekLabel").textContent = "Week " + w.week + (now ? " · this week" : "");
+    Array.prototype.forEach.call(body.querySelectorAll(".week-pane"), function (el, k) {
+      el.classList.toggle("on", k === weekAt);
+    });
+    var steps = body.querySelectorAll(".week-step");
+    var focused = document.activeElement;
+    steps[0].disabled = weekAt === 0;
+    steps[1].disabled = now;
+    if (focused && focused.disabled) steps[weekAt === 0 ? 1 : 0].focus();   // a disabled button would drop keyboard focus
+  }
+
   function openPanel(spot, btn) {
     var p = spot.panel;
     body.innerHTML =
@@ -306,13 +348,7 @@
       '<h2 id="sheetTitle">' + h(p.title) + "</h2>" +
       (p.lead ? '<p class="s-lead">' + h(p.lead) + "</p>" : "") +
       (p.list ? '<ul class="s-list">' + p.list.map(function (li) { return "<li>" + h(li) + "</li>"; }).join("") + "</ul>" : "") +
-      (p.tiers ? '<div class="s-tiers">' + p.tiers.map(function (t) {
-        return '<div class="tier tier-' + esc(t.tone || "must") + '">' +
-          '<p class="tier-head"><span class="tier-dot"></span>' + h(t.label) + "</p>" +
-          '<div class="tier-chips">' + (t.items || []).map(function (i) {
-            return '<span class="tier-chip">' + h(i) + "</span>";
-          }).join("") + "</div></div>";
-      }).join("") + "</div>" : "") +
+      (p.weeks ? weeksHtml(p) : "") +
       (p.links ? '<div class="s-links">' + p.links.map(function (l) {
         return isPh(l.href)
           ? '<a href="#" data-placeholder title="Link not set yet">' + h(l.label) + "</a>"
@@ -320,6 +356,9 @@
       }).join("") + "</div>" : "") +
       (p.note ? '<p class="s-note">' + h(p.note) + "</p>" : "");
     body.scrollTop = 0;
+
+    openWeeks = p.weeks || null;
+    if (openWeeks) showWeek(openWeeks.length - 1);
 
     Array.prototype.forEach.call(dotsEl.children, function (el) { el.classList.remove("open"); });
     if (btn) btn.classList.add("open");
@@ -344,6 +383,13 @@
   body.addEventListener("click", function (e) {
     var a = e.target.closest("a");
     if (a && (a.getAttribute("href") === "#" || !a.getAttribute("href"))) e.preventDefault();
+    var step = e.target.closest(".week-step");
+    if (step) showWeek(weekAt + Number(step.dataset.step));
+  });
+  sheet.addEventListener("keydown", function (e) {
+    if (!openWeeks) return;
+    if (e.key === "ArrowLeft") showWeek(weekAt - 1);
+    if (e.key === "ArrowRight") showWeek(weekAt + 1);
   });
 
   /* ---------- edit mode ---------- */

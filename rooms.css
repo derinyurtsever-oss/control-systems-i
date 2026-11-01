@@ -427,6 +427,49 @@ html:has(.sheet[open]) { overflow: hidden; }
 }
 .tier-chip .ph { background: none; color: inherit; padding: 0; opacity: .75; }
 
+/* stepping through the homework of past weeks */
+.s-week {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-top: 20px;
+  padding: 5px;
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.05);
+}
+.week-label { margin: 0; font-size: 15px; font-weight: 600; color: var(--ink); font-variant-numeric: tabular-nums; }
+.week-step {
+  width: 36px; height: 36px;
+  flex: none;
+  display: grid;
+  place-items: center;
+  border: 0;
+  border-radius: 50%;
+  background: #fff;
+  color: var(--ink);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.14);
+  cursor: pointer;
+}
+.week-step:hover { color: var(--blue); }
+.week-step:focus-visible { outline: 2.5px solid var(--blue); outline-offset: 2px; border-radius: 50%; }
+.week-step:disabled { background: none; box-shadow: none; color: var(--ink-2); opacity: .4; cursor: default; }
+.week-step svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; }
+
+.s-weeks { display: grid; margin-top: 10px; }
+.week-pane { grid-area: 1 / 1; margin-top: 0; align-content: start; visibility: hidden; opacity: 0; transition: opacity .2s; }
+.week-pane.on { visibility: visible; opacity: 1; }
+.tier-none {
+  margin: 0;
+  padding: 18px 16px;
+  border-radius: 18px;
+  background: rgba(0, 0, 0, 0.04);
+  color: var(--ink-2);
+  font-size: 15px;
+  font-weight: 600;
+  text-align: center;
+}
+
 /* a link whose URL has not been filled in yet */
 .s-links a[data-placeholder],
 .s-links a[data-placeholder]:hover {

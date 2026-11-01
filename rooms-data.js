@@ -41,10 +41,36 @@ window.ROOMS = [
           kicker: "Homework",
           title: "This week's homework",
           lead: "Start at the top and work down as far as your time allows.",
+          // One entry per week, oldest first. The last one is the current week and opens first,
+          // so a new week just gets added at the bottom. tiers: [] means no homework that week.
           // tone: "must" (red), "should" (orange) or "could" (purple)
-          tiers: [
-            { label: "Definitely do", tone: "must", items: ["1", "2", "3", "5"] },
-            { label: "If you have time", tone: "should", items: ["4", "6"] }
+          weeks: [
+            { week: 1, tiers: [] },
+            { week: 2, tiers: [
+              { label: "Definitely do", tone: "must", items: ["1", "4"] },
+              { label: "If you have time", tone: "should", items: ["2", "3"] }
+            ] },
+            { week: 3, tiers: [
+              { label: "Definitely do", tone: "must", items: ["1", "2"] },
+              { label: "If you have time", tone: "should", items: ["3"] }
+            ] },
+            { week: 4, tiers: [
+              { label: "Definitely do", tone: "must", items: ["1", "2"] },
+              { label: "If you have time", tone: "should", items: ["3", "4", "5"] },
+              { label: "If you are interested", tone: "could", items: ["6"] }
+            ] },
+            { week: 5, tiers: [
+              { label: "Definitely do", tone: "must", items: ["1", "2", "3"] },
+              { label: "If you are interested", tone: "could", items: ["4", "5"] }
+            ] },
+            { week: 6, tiers: [
+              { label: "Definitely do", tone: "must", items: ["1", "2", "3"] },
+              { label: "If you have time", tone: "should", items: ["4", "5", "6"] }
+            ] },
+            { week: 7, tiers: [
+              { label: "Definitely do", tone: "must", items: ["1", "2", "3", "5"] },
+              { label: "If you have time", tone: "should", items: ["4", "6"] }
+            ] }
           ]
         }
       },
