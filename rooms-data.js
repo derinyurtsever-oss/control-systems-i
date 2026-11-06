@@ -81,7 +81,7 @@ window.ROOMS = [
         x: 83, y: 53.3,
         label: "This week's tool",
         panel: {
-          kicker: "Week 7 · Try it yourself",
+          kicker: "From last week · Try it yourself",
           title: "Draw the root locus",
           lead: "The example from page 8: P(s) = 0.2 / ((s + 2)(s − 1)) with a gain K in front. Turn K up and watch the closed-loop poles trace out the root locus.",
           list: [
@@ -102,19 +102,18 @@ window.ROOMS = [
         x: 73.5, y: 44.9,
         label: "Today's exercise",
         panel: {
-          kicker: "Week 7 · Today",
-          title: "Feedback, Root Locus",
-          lead: "Synthesis at last: close the loop with a simple controller and change the poles.",
+          kicker: "Week 8 · Today",
+          title: "Time-Domain Specifications, PID",
+          lead: "Stable is not enough. We follow a car with cruise control from a red light, up a hill and onto the motorway, and ask: how fast, how much overshoot, exactly on target?",
           list: [
-            "Open loop vs closed loop: why the controller has to see the output",
-            "T(s) = CP / (1 + CP): the closed-loop poles are the roots of D(s) + N(s)",
-            "Proportional feedback, and how the poles move as K grows",
-            "Sketching the root locus: the rules, centroid and asymptotes"
+            "Settling time, rise time, time to peak and overshoot of first- and second-order systems",
+            "Turning those specs into a region of the s-plane, and reaching it with the root locus",
+            "Dominant poles, and keeping G(0) when you approximate",
+            "Steady-state error and system type; P, I and D, and what each one does"
           ],
           links: [
-            { label: "Worksheet 7", href: "files/week-7-worksheet.pdf" },
-            { label: "Worksheet 6", href: "files/week-6-worksheet.pdf" },
-            { label: "Last week's video", href: "https://youtu.be/-3Soc61c7F0" }
+            { label: "Worksheet 8", href: "files/week-8-worksheet.pdf" },
+            { label: "Worksheet 7", href: "files/week-7-worksheet.pdf" }
           ],
           note: "Solutions go up straight after the session."
         }
