@@ -300,6 +300,7 @@
   }
 
   function tiersHtml(w) {
+    if (w.pending) return '<p class="tier-none">Coming soon<span>The week ' + h(String(w.week)) + " homework will be posted here.</span></p>";
     if (!w.tiers.length) return '<p class="tier-none">No homework in week ' + h(String(w.week)) + "</p>";
     return w.tiers.map(function (t) {
       return '<div class="tier tier-' + esc(t.tone || "must") + '">' +

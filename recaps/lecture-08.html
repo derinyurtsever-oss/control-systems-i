@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<meta name="robots" content="noindex, nofollow">
+<title>Lecture 8 recap — System Specifications</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📝</text></svg>">
+<link rel="stylesheet" href="recap.css">
+</head>
+<body>
+<div class="wrap">
+
+  <a class="back" href="./">← All recaps</a>
+
+  <p class="eyebrow">Lecture 8 · 4 November</p>
+  <h1>Specifications and PID</h1>
+  <p class="robot"><span>✨</span><span>AI-generated recap — check anything important against the slides</span></p>
+
+  <p class="lede">
+    The root locus tells you whether a loop is stable. This lecture asks how <i>well</i> it behaves:
+    how fast, how much overshoot, how close to the target in the end. Each answer turns into a region
+    of the complex plane where the closed-loop poles have to be. P, I and D are the tools for getting
+    them there.
+  </p>
+
+  <div class="card">
+    <h2>First-order step response</h2>
+    <ul>
+      <li>G(s) = 1/(τs + 1) gives <b>y(t) = 1 − e<sup>−t/τ</sup></b>. It ends at G(0) = 1.</li>
+      <li>After one τ it is 63% of the way there. The pole sits at −1/τ.</li>
+      <li><b>Settling time</b> to within d%: T<sub>d</sub> = τ·ln(100/d). For 5% that is about <b>3τ</b>.</li>
+    </ul>
+  </div>
+
+  <div class="card">
+    <h2>Second-order step response</h2>
+    <ul>
+      <li>G(s) = ω<sub>n</sub>²/(s² + 2ζω<sub>n</sub>s + ω<sub>n</sub>²). When underdamped (ζ &lt; 1) the poles are σ ± jω.</li>
+      <li>Reading the pole: <b>ω<sub>n</sub></b> is its distance from the origin, <b>|σ| = ζω<sub>n</sub></b>, and <b>ζ</b> is the sine of its angle away from the imaginary axis.</li>
+      <li>The envelope decays like e<sup>σt</sup>, so settling works as in first order with <b>τ = 1/|σ|</b>.</li>
+      <li><b>Time to peak</b>: T<sub>p</sub> = π/ω. <b>Overshoot</b>: M<sub>p</sub> = e<sup>σπ/ω</sup>, which depends only on ζ.</li>
+      <li>Three numbers worth remembering: ζ = 0.3, 0.5, 0.7 give about <b>37%, 16% and 5%</b> overshoot.</li>
+    </ul>
+  </div>
+
+  <div class="card">
+    <h2>Dominant poles</h2>
+    <ul>
+      <li>A higher-order system usually behaves like its <b>slowest</b> poles — the ones closest to the imaginary axis. The faster ones die out first.</li>
+      <li>Example: with poles at −5 and −1 ± 5j, the response looks almost exactly like the −1 ± 5j pair alone.</li>
+      <li>The exception: if a zero sits right next to the slow pole, it shrinks that residue and the next poles take over.</li>
+    </ul>
+  </div>
+
+  <div class="card">
+    <h2>Specifications as regions in the plane</h2>
+    <div class="arch">
+      <div>
+        <h3>Settling time</h3>
+        <p>Poles to the left of a vertical line: Re(p) more negative than some bound.</p>
+      </div>
+      <div>
+        <h3>Overshoot</h3>
+        <p>ζ above a minimum: the poles stay inside a wedge around the negative real axis.</p>
+      </div>
+      <div>
+        <h3>Rise time</h3>
+        <p>Poles far enough from the origin, or with a large enough imaginary part.</p>
+      </div>
+      <div>
+        <h3>Together</h3>
+        <p>A "good" region. Draw it on top of the root locus and pick a gain that lands the dominant poles inside it.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Steady-state error</h2>
+    <ul>
+      <li>From r to e is the <b>sensitivity</b> S = 1/(1 + L). For a step, e<sub>ss</sub> = <b>1/(1 + L(0))</b>: a bigger loop gain gives a smaller error.</li>
+      <li>If L has an <b>integrator</b> (a pole at 0) and the loop is stable, the step error is exactly zero, not just small.</li>
+      <li>The <b>type</b> of L is the number of poles at the origin. To follow a ramp of order q with zero error you need at least q + 1 integrators.</li>
+    </ul>
+    <table style="width:100%; border-collapse: collapse; margin-top: 12px; font-size: 15px; text-align: center">
+      <tr style="color: var(--ink-2, #6e6e73)"><th style="text-align:left; padding:6px">e<sub>ss</sub></th><th>step</th><th>ramp</th><th>parabola</th></tr>
+      <tr style="border-top:1px solid #e5e5ea"><td style="text-align:left; padding:6px">Type 0</td><td>1/(1 + k)</td><td>∞</td><td>∞</td></tr>
+      <tr style="border-top:1px solid #e5e5ea"><td style="text-align:left; padding:6px">Type 1</td><td>0</td><td>1/k</td><td>∞</td></tr>
+      <tr style="border-top:1px solid #e5e5ea"><td style="text-align:left; padding:6px">Type 2</td><td>0</td><td>0</td><td>1/k</td></tr>
+    </table>
+    <ul style="margin-top: 12px">
+      <li>Disturbances work the same way. To fully reject a constant disturbance at the plant input, the integrator has to be in the <b>controller</b>.</li>
+    </ul>
+  </div>
+
+  <div class="card">
+    <h2>P, I and D</h2>
+    <div class="arch">
+      <div>
+        <h3>P · proportional</h3>
+        <p>More gain gives a smaller error and a faster response, but more noise. In second-order systems it also brings more oscillation.</p>
+      </div>
+      <div>
+        <h3>I · integral</h3>
+        <p>Removes the step error completely. Too much makes the response oscillate, and it can destabilize the loop.</p>
+      </div>
+      <div>
+        <h3>D · derivative</h3>
+        <p>Looks ahead at where the error is going: it adds damping and pulls the poles left. More noise, and in practice it needs a fast pole, s/(cs + 1).</p>
+      </div>
+      <div>
+        <h3>PID</h3>
+        <p>C(s) = (k<sub>D</sub>s² + k<sub>P</sub>s + k<sub>I</sub>)/s: two zeros and a pole at the origin. Place them, then compute k<sub>P</sub>, k<sub>I</sub> and k<sub>D</sub>.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>The design recipe from the slides</h2>
+    <ul>
+      <li>Start with P and draw the root locus.</li>
+      <li>If the locus never passes through the good region, add a D term and redraw.</li>
+      <li>Pick the gain that puts the dominant poles in the good region.</li>
+      <li>If the steady-state error is still too big, add an I term and redraw.</li>
+    </ul>
+  </div>
+
+  <div class="card">
+    <h2>The catch</h2>
+    <ul>
+      <li>Following the reference and rejecting disturbances needs <b>S small</b>. Keeping sensor noise out of the output needs <b>T = L/(1 + L) small</b>.</li>
+      <li>But <b>S + T = 1</b>, so both cannot be small at once. The way out is to make them small at different frequencies — which is where next week's frequency-domain tools come in.</li>
+    </ul>
+  </div>
+
+  <div class="keep">
+    <h2>If you keep one thing</h2>
+    <p>
+      Every time-domain spec is a fence in the complex plane. Settling time pushes the poles left,
+      overshoot keeps them in a wedge, and integrators kill the steady-state error. P, I and D are
+      how you bend the root locus into the region you want.
+    </p>
+  </div>
+
+  <div class="card">
+    <h2>Worth doing this week</h2>
+    <ul>
+      <li>Read <b>Åström &amp; Murray, sections 12.1–12.2</b>.</li>
+      <li>For a pole at −1 ± 2j, work out ζ, ω<sub>n</sub>, the overshoot and the 5% settling time, then check them against <code>step</code> in MATLAB.</li>
+      <li>Watch the PID intro linked on the slides: <a href="https://www.youtube.com/watch?v=4Y7zG48uHRo">youtube.com/watch?v=4Y7zG48uHRo</a>.</li>
+    </ul>
+  </div>
+
+  <p class="fine">
+    Written by AI from the lecture slides, so treat it as a reminder rather than a source.<br>
+    <a href="https://video.ethz.ch/lectures/d-mavt/2026/autumn/151-0591-00L">Lecture recording</a> ·
+    <a href="https://idsc.ethz.ch/education/lectures/control-systems-i.html">Course page</a>
+  </p>
+
+</div>
+</body>
+</html>

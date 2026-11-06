@@ -469,6 +469,7 @@ html:has(.sheet[open]) { overflow: hidden; }
   font-weight: 600;
   text-align: center;
 }
+.tier-none span { display: block; margin-top: 3px; font-size: 13.5px; font-weight: 500; color: var(--ink-2); opacity: .8; }
 
 /* a link whose URL has not been filled in yet */
 .s-links a[data-placeholder],

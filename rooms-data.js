@@ -42,7 +42,8 @@ window.ROOMS = [
           title: "This week's homework",
           lead: "Start at the top and work down as far as your time allows.",
           // One entry per week, oldest first. The last one is the current week and opens first,
-          // so a new week just gets added at the bottom. tiers: [] means no homework that week.
+          // so a new week just gets added at the bottom. tiers: [] means no homework that week,
+          // and pending: true means it has not been announced yet ("coming soon").
           // tone: "must" (red), "should" (orange) or "could" (purple)
           weeks: [
             { week: 1, tiers: [] },
@@ -70,7 +71,8 @@ window.ROOMS = [
             { week: 7, tiers: [
               { label: "Definitely do", tone: "must", items: ["1", "2", "3", "5"] },
               { label: "If you have time", tone: "should", items: ["4", "6"] }
-            ] }
+            ] },
+            { week: 8, pending: true, tiers: [] }
           ]
         }
       },
@@ -167,7 +169,7 @@ window.ROOMS = [
           title: "Lecture recaps",
           lead: "A short AI-generated summary of each lecture, for catching up or revising. If something looks off, the slides are the reference.",
           links: [
-            { label: "This week's recap", href: "recaps/lecture-07.html" },
+            { label: "This week's recap", href: "recaps/lecture-08.html" },
             { label: "All recaps", href: "recaps/" }
           ]
         }
