@@ -72,7 +72,9 @@ window.ROOMS = [
               { label: "Definitely do", tone: "must", items: ["1", "2", "3", "5"] },
               { label: "If you have time", tone: "should", items: ["4", "6"] }
             ] },
-            { week: 8, pending: true, tiers: [] },
+            { week: 8, tiers: [
+              { label: "Definitely do", tone: "must", items: ["1", "2", "3"] }
+            ] },
             { week: 9, tiers: [
               { label: "Definitely do", tone: "must", items: ["1", "2"] },
               { label: "If you have time", tone: "should", items: ["5"] },
