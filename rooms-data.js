@@ -72,7 +72,12 @@ window.ROOMS = [
               { label: "Definitely do", tone: "must", items: ["1", "2", "3", "5"] },
               { label: "If you have time", tone: "should", items: ["4", "6"] }
             ] },
-            { week: 8, pending: true, tiers: [] }
+            { week: 8, pending: true, tiers: [] },
+            { week: 9, tiers: [
+              { label: "Definitely do", tone: "must", items: ["1", "2"] },
+              { label: "If you have time", tone: "should", items: ["5"] },
+              { label: "If you are interested", tone: "could", items: ["3", "4"] }
+            ] }
           ]
         }
       },
@@ -168,7 +173,7 @@ window.ROOMS = [
           title: "Lecture recaps",
           lead: "A short AI-generated summary of each lecture, for catching up or revising. If something looks off, the slides are the reference.",
           links: [
-            { label: "This week's recap", href: "recaps/lecture-08.html" },
+            { label: "This week's recap", href: "recaps/lecture-09.html" },
             { label: "All recaps", href: "recaps/" }
           ]
         }

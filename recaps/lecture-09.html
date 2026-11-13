@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<meta name="robots" content="noindex, nofollow">
+<title>Lecture 9 recap — Frequency Response</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📝</text></svg>">
+<link rel="stylesheet" href="recap.css">
+</head>
+<body>
+<div class="wrap">
+
+  <a class="back" href="./">← All recaps</a>
+
+  <p class="eyebrow">Lecture 9 · 11 November</p>
+  <h1>Frequency response and Bode plots</h1>
+  <p class="robot"><span>✨</span><span>AI-generated recap — check anything important against the slides</span></p>
+
+  <p class="lede">
+    The root locus has its limits: it needs a finite set of poles and zeros, and it says little about
+    uncertainty. This lecture starts on the other two classical tools. Both are built on one object
+    you already know from week 5: G(jω), how a system stretches and delays a sinusoid.
+  </p>
+
+  <div class="card">
+    <h2>Three classical tools</h2>
+    <div class="arch">
+      <div>
+        <h3>Root locus</h3>
+        <p>Quick check of whether a design can work. Only for finite numbers of poles and zeros; hard to show uncertainty.</p>
+      </div>
+      <div>
+        <h3>Nyquist plot</h3>
+        <p>The most reliable closed-loop stability test, and it always applies. Harder to draw and to design with.</p>
+      </div>
+      <div>
+        <h3>Bode plot</h3>
+        <p>Easy to draw and easy to show uncertainty — the tool of choice for real design. Can mislead if the plant is unstable or non-minimum phase.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Frequency response, again</h2>
+    <ul>
+      <li>For a stable system, cos(ωt) in gives <b>|G(jω)|·cos(ωt + ∠G(jω))</b> out in steady state: the same frequency, stretched and shifted.</li>
+      <li>G(jω) is a complex number for every ω. You can draw it in two ways: as a curve in the complex plane (the <b>polar plot</b>, leading to Nyquist), or as magnitude and phase against ω (the <b>Bode plot</b>).</li>
+      <li>You don't even need a model: excite a stable plant at a few frequencies, measure amplitude and phase, and you have its Bode plot.</li>
+    </ul>
+  </div>
+
+  <div class="card">
+    <h2>How a Bode plot is drawn</h2>
+    <ul>
+      <li>Frequency on a <b>log scale</b>. Magnitude in <b>decibels</b>: 20·log<sub>10</sub>|G|. A factor of 10 is 20 dB, a factor of 2 is about 6 dB.</li>
+      <li>Phase in degrees, on a linear scale.</li>
+      <li>Because magnitudes multiply and phases add, on these axes <b>the Bode plots of factors simply add up</b>. Inverting G flips both plots about the horizontal axis.</li>
+    </ul>
+  </div>
+
+  <div class="card">
+    <h2>The building blocks</h2>
+    <div class="arch">
+      <div>
+        <h3>Gain k</h3>
+        <p>A flat line at 20·log<sub>10</sub>k. Phase 0°.</p>
+      </div>
+      <div>
+        <h3>Integrator 1/s</h3>
+        <p>Falls at −20 dB per decade through 0 dB at ω = 1. Phase −90° everywhere.</p>
+      </div>
+      <div>
+        <h3>Stable pole 1/(τs + 1)</h3>
+        <p>Flat at 0 dB, then −20 dB/decade after the corner at ω = 1/τ (−3 dB right at it). Phase from 0° to −90°, passing −45° at the corner.</p>
+      </div>
+      <div>
+        <h3>Complex pair</h3>
+        <p>Flat, then −40 dB/decade after ω<sub>n</sub>. Phase from 0° to −180°. Near ω<sub>n</sub> there is a peak of 1/(2ζ): the smaller ζ, the sharper the peak and the steeper the phase drop.</p>
+      </div>
+      <div>
+        <h3>Zero τs + 1</h3>
+        <p>The pole flipped: +20 dB/decade after the corner, phase up to +90°.</p>
+      </div>
+      <div>
+        <h3>Non-minimum-phase zero −τs + 1</h3>
+        <p>Same magnitude as a normal zero, but the phase goes <b>down</b> to −90°, like a pole. The magnitude alone cannot tell you it is there.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Putting it together</h2>
+    <ul>
+      <li><b>Step 1</b>: rewrite G in Bode form, with every factor as (s/(−p) + 1) and the leftover constant out in front. For example, ½·(s + 2)(s + 10)/((s² + s + 1)(s + 5)) becomes 2·(s/2 + 1)(s/10 + 1)/((s² + s + 1)(s/5 + 1)).</li>
+      <li><b>Step 2</b>: draw the straight-line approximation for each factor.</li>
+      <li><b>Step 3</b>: add them. The low-frequency level is the Bode gain (here 2, about 6 dB). Each corner changes the slope by ±20 dB/decade for each pole or zero there.</li>
+      <li>An integrator in front tilts the whole thing: the plot starts at −20 dB/decade and −90°, as in the second example on the slides, 4·(s/4 + 1)/(s(s²/100 + s/10 + 1)).</li>
+    </ul>
+  </div>
+
+  <div class="card">
+    <h2>Bode's law</h2>
+    <ul>
+      <li>For a system that is stable and minimum-phase, magnitude and phase are not independent.</li>
+      <li>If the magnitude slope is κ·20 dB/decade over about a decade or more, the phase there is roughly <b>κ·90°</b>. A −40 dB/decade stretch means about −180°.</li>
+    </ul>
+  </div>
+
+  <div class="card">
+    <h2>The polar plot</h2>
+    <ul>
+      <li>The same G(jω), drawn as one curve in the complex plane, with ω running along it.</li>
+      <li>Sketch the Bode plot first, then read magnitude and angle off it to place the curve.</li>
+      <li>Only two things really matter: where it crosses the <b>unit circle</b> (|G| = 1) and where it crosses the <b>negative real axis</b> (phase −180°). That is the setup for Nyquist next week.</li>
+    </ul>
+  </div>
+
+  <div class="keep">
+    <h2>If you keep one thing</h2>
+    <p>
+      On a Bode plot every factor is a straight-line piece you can draw by hand, and the full plot is
+      just their sum. Poles bend it down by 20 dB/decade and −90°, zeros bend it up — except a
+      right-half-plane zero, which still pulls the phase down.
+    </p>
+  </div>
+
+  <div class="card">
+    <h2>Worth doing this week</h2>
+    <ul>
+      <li>Read <b>Åström &amp; Murray, chapter 9</b>.</li>
+      <li>Sketch both slide examples by hand from the building blocks, then compare with <code>bode</code> in MATLAB.</li>
+      <li>Try the question the slides leave open: what do the Bode plots of a differentiator and of a pair of complex zeros look like?</li>
+    </ul>
+  </div>
+
+  <p class="fine">
+    Written by AI from the lecture slides, so treat it as a reminder rather than a source.<br>
+    <a href="https://video.ethz.ch/lectures/d-mavt/2026/autumn/151-0591-00L">Lecture recording</a> ·
+    <a href="https://idsc.ethz.ch/education/lectures/control-systems-i.html">Course page</a>
+  </p>
+
+</div>
+</body>
+</html>
