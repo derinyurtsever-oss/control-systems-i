@@ -1,0 +1,524 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<meta name="robots" content="noindex, nofollow">
+<title>From arrow to Bode plot</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>↗️</text></svg>">
+<style>
+:root {
+  color-scheme: light;
+  --ink:   #1d1d1f;
+  --ink-2: #6e6e73;
+  --ink-3: #a1a1a6;
+  --line:  #e0e3e8;
+  --bg:    #f6f7f9;
+  --card:  #ffffff;
+
+  /* the worksheet's colours */
+  --pole:  #1f77d0;   /* the pole block, blue */
+  --now:   #1d1d1f;   /* the arrow right now */
+  --w1:    #2ca02c;   /* ω = 0.2, green */
+  --w2:    #ff8a00;   /* ω = 1, orange */
+  --w3:    #9b59d0;   /* ω = 5, purple */
+  --asym:  #d4231a;
+  --blue:  #0a84ff;
+
+  --font: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text",
+          "Segoe UI Variable Display", "Segoe UI", system-ui, sans-serif;
+  --mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+}
+
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+
+body {
+  margin: 0; min-height: 100vh;
+  background: var(--bg); color: var(--ink);
+  font-family: var(--font); font-size: 16px; letter-spacing: -0.01em;
+  -webkit-font-smoothing: antialiased;
+  -webkit-user-select: none; user-select: none;
+}
+
+.wrap { max-width: 1260px; margin: 0 auto; padding: 16px 20px 24px; display: flex; flex-direction: column; gap: 12px; }
+:focus-visible { outline: 2.5px solid var(--blue); outline-offset: 2px; border-radius: 10px; }
+
+.top { display: flex; align-items: center; justify-content: space-between; gap: 14px; flex-wrap: wrap; }
+.top h1 { margin: 0; font-size: clamp(18px, 2.1vw, 25px); font-weight: 650; letter-spacing: -0.025em; }
+.top .back { font-size: 14px; color: var(--blue); text-decoration: none; }
+.top .back:hover { text-decoration: underline; }
+.sub { margin: -6px 0 0; color: var(--ink-2); font-size: 15px; }
+
+.card {
+  background: var(--card); border-radius: 20px; padding: 14px 16px;
+  box-shadow: 0 1px 2px rgba(16,24,40,.04), 0 12px 30px -18px rgba(16,24,40,.25);
+}
+.card h2 { margin: 0 0 8px; font-size: 13px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; color: var(--ink-3); }
+
+.grid { display: grid; grid-template-columns: minmax(0, 0.85fr) minmax(0, 1.1fr); gap: 12px; align-items: stretch; }
+.below { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr); gap: 12px; }
+
+canvas { display: block; width: 100%; height: auto; }
+
+/* the two numbers the arrow gives */
+.read { display: grid; gap: 12px; }
+.row { display: grid; grid-template-columns: 1fr auto 1fr; gap: 10px; align-items: center; }
+.row .from, .row .to { padding: 10px 12px; border-radius: 14px; background: #f6f7f9; }
+.row .to { background: #eef5ff; }
+.row .k { font-size: 13px; font-weight: 600; color: var(--ink-2); }
+.row .v { font-size: clamp(20px, 2.3vw, 28px); font-weight: 700; letter-spacing: -0.02em; font-variant-numeric: tabular-nums; }
+.row .f { font-size: 12.5px; color: var(--ink-3); font-family: var(--mono); margin-top: 2px; }
+.row .arr { font-size: 22px; color: var(--ink-3); }
+.omega { font-size: 15px; color: var(--ink-2); }
+.omega b { font-size: 22px; color: var(--ink); font-variant-numeric: tabular-nums; }
+
+/* the three regimes, as in the table on page 8 */
+.regimes { display: grid; gap: 6px; }
+.reg { display: grid; grid-template-columns: 74px 1fr 1fr; gap: 10px; align-items: center; padding: 9px 12px; border-radius: 12px; background: #f6f7f9; font-size: 14.5px; color: var(--ink-2); transition: background .2s, color .2s, box-shadow .2s; }
+.reg b { color: var(--c); font-size: 15px; }
+.reg.on { background: #fff; color: var(--ink); box-shadow: inset 0 0 0 2px var(--c); }
+
+.say {
+  min-height: 34px; margin: 2px 0;
+  font-size: clamp(16px, 2vw, 22px); font-weight: 550; letter-spacing: -0.02em;
+  text-align: center;
+}
+.say .dim { color: var(--ink-3); }
+
+.controls { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; justify-content: center; }
+button {
+  font: inherit; font-size: 15px; font-weight: 600;
+  padding: 10px 16px; border: 0; border-radius: 999px;
+  background: var(--card); color: var(--ink);
+  box-shadow: inset 0 0 0 1px var(--line); cursor: pointer; transition: background .15s;
+}
+button:hover { background: #f0f2f5; }
+button.primary { background: var(--blue); color: #fff; box-shadow: none; min-width: 150px; }
+button.primary:hover { background: #0070e0; }
+button[aria-pressed="true"] { background: var(--ink); color: #fff; box-shadow: none; }
+button .dot { display: inline-block; width: 9px; height: 9px; border-radius: 50%; background: var(--c); margin-right: 7px; vertical-align: 1px; }
+kbd { font: inherit; font-size: 11px; font-weight: 700; opacity: .55; margin-left: 7px; letter-spacing: .04em; }
+.sep { width: 1px; height: 26px; background: var(--line); margin: 0 2px; }
+
+.slider { display: flex; align-items: center; gap: 10px; padding: 6px 14px; background: var(--card); border-radius: 999px; box-shadow: inset 0 0 0 1px var(--line); }
+.slider label { font-size: 14px; font-weight: 600; color: var(--ink-2); white-space: nowrap; }
+input[type=range] { -webkit-appearance: none; appearance: none; width: 200px; height: 5px; border-radius: 999px; background: var(--line); }
+input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; appearance: none; width: 19px; height: 19px; border-radius: 50%; background: #fff; border: 0; box-shadow: 0 1px 4px rgba(0,0,0,.32); cursor: pointer; }
+input[type=range]::-moz-range-thumb { width: 19px; height: 19px; border-radius: 50%; background: #fff; border: 0; box-shadow: 0 1px 4px rgba(0,0,0,.32); cursor: pointer; }
+
+details.sheet { background: var(--card); border-radius: 16px; box-shadow: inset 0 0 0 1px var(--line); padding: 12px 16px; font-size: 14.5px; }
+details.sheet summary { cursor: pointer; font-weight: 650; }
+details.sheet ol { margin: 12px 0 0; padding-left: 20px; display: grid; gap: 10px; color: var(--ink-2); }
+details.sheet b { color: var(--ink); }
+details.sheet .line { color: var(--ink); font-style: italic; }
+
+@media (max-width: 980px) {
+  .grid, .below { grid-template-columns: 1fr; }
+  kbd { display: none; }
+}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+
+  <div class="top">
+    <h1>From arrow to Bode plot</h1>
+    <a class="back" href="../">← back to the room</a>
+  </div>
+  <p class="sub">The first block on page 8: one pole, G(s) = 1/(s + 1). Walk s = jω up the imaginary axis, and the arrow from the pole draws the Bode plot.</p>
+
+  <div class="grid">
+    <section class="card">
+      <h2>s-plane · the arrow from the pole to jω</h2>
+      <canvas id="plane" width="760" height="900"></canvas>
+    </section>
+
+    <section class="card">
+      <h2>Bode plot of 1/(s + 1)</h2>
+      <canvas id="bode" width="1000" height="900"></canvas>
+    </section>
+  </div>
+
+  <p class="say" id="say">ω starts tiny: s = jω sits almost on the origin. Press space to walk it up.</p>
+
+  <div class="below">
+    <section class="card">
+      <h2>Read the arrow</h2>
+      <div class="read">
+        <div class="omega">ω = <b id="wOut">0.010</b> rad/s</div>
+        <div class="row">
+          <div class="from"><div class="k">arrow length</div><div class="v" id="lenOut">1.00</div><div class="f">√(1 + ω²)</div></div>
+          <div class="arr">→</div>
+          <div class="to"><div class="k">|G(jω)| = 1 / length</div><div class="v" id="magOut">0.0 dB</div><div class="f" id="magF">= 1.00</div></div>
+        </div>
+        <div class="row">
+          <div class="from"><div class="k">arrow angle</div><div class="v" id="angOut">0.6°</div><div class="f">arctan(ω)</div></div>
+          <div class="arr">→</div>
+          <div class="to"><div class="k">∠G(jω) = − angle</div><div class="v" id="phOut">−0.6°</div><div class="f">&nbsp;</div></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>Three regimes · the table on page 8</h2>
+      <div class="regimes">
+        <div class="reg" id="r1" style="--c: var(--w1)"><b>ω ≪ 1</b><span>the arrow hardly changes</span><span>flat at 0 dB, phase 0°</span></div>
+        <div class="reg" id="r2" style="--c: var(--w2)"><b>ω = 1</b><span>length √2, angle 45°</span><span>−3 dB, phase −45°</span></div>
+        <div class="reg" id="r3" style="--c: var(--w3)"><b>ω ≫ 1</b><span>as long as ω: 10× ω ⇒ 10× longer</span><span>−20 dB/decade, phase −90°</span></div>
+      </div>
+    </section>
+  </div>
+
+  <div class="controls">
+    <button class="primary" id="btnGo" type="button">Sweep ω<kbd>SPACE</kbd></button>
+    <button id="btnReset" type="button">Start over<kbd>0</kbd></button>
+    <span class="sep"></span>
+    <button type="button" data-w="0.2" style="--c: var(--w1)"><span class="dot"></span>ω = 0.2<kbd>1</kbd></button>
+    <button type="button" data-w="1" style="--c: var(--w2)"><span class="dot"></span>ω = 1<kbd>2</kbd></button>
+    <button type="button" data-w="5" style="--c: var(--w3)"><span class="dot"></span>ω = 5<kbd>3</kbd></button>
+    <span class="sep"></span>
+    <div class="slider">
+      <label for="wIn">ω</label>
+      <input type="range" id="wIn" min="-2" max="2" step="0.005" value="-2" aria-label="Frequency, log scale">
+    </div>
+    <button id="btnLines" type="button" aria-pressed="false">Straight lines<kbd>A</kbd></button>
+  </div>
+
+  <details class="sheet">
+    <summary>How to run this</summary>
+    <ol>
+      <li><b>The three arrows first.</b> Press 1, 2, 3 for ω = 0.2, 1 and 5 — the green, orange and purple arrows from the sheet.
+        Each one drops a dot on the Bode plot. Before each one, ask: longer or shorter, steeper or flatter?</li>
+      <li><b>Then start over and sweep.</b> At the bottom the arrow barely moves: flat at 0 dB. At ω = 1 it is the diagonal of a
+        unit square: √2 long, 45°. Above that it is basically just jω.
+        <div class="line">"Ten times higher, ten times longer arrow, a tenth of the gain: −20 dB per decade."</div></li>
+      <li><b>Straight lines.</b> Press A for the asymptotes: flat, then −20 dB/decade from the corner at ω = 1; the phase ramps
+        from 0° to −90° between 0.1 and 10. The real curve is never more than 3 dB away.</li>
+      <li><b>Then the rest of the alphabet.</b> A zero is the same arrow in the numerator, so everything flips: +20 dB/decade and +90°.</li>
+    </ol>
+    <p style="margin:14px 0 0; color: var(--ink-2)">
+      Keys: <b>space</b> sweep / pause · <b>1 2 3</b> ω = 0.2, 1, 5 · <b>←/→</b> nudge ω · <b>0</b> start over · <b>A</b> straight lines · <b>F</b> fullscreen.
+    </p>
+  </details>
+
+</div>
+
+<script>
+(function () {
+  "use strict";
+
+  var $ = function (id) { return document.getElementById(id); };
+  var LMIN = -2, LMAX = 2;               // ω from 0.01 to 100, on a log scale
+  var SNAPS = [
+    { w: 0.2, c: "w1" },
+    { w: 1,   c: "w2" },
+    { w: 5,   c: "w3" }
+  ];
+
+  var lw = LMIN, lwMax = LMIN, target = LMIN, rate = 1 / 3, moving = false, dwell = 0, lines = false;
+  var pins = [];
+
+  function W() { return Math.pow(10, lw); }
+  function len(w) { return Math.sqrt(1 + w * w); }
+  function ang(w) { return Math.atan(w); }                 // radians
+  function dB(w) { return -20 * Math.log10(len(w)); }
+  function ph(w) { return -ang(w) * 180 / Math.PI; }
+
+  var FONT = getComputedStyle(document.documentElement).getPropertyValue("--font");
+  function col(n) { return getComputedStyle(document.documentElement).getPropertyValue("--" + n).trim(); }
+  function minus(s) { return String(s).replace("-", "−"); }
+
+  /* ---------------- the s-plane ---------------- */
+
+  var pc = $("plane"), PW = pc.width, PH = pc.height;
+  var S = 150, OX = 2.2 * S, OY = 5.4 * S;               // Re from −2.2, Im up to 5.4
+  var X = function (re) { return OX + re * S; }, Y = function (im) { return OY - im * S; };
+  var TOP = 30;                                            // arrows that go higher are cut here
+
+  function arrow(ctx, x0, y0, x1, y1, colour, width, head) {
+    ctx.strokeStyle = colour; ctx.fillStyle = colour; ctx.lineWidth = width; ctx.lineCap = "round";
+    var q = Math.atan2(y1 - y0, x1 - x0), h = head || 22;
+    ctx.beginPath(); ctx.moveTo(x0, y0); ctx.lineTo(x1 - h * 0.6 * Math.cos(q), y1 - h * 0.6 * Math.sin(q)); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(x1, y1);
+    ctx.lineTo(x1 - h * Math.cos(q - 0.42), y1 - h * Math.sin(q - 0.42));
+    ctx.lineTo(x1 - h * Math.cos(q + 0.42), y1 - h * Math.sin(q + 0.42));
+    ctx.closePath(); ctx.fill();
+  }
+
+  function tip(w) {
+    // where the arrow ends on the canvas: at jω, or cut at the top edge
+    var x1 = X(0), y1 = Y(w), cut = false;
+    if (y1 < TOP) {
+      var t = (OY - TOP) / (OY - y1);                      // fraction of the way from the pole
+      x1 = X(-1) + (X(0) - X(-1)) * t; y1 = TOP; cut = true;
+    }
+    return { x: x1, y: y1, cut: cut };
+  }
+
+  function drawPlane() {
+    var ctx = pc.getContext("2d");
+    ctx.clearRect(0, 0, PW, PH);
+
+    ctx.strokeStyle = "#eceef2"; ctx.lineWidth = 1.5;
+    for (var g = -2; g <= 2; g++) { ctx.beginPath(); ctx.moveTo(X(g), 0); ctx.lineTo(X(g), PH); ctx.stroke(); }
+    for (var h = 1; h <= 5; h++) { ctx.beginPath(); ctx.moveTo(0, Y(h)); ctx.lineTo(PW, Y(h)); ctx.stroke(); }
+    ctx.strokeStyle = "#9aa0a8"; ctx.lineWidth = 2.5;
+    ctx.beginPath(); ctx.moveTo(0, OY); ctx.lineTo(PW, OY); ctx.moveTo(X(0), PH); ctx.lineTo(X(0), 0); ctx.stroke();
+    ctx.fillStyle = "#8e8e93"; ctx.font = "600 24px " + FONT;
+    ctx.textAlign = "center"; ctx.textBaseline = "top";
+    [-2, 1, 2].forEach(function (v) { ctx.fillText(minus(v), X(v), OY + 10); });
+    ctx.textAlign = "right"; ctx.textBaseline = "middle";
+    [1, 2, 3, 4, 5].forEach(function (v) { ctx.fillText(v + "j", X(0) - 12, Y(v)); });
+    ctx.textAlign = "right"; ctx.textBaseline = "bottom"; ctx.fillText("Re", PW - 12, OY - 8);
+    ctx.textAlign = "left"; ctx.textBaseline = "top"; ctx.fillText("Im", X(0) + 10, 8);
+
+    // ω → ∞: the arrow ends up pointing straight up
+    ctx.strokeStyle = "#c7cbd1"; ctx.lineWidth = 2.5; ctx.setLineDash([8, 9]);
+    ctx.beginPath(); ctx.moveTo(X(-1), OY); ctx.lineTo(X(-1), TOP); ctx.stroke(); ctx.setLineDash([]);
+    ctx.fillStyle = "#a1a1a6"; ctx.font = "600 21px " + FONT; ctx.textAlign = "right"; ctx.textBaseline = "top";
+    ctx.fillText("ω = ∞", X(-1) - 10, TOP + 4);
+
+    // the path of s = jω so far
+    ctx.strokeStyle = "rgba(10,132,255,.35)"; ctx.lineWidth = 9; ctx.lineCap = "round";
+    ctx.beginPath(); ctx.moveTo(X(0), OY); ctx.lineTo(X(0), Math.max(TOP, Y(Math.pow(10, lwMax)))); ctx.stroke();
+
+    // the snapshots left behind
+    pins.forEach(function (p) {
+      var t = tip(p.w);
+      arrow(ctx, X(-1), OY, t.x, t.y, col(p.c), 5, 20);
+      ctx.fillStyle = col(p.c); ctx.font = "700 22px " + FONT; ctx.textAlign = "left"; ctx.textBaseline = "middle";
+      ctx.fillText("ω = " + p.w, X(0) + 16, t.cut ? TOP + 14 : t.y);
+    });
+
+    // the arrow right now, with its length and angle
+    var w = W(), t = tip(w);
+    var a = ang(w), R = 70;
+    ctx.strokeStyle = "rgba(29,29,31,.55)"; ctx.lineWidth = 3;
+    ctx.beginPath(); ctx.arc(X(-1), OY, R, 0, -a, true); ctx.stroke();
+    ctx.fillStyle = "#1d1d1f"; ctx.font = "700 22px " + FONT; ctx.textAlign = "left"; ctx.textBaseline = "middle";
+    ctx.fillText((a * 180 / Math.PI).toFixed(0) + "°", X(-1) + R * Math.cos(-a / 2) + 10, OY + R * Math.sin(-a / 2) - (a < 0.25 ? 14 : 0));
+
+    arrow(ctx, X(-1), OY, t.x, t.y, col("now"), 7, 26);
+    ctx.fillStyle = "#fff"; ctx.strokeStyle = col("blue"); ctx.lineWidth = 4;
+    if (!t.cut) { ctx.beginPath(); ctx.arc(X(0), Y(w), 9, 0, 7); ctx.fill(); ctx.stroke(); }
+    // the length, written along the arrow
+    var mx = (X(-1) + t.x) / 2, my = (OY + t.y) / 2;
+    ctx.save(); ctx.translate(mx, my); ctx.rotate(Math.atan2(t.y - OY, t.x - X(-1)));
+    ctx.fillStyle = "#1d1d1f"; ctx.font = "700 24px " + FONT; ctx.textAlign = "center"; ctx.textBaseline = "bottom";
+    ctx.fillText("length " + len(w).toFixed(2), 0, -10);
+    ctx.restore();
+    if (t.cut) {
+      ctx.fillStyle = col("blue"); ctx.font = "700 22px " + FONT; ctx.textAlign = "left"; ctx.textBaseline = "top";
+      ctx.fillText("jω = " + w.toFixed(w < 10 ? 1 : 0) + "j  ↑ above the picture", X(0) + 14, TOP + 96);
+    } else {
+      ctx.fillStyle = col("blue"); ctx.font = "700 22px " + FONT; ctx.textAlign = "left"; ctx.textBaseline = "middle";
+      ctx.fillText("s = jω", X(0) + 18, Y(w) + (pins.some(function (p) { return Math.abs(Y(p.w) - Y(w)) < 26; }) ? 28 : 0));
+    }
+
+    // the pole
+    ctx.strokeStyle = col("pole"); ctx.lineWidth = 6; ctx.lineCap = "round";
+    var px = X(-1), r = 15;
+    ctx.beginPath(); ctx.moveTo(px - r, OY - r); ctx.lineTo(px + r, OY + r); ctx.moveTo(px + r, OY - r); ctx.lineTo(px - r, OY + r); ctx.stroke();
+    ctx.fillStyle = col("pole"); ctx.font = "700 24px " + FONT; ctx.textAlign = "center"; ctx.textBaseline = "top";
+    ctx.fillText("p = −1", px, OY + 22);
+  }
+
+  /* ---------------- the Bode plot ---------------- */
+
+  var bc = $("bode"), BW = bc.width, BH = bc.height;
+  var padL = 118, padR = 26;
+  var MAG = { top: 24, bot: 420, hi: 20, lo: -80 }, PHS = { top: 476, bot: 830, hi: 0, lo: -180 };
+  var BX = function (l) { return padL + (l - LMIN) / (LMAX - LMIN) * (BW - padL - padR); };
+  var YM = function (v) { return MAG.top + (MAG.hi - v) / (MAG.hi - MAG.lo) * (MAG.bot - MAG.top); };
+  var YP = function (v) { return PHS.top + (PHS.hi - v) / (PHS.hi - PHS.lo) * (PHS.bot - PHS.top); };
+
+  function frame(box, Yf, ticks, unit, title) {
+    var ctx = bc.getContext("2d");
+    ctx.fillStyle = "#fbfbfc"; ctx.fillRect(padL, box.top, BW - padL - padR, box.bot - box.top);
+    ctx.strokeStyle = "#eceef2"; ctx.lineWidth = 1;
+    for (var d = LMIN; d < LMAX; d++) for (var k = 2; k <= 9; k++) {
+      var x = BX(d + Math.log10(k)); ctx.beginPath(); ctx.moveTo(x, box.top); ctx.lineTo(x, box.bot); ctx.stroke();
+    }
+    ctx.strokeStyle = "#d9dce1"; ctx.lineWidth = 1.6;
+    for (var e = LMIN; e <= LMAX; e++) { ctx.beginPath(); ctx.moveTo(BX(e), box.top); ctx.lineTo(BX(e), box.bot); ctx.stroke(); }
+    ctx.fillStyle = "#8e8e93"; ctx.font = "600 22px " + FONT; ctx.textAlign = "right"; ctx.textBaseline = "middle";
+    ticks.forEach(function (v) {
+      ctx.beginPath(); ctx.moveTo(padL, Yf(v)); ctx.lineTo(BW - padR, Yf(v)); ctx.stroke();
+      ctx.fillText(minus(v), padL - 12, Yf(v));
+    });
+    ctx.strokeStyle = "#9aa0a8"; ctx.lineWidth = 2; ctx.strokeRect(padL, box.top, BW - padL - padR, box.bot - box.top);
+    ctx.save(); ctx.translate(28, (box.top + box.bot) / 2); ctx.rotate(-Math.PI / 2);
+    ctx.textAlign = "center"; ctx.textBaseline = "middle"; ctx.fillStyle = "#6e6e73"; ctx.font = "600 22px " + FONT;
+    ctx.fillText(title + " [" + unit + "]", 0, 0); ctx.restore();
+  }
+
+  function drawBode() {
+    var ctx = bc.getContext("2d");
+    ctx.clearRect(0, 0, BW, BH);
+    frame(MAG, YM, [20, 0, -20, -40, -60, -80], "dB", "magnitude");
+    frame(PHS, YP, [0, -45, -90, -135, -180], "deg", "phase");
+    ctx.fillStyle = "#8e8e93"; ctx.font = "600 22px " + FONT; ctx.textAlign = "center"; ctx.textBaseline = "top";
+    for (var e = LMIN; e <= LMAX; e++) ctx.fillText("10" + ["⁻²", "⁻¹", "⁰", "¹", "²"][e + 2], BX(e), PHS.bot + 10);
+    ctx.fillText("ω [rad/s]", (padL + BW - padR) / 2, PHS.bot + 40);
+
+    // the straight-line approximation
+    if (lines) {
+      ctx.strokeStyle = "rgba(212,35,26,.75)"; ctx.lineWidth = 4; ctx.setLineDash([14, 10]);
+      ctx.beginPath(); ctx.moveTo(BX(LMIN), YM(0)); ctx.lineTo(BX(0), YM(0)); ctx.lineTo(BX(LMAX), YM(-40)); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(BX(LMIN), YP(0)); ctx.lineTo(BX(-1), YP(0)); ctx.lineTo(BX(1), YP(-90)); ctx.lineTo(BX(LMAX), YP(-90)); ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.fillStyle = col("asym"); ctx.font = "700 21px " + FONT; ctx.textAlign = "left"; ctx.textBaseline = "top";
+      ctx.fillText("−20 dB / decade", BX(0.9), YM(-38));
+      ctx.textAlign = "center"; ctx.fillText("corner ω = 1", BX(0), YM(0) - 34);
+      ctx.textAlign = "left"; ctx.textBaseline = "top"; ctx.fillText("0° → −90° from 0.1 to 10", BX(-0.95), YP(-90) + 34);
+      // one decade, one −20 dB step
+      ctx.strokeStyle = col("asym"); ctx.lineWidth = 2.5;
+      ctx.beginPath(); ctx.moveTo(BX(1), YM(-20)); ctx.lineTo(BX(2), YM(-20)); ctx.lineTo(BX(2), YM(-40)); ctx.stroke();
+      ctx.textAlign = "right"; ctx.textBaseline = "middle"; ctx.fillText("−20 dB", BX(2) - 8, YM(-31));
+      ctx.textAlign = "center"; ctx.textBaseline = "bottom"; ctx.fillText("× 10", BX(1.5), YM(-20) - 6);
+    }
+
+    // the curve, drawn as far as ω has gone
+    ctx.lineJoin = "round"; ctx.lineCap = "round";
+    [[YM, dB], [YP, ph]].forEach(function (pair) {
+      ctx.strokeStyle = col("pole"); ctx.lineWidth = 6; ctx.beginPath();
+      var n = 400;
+      for (var i = 0; i <= n; i++) {
+        var l = LMIN + (lwMax - LMIN) * i / n, w = Math.pow(10, l);
+        var x = BX(l), y = pair[0](pair[1](w));
+        if (!i) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+      }
+      if (lwMax > LMIN) ctx.stroke();
+    });
+
+    // the snapshots
+    pins.forEach(function (p) {
+      var x = BX(Math.log10(p.w));
+      [[YM(dB(p.w)), minus(dB(p.w).toFixed(1)) + " dB"], [YP(ph(p.w)), minus(ph(p.w).toFixed(0)) + "°"]].forEach(function (q) {
+        ctx.fillStyle = "#fff"; ctx.beginPath(); ctx.arc(x, q[0], 13, 0, 7); ctx.fill();
+        ctx.fillStyle = col(p.c); ctx.beginPath(); ctx.arc(x, q[0], 9, 0, 7); ctx.fill();
+        ctx.font = "700 20px " + FONT; ctx.textAlign = "left"; ctx.textBaseline = "top";
+        ctx.fillText(q[1], x + 12, q[0] + 10);
+      });
+    });
+
+    // ω right now
+    var x = BX(lw), w = W();
+    ctx.strokeStyle = "rgba(10,132,255,.45)"; ctx.lineWidth = 2.5; ctx.setLineDash([6, 8]);
+    ctx.beginPath(); ctx.moveTo(x, MAG.top); ctx.lineTo(x, PHS.bot); ctx.stroke(); ctx.setLineDash([]);
+    [YM(dB(w)), YP(ph(w))].forEach(function (y) {
+      ctx.fillStyle = "#fff"; ctx.strokeStyle = col("blue"); ctx.lineWidth = 4;
+      ctx.beginPath(); ctx.arc(x, y, 10, 0, 7); ctx.fill(); ctx.stroke();
+    });
+  }
+
+  /* ---------------- text ---------------- */
+
+  var region = null;
+  function paintText() {
+    var w = W();
+    $("wOut").textContent = w < 0.1 ? w.toFixed(3) : w < 10 ? w.toFixed(2) : w.toFixed(1);
+    $("lenOut").textContent = len(w).toFixed(2);
+    $("magOut").textContent = minus(dB(w).toFixed(1)) + " dB";
+    $("magF").textContent = "= 1 / " + len(w).toFixed(2) + " = " + (1 / len(w)).toFixed(w > 20 ? 3 : 2);
+    $("angOut").textContent = (ang(w) * 180 / Math.PI).toFixed(1) + "°";
+    $("phOut").textContent = minus(ph(w).toFixed(1)) + "°";
+    if (document.activeElement !== $("wIn")) $("wIn").value = lw;
+
+    var r = lw < -0.55 ? 1 : lw <= 0.45 ? 2 : 3;
+    ["r1", "r2", "r3"].forEach(function (id, i) { $(id).classList.toggle("on", i + 1 === r); });
+    var key = Math.abs(lw) < 0.02 ? "corner" : lw >= 1.98 ? "end" : r;
+    if (key !== region) {
+      region = key;
+      var SAY = {
+        1: "ω ≪ 1: the tip barely leaves the origin. <span class='dim'>Length ≈ 1, angle ≈ 0 — flat at 0 dB.</span>",
+        corner: "ω = 1: the arrow is the diagonal of a unit square. <span class='dim'>√2 long, 45° — so −3 dB and −45°.</span>",
+        2: "Around the corner the arrow starts to stretch and tip over.",
+        3: "ω ≫ 1: the arrow is basically jω itself. <span class='dim'>10× higher, 10× longer: −20 dB per decade, −90°.</span>",
+        end: "ω = 100: the arrow is 100 long, so |G| = 1/100 = −40 dB. <span class='dim'>Two decades past the corner, two times −20 dB.</span>"
+      };
+      $("say").innerHTML = SAY[key];
+    }
+    $("btnGo").innerHTML = (moving && target === LMAX ? "Pause" : lw >= LMAX ? "Sweep again" : lw > LMIN ? "Keep sweeping" : "Sweep ω") + "<kbd>SPACE</kbd>";
+    $("btnLines").setAttribute("aria-pressed", String(lines));
+  }
+
+  /* ---------------- moving ω ---------------- */
+
+  function reach(l) {
+    if (l > lwMax) {
+      SNAPS.forEach(function (s) {
+        var ls = Math.log10(s.w);
+        if (lwMax < ls - 1e-9 && l >= ls - 1e-9 && !pins.some(function (p) { return p.w === s.w; })) pins.push(s);
+      });
+      lwMax = l;
+    }
+  }
+  function goTo(l, r) { target = Math.max(LMIN, Math.min(LMAX, l)); rate = r; moving = true; }
+  function startOver() { lw = lwMax = target = LMIN; moving = false; dwell = 0; pins = []; region = null; paintText(); }
+
+  $("btnGo").addEventListener("click", function () {
+    if (moving && target === LMAX) moving = false;
+    else { if (lw >= LMAX) startOver(); goTo(LMAX, 1 / 3); }
+    paintText();
+  });
+  $("btnReset").addEventListener("click", startOver);
+  Array.prototype.forEach.call(document.querySelectorAll("button[data-w]"), function (b) {
+    b.addEventListener("click", function () {
+      var l = Math.log10(+b.dataset.w);
+      goTo(l, Math.max(0.8, Math.abs(l - lw) / 1.1)); paintText();
+    });
+  });
+  $("btnLines").addEventListener("click", function () { lines = !lines; paintText(); });
+  $("wIn").addEventListener("input", function () { moving = false; lw = +this.value; reach(lw); paintText(); });
+
+  document.addEventListener("keydown", function (e) {
+    if (e.target.tagName === "INPUT" && e.key.indexOf("Arrow") === 0) return;
+    var k = e.key.toLowerCase();
+    if (k === " " || e.code === "Space") { e.preventDefault(); $("btnGo").click(); }
+    else if (k === "1" || k === "2" || k === "3") document.querySelectorAll("button[data-w]")[+k - 1].click();
+    else if (k === "0" || k === "r") startOver();
+    else if (k === "a") $("btnLines").click();
+    else if (e.key === "ArrowRight") { e.preventDefault(); moving = false; lw = Math.min(LMAX, lw + 0.05); reach(lw); paintText(); }
+    else if (e.key === "ArrowLeft") { e.preventDefault(); moving = false; lw = Math.max(LMIN, lw - 0.05); paintText(); }
+    else if (k === "f") {
+      if (document.fullscreenElement) document.exitFullscreen();
+      else document.documentElement.requestFullscreen();
+    }
+  });
+
+  /* ---------------- the loop ---------------- */
+
+  var last = null, lastRAF = 0;
+  function advance(now) {
+    if (last === null) last = now;
+    var dt = Math.min(0.05, (now - last) / 1000);
+    last = now;
+    if (moving && dwell > 0) dwell -= dt;
+    else if (moving) {
+      var step = rate * dt, before = lw;
+      if (Math.abs(target - lw) <= step) { lw = target; moving = false; }
+      else lw += step * Math.sign(target - lw);
+      // during a sweep, stop for a moment at each of the three arrows from the sheet
+      if (target === LMAX) SNAPS.forEach(function (s) {
+        var ls = Math.log10(s.w);
+        if (before < ls && lw >= ls) { lw = ls; dwell = 1.3; }
+      });
+      reach(lw);
+      paintText();
+    }
+    drawPlane(); drawBode();
+  }
+  function tick(ts) { requestAnimationFrame(tick); lastRAF = performance.now(); advance(ts); }
+  requestAnimationFrame(tick);
+  setInterval(function () { var n = performance.now(); if (n - lastRAF > 300) advance(n); }, 60);
+  document.addEventListener("visibilitychange", function () { last = null; });
+
+  startOver(); drawPlane(); drawBode();
+})();
+</script>
+</body>
+</html>

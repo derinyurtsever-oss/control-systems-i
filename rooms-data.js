@@ -88,20 +88,20 @@ window.ROOMS = [
         x: 83, y: 53.3,
         label: "This week's tool",
         panel: {
-          kicker: "From last week · Try it yourself",
-          title: "Draw the root locus",
-          lead: "The example from page 8: P(s) = 0.2 / ((s + 2)(s − 1)) with a gain K in front. Turn K up and watch the closed-loop poles trace out the root locus.",
+          kicker: "Week 9 · Try it yourself",
+          title: "From arrow to Bode plot",
+          lead: "The first block on page 8: one pole, G(s) = 1/(s + 1). Walk s = jω up the imaginary axis and watch the arrow from the pole draw the Bode plot.",
           list: [
-            "K = 1, 10, 20: the three snapshots from the sheet",
-            "K = 10: the unstable pole reaches 0, and the loop becomes stable",
-            "K = 11.25: the poles meet at −0.5 and break away",
-            "Then the rules give the same picture without solving anything"
+            "|G| = 1 / arrow length, ∠G = − arrow angle",
+            "ω = 0.2, 1, 5: the three arrows from the sheet",
+            "At the corner: √2 long, 45°, so −3 dB and −45°",
+            "Far above it: 10× higher, 10× longer, −20 dB per decade"
           ],
           links: [
-            { label: "Open the demo", href: "tools/root-locus.html" },
-            { label: "Earlier: shake the spring", href: "tools/spring-frequency.html" }
+            { label: "Open the demo", href: "tools/bode-pole.html" },
+            { label: "Week 5: shake the spring", href: "tools/spring-frequency.html" }
           ],
-          note: "Closed-loop poles start at the open-loop poles and end at the zeros — or at infinity."
+          note: "Every other block in the Bode alphabet works the same way: a zero is the same arrow, upside down."
         }
       },
       {
@@ -109,18 +109,18 @@ window.ROOMS = [
         x: 73.5, y: 44.9,
         label: "Today's exercise",
         panel: {
-          kicker: "Week 8 · Today",
-          title: "Time-Domain Specifications, PID",
-          lead: "Stable is not enough. We follow a car with cruise control from a red light, up a hill and onto the motorway, and ask: how fast, how much overshoot, exactly on target?",
+          kicker: "Week 9 · Today",
+          title: "Frequency Response, Bode Plot, Polar Plot",
+          lead: "A step response is only one test. Real signals keep oscillating, so today we ask how a system reacts to every frequency at once.",
           list: [
-            "Settling time, rise time, time to peak and overshoot of first- and second-order systems",
-            "Turning those specs into a region of the s-plane, and reaching it with the root locus",
-            "Dominant poles, and keeping G(0) when you approximate",
-            "Steady-state error and system type; P, I and D, and what each one does"
+            "Back to the rubber band: each experiment is one complex number G(jω)",
+            "From three frequencies to all of them, on log axes and in decibels",
+            "Multiplying becomes adding: the Bode alphabet of building blocks",
+            "Two complex poles, and the polar plot"
           ],
           links: [
-            { label: "Worksheet 8", href: "files/week-8-worksheet.pdf" },
-            { label: "Worksheet 7", href: "files/week-7-worksheet.pdf" }
+            { label: "Worksheet 9", href: "files/week-9-worksheet.pdf" },
+            { label: "Worksheet 8", href: "files/week-8-worksheet.pdf" }
           ],
           note: "Solutions go up straight after the session."
         }
