@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<meta name="robots" content="noindex, nofollow">
+<title>Lecture 10 recap — Polar Plots and Nyquist</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📝</text></svg>">
+<link rel="stylesheet" href="recap.css">
+</head>
+<body>
+<div class="wrap">
+
+  <a class="back" href="./">← All recaps</a>
+
+  <p class="eyebrow">Lecture 10 · 18 November</p>
+  <h1>Polar plots and the Nyquist condition</h1>
+  <p class="robot"><span>✨</span><span>AI-generated recap — check anything important against the slides</span></p>
+
+  <p class="lede">
+    The root locus answers "is the closed loop stable?" by moving poles around. Nyquist answers the
+    same question from the open-loop frequency response alone, and it also says how close you are to
+    the edge. That distance is what gain and phase margin measure.
+  </p>
+
+  <div class="card">
+    <h2>The polar plot</h2>
+    <ul>
+      <li>Draw G(jω) as a single curve in the complex plane, with ω running along it. Sketching the Bode plot first is the easiest way to get it right.</li>
+      <li>Only two places really matter: where the curve crosses the <b>unit circle</b> (|G| = 1) and where it crosses the <b>negative real axis</b> (phase −180°).</li>
+      <li>The slides go through the integrator (the negative imaginary axis), a single pole (a half-circle from 1 to 0), a complex pair (down to −180°), and a longer transfer function.</li>
+    </ul>
+  </div>
+
+  <div class="card">
+    <h2>The idea behind it: counting by angles</h2>
+    <ul>
+      <li>Walk s once around a closed curve Γ. Each factor (s − z) or (s − p) is an arrow from that zero or pole to s, and ∠G is the sum of the zero angles minus the pole angles.</li>
+      <li>An arrow from a point <b>outside</b> Γ swings back and forth and ends where it started: a net change of 0. An arrow from a point <b>inside</b> Γ goes all the way round: ±360°.</li>
+      <li>So the number of times G(s) circles the origin is <b>N = Z − P</b>: the zeros minus the poles inside Γ. This is the <b>principle of the argument</b>.</li>
+    </ul>
+  </div>
+
+  <div class="card">
+    <h2>From that to closed-loop stability</h2>
+    <ul>
+      <li>The closed-loop poles are the zeros of 1 + kL(s). The poles of 1 + kL(s) are just the poles of L(s).</li>
+      <li>Choose Γ as the <b>Nyquist contour</b>, or D-contour: up the imaginary axis and round a huge half-circle enclosing the right half-plane.</li>
+      <li>Then 1 + kL circling 0 is the same as L circling the point <b>−1/k</b>. For k = 1 that is the famous −1 point.</li>
+      <li>On the imaginary axis L(−jω) is the mirror image of L(jω), so the <b>Nyquist plot</b> is just the polar plot plus its reflection in the real axis.</li>
+    </ul>
+  </div>
+
+  <div class="keep">
+    <h2>The Nyquist condition</h2>
+    <p>
+      Let P be the number of unstable open-loop poles and N the number of clockwise encirclements of −1/k.
+      The closed loop then has <b>Z = N + P</b> unstable poles. If L is stable (P = 0), the closed loop is stable as
+      long as the plot does <b>not</b> circle −1/k. If L has P unstable poles, the plot has to circle −1/k exactly
+      P times <b>counter-clockwise</b>.
+    </p>
+  </div>
+
+  <div class="card">
+    <h2>Poles on the imaginary axis</h2>
+    <ul>
+      <li>The contour cannot go through a pole, so make a tiny <b>indentation</b> around each pole on the axis, leaving it on the left.</li>
+      <li>On the plot that small detour turns into a huge arc at infinity. Close it the right way: if you went counter-clockwise round the pole, close the plot clockwise.</li>
+      <li>The slides work through 4/(s(s + 2)), (s − 2)/s² and 2/((s² + 1)(s + 1)).</li>
+    </ul>
+  </div>
+
+  <div class="card">
+    <h2>How far from the edge: margins</h2>
+    <div class="arch">
+      <div>
+        <h3>Gain margin</h3>
+        <p>At ω<sub>180</sub>, where the phase is −180°: GM = 1/|L(jω<sub>180</sub>)|. How much the gain may grow before the plot hits −1. On the Bode plot: the gap below 0 dB at ω<sub>180</sub>.</p>
+      </div>
+      <div>
+        <h3>Phase margin</h3>
+        <p>At the crossover ω<sub>c</sub>, where |L| = 1: φ<sub>m</sub> = 180° + ∠L(jω<sub>c</sub>). How much extra phase lag the loop can take. On the Bode plot: the gap above −180° at ω<sub>c</sub>.</p>
+      </div>
+    </div>
+    <ul style="margin-top: 14px">
+      <li>For a stable, minimum-phase L, Nyquist on the Bode plot becomes: the magnitude must be below 0 dB where the phase crosses −180°, and the phase above −180° where the magnitude crosses 0 dB.</li>
+      <li>If L is unstable or has right-half-plane zeros, don't trust that shortcut. Check with the full Nyquist plot or the root locus.</li>
+    </ul>
+  </div>
+
+  <div class="card">
+    <h2>Specs in the frequency domain</h2>
+    <ul>
+      <li>References and disturbances live at <b>low</b> frequencies, sensor noise at <b>high</b> ones. That is how you get around S + T = 1: make each one small where it matters.</li>
+      <li><b>Tracking</b>: |S| small at low frequency, which means |L| large there. Written as |L(jω)| &gt; |W<sub>1</sub>(jω)|, a <b>low-frequency obstacle</b> on the Bode plot.</li>
+      <li><b>Noise rejection</b>: |T| small at high frequency, which means |L| small there. Written as |L(jω)| &lt; 1/|W<sub>2</sub>(jω)|, a <b>high-frequency obstacle</b>.</li>
+      <li>In between, cross 0 dB with a slope of about <b>−20 dB/decade</b> to keep a good phase margin. The crossover ω<sub>c</sub> is roughly the closed-loop <b>bandwidth</b>.</li>
+      <li>Loop shaping is threading |L| through this obstacle course.</li>
+    </ul>
+  </div>
+
+  <div class="card">
+    <h2>The closed loop, seen from L</h2>
+    <ul>
+      <li>|T| ≈ 1 where |L| ≫ 1: the output follows the reference.</li>
+      <li>|T| ≈ |L| where |L| ≪ 1: noise is passed on only as much as L lets it through.</li>
+      <li>|T| ≫ 1 near L ≈ −1: a resonance peak, and the sign of a poor margin.</li>
+    </ul>
+  </div>
+
+  <div class="card">
+    <h2>Worth doing this week</h2>
+    <ul>
+      <li>Read <b>Åström &amp; Murray, sections 9.1–9.4</b>.</li>
+      <li>Sketch the Nyquist plot of 2/(s + 1) and of (s + 2)/(s² − 1) by hand. For the second one, find the range of k that makes the closed loop stable and check it with the root locus.</li>
+      <li>Take any Bode plot from last week, find ω<sub>c</sub> and ω<sub>180</sub>, and read off both margins. Compare with <code>margin</code> in MATLAB.</li>
+    </ul>
+  </div>
+
+  <p class="fine">
+    Written by AI from the lecture slides, so treat it as a reminder rather than a source.<br>
+    <a href="https://video.ethz.ch/lectures/d-mavt/2026/autumn/151-0591-00L">Lecture recording</a> ·
+    <a href="https://idsc.ethz.ch/education/lectures/control-systems-i.html">Course page</a>
+  </p>
+
+</div>
+</body>
+</html>
