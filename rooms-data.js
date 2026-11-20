@@ -89,20 +89,20 @@ window.ROOMS = [
         x: 83, y: 53.3,
         label: "This week's tool",
         panel: {
-          kicker: "Week 9 · Try it yourself",
-          title: "From arrow to Bode plot",
-          lead: "The first block on page 8: one pole, G(s) = 1/(s + 1). Walk s = jω up the imaginary axis and watch the arrow from the pole draw the Bode plot.",
+          kicker: "Week 10 · Try it yourself",
+          title: "The shower",
+          lead: "You turn the tap, but the water answers late. Too cold, more, more — then everything arrives at once. Same water every time; only the hand on the tap changes.",
           list: [
-            "|G| = 1 / arrow length, ∠G = − arrow angle",
-            "ω = 0.2, 1, 5: the three arrows from the sheet",
-            "At the corner: √2 long, 45°, so −3 dB and −45°",
-            "Far above it: 10× higher, 10× longer, −20 dB per decade"
+            "Patient (K = 4): every swing smaller than the last",
+            "K = 8: hot, cold, hot, cold forever — L(jω) = −1",
+            "Impatient (K = 16): every swing bigger, until it runs away",
+            "One trip around the loop multiplies a wobble by −L(jω)"
           ],
           links: [
-            { label: "Open the demo", href: "tools/bode-pole.html" },
-            { label: "Week 5: shake the spring", href: "tools/spring-frequency.html" }
+            { label: "Open the demo", href: "tools/shower.html" },
+            { label: "Last week: arrow to Bode plot", href: "tools/bode-pole.html" }
           ],
-          note: "Every other block in the Bode alphabet works the same way: a zero is the same arrow, upside down."
+          note: "The plant alone is harmless. The closed loop with us in it makes it oscillate."
         }
       },
       {
@@ -110,18 +110,18 @@ window.ROOMS = [
         x: 73.5, y: 44.9,
         label: "Today's exercise",
         panel: {
-          kicker: "Week 9 · Today",
-          title: "Frequency Response, Bode Plot, Polar Plot",
-          lead: "A step response is only one test. Real signals keep oscillating, so today we ask how a system reacts to every frequency at once.",
+          kicker: "Week 10 · Today",
+          title: "Nyquist",
+          lead: "Is the closed loop stable? Today we answer that from the open loop alone.",
           list: [
-            "Back to the rubber band: each experiment is one complex number G(jω)",
-            "From three frequencies to all of them, on log axes and in decibels",
-            "Multiplying becomes adding: the Bode alphabet of building blocks",
-            "Two complex poles, and the polar plot"
+            "Sketching polar plots: where they start, end, turn and cross",
+            "Nyquist plot = polar plot + its mirror image",
+            "What can go wrong when we close the loop: the critical point −1",
+            "Walking around zeros and poles: N = Z − P, and the Nyquist criterion Z = N + P"
           ],
           links: [
-            { label: "Worksheet 9", href: "files/week-9-worksheet.pdf" },
-            { label: "Worksheet 8", href: "files/week-8-worksheet.pdf" }
+            { label: "Worksheet 10", href: "files/week-10-worksheet.pdf" },
+            { label: "Worksheet 9", href: "files/week-9-worksheet.pdf" }
           ],
           note: "Solutions go up straight after the session."
         }
